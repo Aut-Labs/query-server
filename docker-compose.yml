@@ -1,0 +1,24 @@
+version: '3.9'
+
+services:
+  aut-api:
+    container_name: aut-api
+    image: node:16
+    volumes:
+      - .:/app
+    working_dir: /app
+    environment:
+      - ENVIRONMENT_IP=localhost
+      - SERVER_PORT=4005
+      - NODE_ENV=development
+    ports:
+      - "4005:4005"
+    command: /bin/bash -c 'yarn; yarn start;'
+    networks:
+      - aut-api
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+networks:
+  aut-api:

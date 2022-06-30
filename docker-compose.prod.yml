@@ -1,0 +1,23 @@
+version: '3.4'
+
+services:
+  aut-api:
+    container_name: aut-api
+    image: node
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    working_dir: /app
+    environment:
+      - SERVER_PORT=4006
+      - NODE_ENV=production
+    ports:
+      - "4006:4006"
+    command: /bin/bash -c 'yarn; yarn start;'
+    networks:
+      - aut-api
+
+networks:
+  aut-api:

@@ -1,5 +1,5 @@
 import autID from './abis/AutID.json';
-import communityExtension from './abis/communityExtension.json';
+import communityExtension from './abis/CommunityExtension.json';
 import { ethers, signer } from '../tools/ethers';
 
 require('dotenv').config()

@@ -20,4 +20,17 @@ export class HoldersController {
       return res.status(500).send({ error: "Something went wrong, please try again later." });
     }
   }
+
+
+  public getConfig = async (_: any, res: Response) => {
+    try {
+      return res.status(200).send({
+        autIDAddress: process.env.AUTID_CONTRACT_ADDRESS,
+        communityRegistryAddress: process.env.COMMUNITY_REGISTRY_ADDRESS
+      });
+    } catch (err) {
+      this.loggerService.error(err);
+      return res.status(500).send({ error: "Something went wrong, please try again later." });
+    }
+  }
 }

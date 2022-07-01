@@ -25,6 +25,7 @@ export class AutIDRouter {
    *         description: Something went wrong, please try again later.
    */
     this._router.get('/:username', this.holdersController.get);
+    this._router.get('/config/:network', this.holdersController.getConfig);
   }
 
   public get router(): Router {

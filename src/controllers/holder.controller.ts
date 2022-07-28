@@ -13,6 +13,7 @@ export class HoldersController {
 
   public get = async (req: any, res: Response) => {
     try {
+      console.log(req.params.username)
       const holder = await getAutID(req.params.username)
       return res.status(200).send(holder);
     } catch (err) {

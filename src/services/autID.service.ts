@@ -14,15 +14,15 @@ export async function getAutID(username: string): Promise<HolderData> {
         holderData.tokenId = await AutIDContract.getTokenIdByOwner(address);
         holderData.metadataUri = await AutIDContract.getTokenUri(holderData.tokenId);
 
-        const communities = await AutIDContract.getCommunities(address);
+        const daos = await AutIDContract.getHolderDAOs(address);
 
-        for (let i = 0; i < communities.length; i++) {
+        for (let i = 0; i < daos.length; i++) {
 
-            const comData = await AutIDContract.getCommunityMemberData(address, communities[i]);
-            const communityMetadata = await AutIDContract.getCommunityData(communities[i]);
+            const comData = await AutIDContract.getCommunityMemberData(address, daos[i]);
+            const communityMetadata = await AutIDContract.getDAOData(daos[i]);
 
             holderData.communities.push({
-                communityExtension: communities[i],
+                communityExtension: daos[i],
                 holderRole: comData.role,
                 holderCommitment: comData.commitment,
                 holderIsActive: comData.isActive,

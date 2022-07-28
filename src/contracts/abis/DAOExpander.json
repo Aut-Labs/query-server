@@ -4,42 +4,42 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "deployer",
+          "name": "_deployer",
           "type": "address"
         },
         {
           "internalType": "address",
-          "name": "autAddr",
+          "name": "_autAddr",
           "type": "address"
         },
         {
           "internalType": "address",
-          "name": "memTypes",
+          "name": "_daoTypes",
           "type": "address"
         },
         {
           "internalType": "uint256",
-          "name": "contractType",
+          "name": "_daoType",
           "type": "uint256"
         },
         {
           "internalType": "address",
-          "name": "daoAddr",
+          "name": "_daoAddr",
           "type": "address"
         },
         {
           "internalType": "uint256",
-          "name": "market",
+          "name": "_market",
           "type": "uint256"
         },
         {
           "internalType": "string",
-          "name": "metadata",
+          "name": "_metadata",
           "type": "string"
         },
         {
           "internalType": "uint256",
-          "name": "commitment",
+          "name": "_commitment",
           "type": "uint256"
         }
       ],
@@ -50,6 +50,38 @@
       "anonymous": false,
       "inputs": [],
       "name": "ActivitiesAddressAdded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [],
+      "name": "ActivitiesAddressRemoved",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "member",
+          "type": "address"
+        }
+      ],
+      "name": "CoreTeamMemberAdded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "member",
+          "type": "address"
+        }
+      ],
+      "name": "CoreTeamMemberRemoved",
       "type": "event"
     },
     {
@@ -130,6 +162,19 @@
     {
       "inputs": [
         {
+          "internalType": "address",
+          "name": "member",
+          "type": "address"
+        }
+      ],
+      "name": "addToCoreTeam",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "string",
           "name": "_url",
           "type": "string"
@@ -170,7 +215,7 @@
               "type": "uint256"
             }
           ],
-          "internalType": "struct ICommunityExtension.Activity[]",
+          "internalType": "struct IDAOExpander.Activity[]",
           "name": "",
           "type": "tuple[]"
         }
@@ -193,7 +238,20 @@
     },
     {
       "inputs": [],
-      "name": "getComData",
+      "name": "getCoreTeamWhitelist",
+      "outputs": [
+        {
+          "internalType": "address[]",
+          "name": "",
+          "type": "address[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getDAOData",
       "outputs": [
         {
           "components": [
@@ -228,7 +286,7 @@
               "type": "string"
             }
           ],
-          "internalType": "struct ICommunityExtension.CommunityData",
+          "internalType": "struct IDAOExpander.DAOData",
           "name": "data",
           "type": "tuple"
         }
@@ -295,6 +353,19 @@
           "internalType": "bool",
           "name": "",
           "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "interactionAddr",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
         }
       ],
       "stateMutability": "view",
@@ -384,7 +455,7 @@
           "type": "address"
         }
       ],
-      "name": "isMemberOfTheCom",
+      "name": "isMemberOfTheDAO",
       "outputs": [
         {
           "internalType": "bool",
@@ -436,6 +507,32 @@
         }
       ],
       "name": "passOnboarding",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "activityAddr",
+          "type": "address"
+        }
+      ],
+      "name": "removeActivitiesAddress",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "member",
+          "type": "address"
+        }
+      ],
+      "name": "removeFromCoreTeam",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"

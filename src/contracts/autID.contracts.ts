@@ -1,5 +1,5 @@
-import { CommunityData, CommunityMemberData } from "../models/holder";
-import { autIDContract, communityExtensionContract } from "./index";
+import { DAOData, DAOMember } from "../models/holder";
+import { autIDContract, daoExpanderContract } from "./index";
 
 export class AutIDContract {
 
@@ -15,24 +15,24 @@ export class AutIDContract {
   }
 
 
-  public static async getCommunities(holder: string): Promise<string[]> {
+  public static async getHolderDAOs(holder: string): Promise<string[]> {
     try {
       const contract = autIDContract();
-      const communities = await contract.getCommunities(holder);
-      return communities;
+      const daos = await contract.getHolderDAOs(holder);
+      return daos;
     } catch (err) {
       console.log(err);
       return undefined;
     }
   }
 
-  public static async getCommunityData(community: string): Promise<CommunityData> {
+  public static async getDAOData(daoExpanderAddr: string): Promise<DAOData> {
     try {
-      const contract = communityExtensionContract(community);
-      const data = await contract.getComData();
+      const contract = daoExpanderContract(daoExpanderAddr);
+      const data = await contract.getDAOData();
       if (data && data['commitment']) {
 
-        const res: CommunityData = {
+        const res: DAOData = {
           contractType: data['contractType'].toString(),
           daoAddress: data['daoAddress'],
           metadata: data['metadata'],
@@ -48,14 +48,14 @@ export class AutIDContract {
     }
   }
 
-  public static async getCommunityMemberData(holder: string, community: string): Promise<CommunityMemberData> {
+  public static async getCommunityMemberData(holder: string, daoExpander: string): Promise<DAOMember> {
     try {
       const contract = autIDContract();
-      const data = await contract.getCommunityData(holder, community);
+      const data = await contract.getMembershipData(holder, daoExpander);
       if (data && data['commitment']) {
 
-        const res: CommunityMemberData = {
-          communityExtension: data['communityExtension'],
+        const res: DAOMember = {
+          daoExpanderAddress: data['daoExpanderAddress'],
           role: data['role'].toString(),
           commitment: data['commitment'].toString(),
           isActive: data['isActive']

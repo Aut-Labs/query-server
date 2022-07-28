@@ -1,5 +1,5 @@
 import autID from './abis/AutID.json';
-import communityExtension from './abis/CommunityExtension.json';
+import daoExpander from './abis/DAOExpander.json';
 import { ethers, signer } from '../tools/ethers';
 
 require('dotenv').config()
@@ -18,11 +18,11 @@ export const autIDContract = () => {
   }
 };
 
-export const communityExtensionContract = (address: string) => {
+export const daoExpanderContract = (address: string) => {
   try {
     let contract = new ethers.Contract(
       address,
-      communityExtension.abi,
+      daoExpander.abi,
       signer,
     );
     return contract;

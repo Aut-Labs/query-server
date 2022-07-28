@@ -80,7 +80,7 @@
         {
           "indexed": false,
           "internalType": "address",
-          "name": "communityAddress",
+          "name": "daoExpanderAddress",
           "type": "address"
         },
         {
@@ -105,7 +105,7 @@
         {
           "indexed": false,
           "internalType": "address",
-          "name": "communityAddress",
+          "name": "daoExpanderAddress",
           "type": "address"
         },
         {
@@ -115,7 +115,7 @@
           "type": "address"
         }
       ],
-      "name": "CommunityJoined",
+      "name": "DAOJoined",
       "type": "event"
     },
     {
@@ -124,7 +124,7 @@
         {
           "indexed": false,
           "internalType": "address",
-          "name": "communityAddress",
+          "name": "daoExpanderAddress",
           "type": "address"
         },
         {
@@ -134,13 +134,32 @@
           "type": "address"
         }
       ],
-      "name": "CommunityWithdrown",
+      "name": "DAOWithdrown",
       "type": "event"
     },
     {
       "anonymous": false,
       "inputs": [],
       "name": "DiscordIDConnectedToAutID",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "metadataUri",
+          "type": "string"
+        }
+      ],
+      "name": "MetadataUriSet",
       "type": "event"
     },
     {
@@ -279,7 +298,7 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "communityExtension",
+          "name": "daoExpander",
           "type": "address"
         },
         {
@@ -339,11 +358,11 @@
           "type": "address"
         }
       ],
-      "name": "getCommunities",
+      "name": "getHolderDAOs",
       "outputs": [
         {
           "internalType": "address[]",
-          "name": "communities",
+          "name": "daos",
           "type": "address[]"
         }
       ],
@@ -359,17 +378,17 @@
         },
         {
           "internalType": "address",
-          "name": "communityExtension",
+          "name": "daoExpander",
           "type": "address"
         }
       ],
-      "name": "getCommunityData",
+      "name": "getMembershipData",
       "outputs": [
         {
           "components": [
             {
               "internalType": "address",
-              "name": "communityExtension",
+              "name": "daoExpanderAddress",
               "type": "address"
             },
             {
@@ -388,7 +407,7 @@
               "type": "bool"
             }
           ],
-          "internalType": "struct IAutID.CommunityMember",
+          "internalType": "struct IAutID.DAOMember",
           "name": "",
           "type": "tuple"
         }
@@ -434,11 +453,11 @@
         },
         {
           "internalType": "address",
-          "name": "communityExtension",
+          "name": "daoExpander",
           "type": "address"
         }
       ],
-      "name": "joinCommunity",
+      "name": "joinDAO",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -467,7 +486,7 @@
         },
         {
           "internalType": "address",
-          "name": "communityExtension",
+          "name": "daoExpander",
           "type": "address"
         }
       ],
@@ -550,7 +569,7 @@
         },
         {
           "internalType": "bytes",
-          "name": "_data",
+          "name": "data",
           "type": "bytes"
         }
       ],
@@ -573,6 +592,19 @@
         }
       ],
       "name": "setApprovalForAll",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "metadataUri",
+          "type": "string"
+        }
+      ],
+      "name": "setMetadataUri",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -655,7 +687,7 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "communityExtension",
+          "name": "daoExpander",
           "type": "address"
         }
       ],

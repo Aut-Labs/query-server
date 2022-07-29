@@ -1,15 +1,17 @@
 import autID from './abis/AutID.json';
 import daoExpander from './abis/DAOExpander.json';
-import { ethers, signer } from '../tools/ethers';
+import { getSigner } from '../tools/ethers';
+import { NetworkConfig } from '../models/config';
+import { ethers } from 'ethers';
 
 require('dotenv').config()
 
-export const autIDContract = () => {
+export const autIDContract = (networkConfig: NetworkConfig): ethers.Contract => {
   try {
     let contract = new ethers.Contract(
-      process.env.AUTID_CONTRACT_ADDRESS,
+      networkConfig.autIDAddress,
       autID.abi,
-      signer,
+      getSigner(networkConfig),
     );
     return contract;
   } catch (err) {
@@ -18,12 +20,12 @@ export const autIDContract = () => {
   }
 };
 
-export const daoExpanderContract = (address: string) => {
+export const daoExpanderContract = (address: string, networkConfig: NetworkConfig): ethers.Contract => {
   try {
     let contract = new ethers.Contract(
       address,
       daoExpander.abi,
-      signer,
+      getSigner(networkConfig),
     );
     return contract;
   } catch (err) {

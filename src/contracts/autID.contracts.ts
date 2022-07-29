@@ -1,12 +1,19 @@
-import { DAOData, DAOMember } from "../models/holder";
-import { autIDContract, daoExpanderContract } from "./index";
+import { ethers } from "ethers";
+import { NetworkConfig } from "../models/config";
+import { DAOMember } from "../models/holder";
+import { autIDContract } from "./index";
 
 export class AutIDContract {
+  autID: ethers.Contract;
+  networkConfig: NetworkConfig;
+  constructor(config: NetworkConfig) {
+    this.networkConfig = config;
+    this.autID = autIDContract(config);
+  }
 
-  public static async getAddressByUsername(username: string): Promise<string> {
+  public async getAddressByUsername(username: string): Promise<string> {
     try {
-      const contract = autIDContract();
-      const address = await contract.autIDUsername(username);
+      const address = await this.autID.autIDUsername(username);
       return address.toString();
     } catch (err) {
       console.log(err);
@@ -15,43 +22,18 @@ export class AutIDContract {
   }
 
 
-  public static async getHolderDAOs(holder: string): Promise<string[]> {
+  public async getHolderDAOs(holder: string): Promise<string[]> {
     try {
-      const contract = autIDContract();
-      const daos = await contract.getHolderDAOs(holder);
+      const daos = await this.autID.getHolderDAOs(holder);
       return daos;
     } catch (err) {
       console.log(err);
       return undefined;
     }
   }
-
-  public static async getDAOData(daoExpanderAddr: string): Promise<DAOData> {
+  public async getCommunityMemberData(holder: string, daoExpander: string): Promise<DAOMember> {
     try {
-      const contract = daoExpanderContract(daoExpanderAddr);
-      const data = await contract.getDAOData();
-      if (data && data['commitment']) {
-
-        const res: DAOData = {
-          contractType: data['contractType'].toString(),
-          daoAddress: data['daoAddress'],
-          metadata: data['metadata'],
-          market: data['market'].toString(),
-          discordServer: data['discordServer']
-        }
-        return res;
-      } else return undefined;
-
-    } catch (err) {
-      console.log(err);
-      return undefined;
-    }
-  }
-
-  public static async getCommunityMemberData(holder: string, daoExpander: string): Promise<DAOMember> {
-    try {
-      const contract = autIDContract();
-      const data = await contract.getMembershipData(holder, daoExpander);
+      const data = await this.autID.getMembershipData(holder, daoExpander);
       if (data && data['commitment']) {
 
         const res: DAOMember = {
@@ -69,20 +51,18 @@ export class AutIDContract {
     }
   }
 
-  public static async getTokenIdByOwner(holder: string): Promise<string> {
+  public async getTokenIdByOwner(holder: string): Promise<string> {
     try {
-      const contract = autIDContract();
-      const tokenID = await contract.getAutIDByOwner(holder);
+      const tokenID = await this.autID.getAutIDByOwner(holder);
       return tokenID.toString();
     } catch (err) {
       console.log(err);
       return undefined;
     }
   }
-  public static async getTokenUri(tokenID: string): Promise<string> {
+  public async getTokenUri(tokenID: string): Promise<string> {
     try {
-      const contract = autIDContract();
-      const uri = await contract.tokenURI(tokenID);
+      const uri = await this.autID.tokenURI(tokenID);
       return uri;
     } catch (err) {
       console.log(err);

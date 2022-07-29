@@ -1,25 +1,28 @@
 import { ethers } from 'ethers';
 import { HolderData } from '../models/holder';
 import { AutIDContract } from '../contracts/autID.contracts';
+import { getConfiguration } from '../services';
+import { DAOExpanderContract } from '../contracts/daoExpander.contracts';
 
-
-export async function getAutID(username: string): Promise<HolderData> {
-    const address = await AutIDContract.getAddressByUsername(username);
-    console.log('address', address);
+export async function getAutID(username: string, network: string): Promise<HolderData> {
+    const config = getConfiguration(network);
+    const autContract = new AutIDContract(config);
+    
+    const address = await autContract.getAddressByUsername(username);
 
     const holderData: HolderData = { communities: []} as any;
     if (address != ethers.constants.AddressZero) {
 
         holderData.address = address;
-        holderData.tokenId = await AutIDContract.getTokenIdByOwner(address);
-        holderData.metadataUri = await AutIDContract.getTokenUri(holderData.tokenId);
+        holderData.tokenId = await autContract.getTokenIdByOwner(address);
+        holderData.metadataUri = await autContract.getTokenUri(holderData.tokenId);
 
-        const daos = await AutIDContract.getHolderDAOs(address);
+        const daos = await autContract.getHolderDAOs(address);
 
         for (let i = 0; i < daos.length; i++) {
 
-            const comData = await AutIDContract.getCommunityMemberData(address, daos[i]);
-            const communityMetadata = await AutIDContract.getDAOData(daos[i]);
+            const comData = await autContract.getCommunityMemberData(address, daos[i]);
+            const communityMetadata = await DAOExpanderContract.getDAOData(daos[i], config);
 
             holderData.communities.push({
                 communityExtension: daos[i],
@@ -33,8 +36,6 @@ export async function getAutID(username: string): Promise<HolderData> {
                 discordServer: communityMetadata.discordServer
             });
         }
-
-        console.log(holderData);
 
         return holderData;
     }

@@ -22,7 +22,10 @@ export class HoldersController {
       if (network !== 'mumbai' && network !== 'goerli')
         return res.status(400).send({ error: "Network not supported." });
 
-      const holder = await getAutID(username, network)
+      const holder = await getAutID(username, network);
+      if(!holder) {
+        return res.status(404).send({ error: "No such autID." });
+      }
       return res.status(200).send(holder);
     } catch (err) {
       this.loggerService.error(err);

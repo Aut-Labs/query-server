@@ -11,7 +11,7 @@ require('dotenv').config()
 export  function getSigner(networkConfig: NetworkConfig) {
 
   const provider = new ethers.providers.JsonRpcProvider(
-    networkConfig.rpc
+    networkConfig.rpcUrls[0]
   );
   
   // Wallet connected to a provider

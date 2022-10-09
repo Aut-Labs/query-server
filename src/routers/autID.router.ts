@@ -30,13 +30,8 @@ export class AutIDRouter {
     this._router.get("/:username", this.holdersController.get);
 
     /**
-     * @OTOD
-     * Add parameter for which NetworkConfigEnv to load the networks for
-     */
-
-    /**
      * @swagger
-     * /api/autID/config/network:
+     * /api/autID/config/network/networkEnv:
      *   get:
      *     description: Gets all networks.
      *     responses:
@@ -45,11 +40,11 @@ export class AutIDRouter {
      *       500:
      *         description: Something went wrong, please try again later.
      */
-    this._router.get("/config/network", this.autController.getNetworks);
+    this._router.get("/config/network/:networkEnv", this.autController.getNetworks);
 
     /**
      * @swagger
-     * /api/autID/config/network:
+     * /api/autID/config/network/networkEnv:/networkEnv:
      *   get:
      *     description: Gets single network.
      *     responses:
@@ -59,7 +54,7 @@ export class AutIDRouter {
      *         description: Something went wrong, please try again later.
      */
     this._router.get(
-      "/config/network/:networkName",
+      "/config/network/:networkEnv/:networkName",
       this.autController.getNetwork
     );
 

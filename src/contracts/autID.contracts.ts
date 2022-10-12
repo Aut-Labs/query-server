@@ -13,7 +13,7 @@ export class AutIDContract {
 
   public async getAddressByUsername(username: string): Promise<string> {
     try {
-      const address = await this.autID.autIDUsername(username);
+      const address = await this.autID.getAutIDHolderByUsername(username);
       return address.toString();
     } catch (err) {
       console.log(err);

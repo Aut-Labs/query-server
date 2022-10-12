@@ -7,8 +7,7 @@ import { DAOExpanderContract } from '../contracts/daoExpander.contracts';
 export async function getAutID(username: string, network: string): Promise<HolderData> {
     const config = getConfiguration(network);
     const autContract = new AutIDContract(config);
-
-    const address = await autContract.getAddressByUsername(username);
+    const address = await autContract.getAddressByUsername(username.toLowerCase());
     if (!address)
         return undefined;
 

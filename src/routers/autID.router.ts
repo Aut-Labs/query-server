@@ -1,11 +1,14 @@
 import { injectable } from "inversify";
 import { Router } from "express";
-import { HoldersController } from "../controllers";
+import { AutController, HoldersController } from "../controllers";
 @injectable()
 export class AutIDRouter {
   private readonly _router: Router;
 
-  constructor(private holdersController: HoldersController) {
+  constructor(
+    private holdersController: HoldersController,
+    private autController: AutController
+  ) {
     this._router = Router({ strict: true });
     this.init();
   }
@@ -13,19 +16,54 @@ export class AutIDRouter {
   private init(): void {
     // GET
 
-  /**
-   * @swagger
-   * /api/autID/username:
-   *   get:
-   *     description: Gets all autID signees.
-   *     responses:
-   *       200:
-   *         description: Success
-   *       500:
-   *         description: Something went wrong, please try again later.
-   */
-    this._router.get('/:username', this.holdersController.get);
-    this._router.get('/config/:network', this.holdersController.getConfig);
+    /**
+     * @swagger
+     * /api/autID/username:
+     *   get:
+     *     description: Gets all autID signees.
+     *     responses:
+     *       200:
+     *         description: Success
+     *       500:
+     *         description: Something went wrong, please try again later.
+     */
+    this._router.get("/:username", this.holdersController.get);
+
+    /**
+     * @swagger
+     * /api/autID/config/network/networkEnv:
+     *   get:
+     *     description: Gets all networks.
+     *     responses:
+     *       200:
+     *         description: Success
+     *       500:
+     *         description: Something went wrong, please try again later.
+     */
+    this._router.get("/config/network/:networkEnv", this.autController.getNetworks);
+
+    /**
+     * @swagger
+     * /api/autID/config/network/networkEnv:/networkEnv:
+     *   get:
+     *     description: Gets single network.
+     *     responses:
+     *       200:
+     *         description: Success
+     *       500:
+     *         description: Something went wrong, please try again later.
+     */
+    this._router.get(
+      "/config/network/:networkEnv/:networkName",
+      this.autController.getNetwork
+    );
+
+    // DEPRECATED
+    // TODO: Removed once replaced everywhere with the new endpoints
+    this._router.get(
+      "/config/:networkName",
+      this.autController.getLegacyNetwork
+    );
   }
 
   public get router(): Router {

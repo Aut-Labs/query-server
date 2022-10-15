@@ -1,22 +1,30 @@
-
 export * from "./logger.service";
 export * from "./autID.service";
-import { NetworkConfig } from '../models/config';
+import { NetworkConfigEnv, NetworkConfig } from "../models/config";
+import { GoerliNetwork, MumbaiNetwork } from "./networks";
 
-export function getConfiguration(network: string): NetworkConfig {
+export function getNetworkConfig(
+  network: string,
+  networkConfigEnv = NetworkConfigEnv.Testing
+): NetworkConfig {
+  if (networkConfigEnv === NetworkConfigEnv.Testing) {
     switch (network) {
-        case 'mumbai': return {
-            network: 'mumbai',
-            rpc: process.env.MUMBAI_RPC_PROVIDER,
-            autIDAddress: process.env.MUMBAI_AUTID_CONTRACT_ADDRESS,
-            daoExpanderRegistryAddress: process.env.MUMBAI_DAOEXPANDER_REGISTRY_ADDRESS
-        }
-        case 'goerli': return {
-            network: 'goerli',
-            rpc: process.env.GOERLI_RPC_PROVIDER,
-            autIDAddress: process.env.GOERLI_AUTID_CONTRACT_ADDRESS,
-            daoExpanderRegistryAddress: process.env.GOERLI_DAOEXPANDER_REGISTRY_ADDRESS
-        }
-        default: return undefined;
+      case "mumbai":
+        return MumbaiNetwork();
+      case "goerli":
+        return GoerliNetwork();
+      default:
+        return undefined;
     }
+  }
+  return undefined;
+}
+
+export function getNetworksConfig(
+  networkConfigEnv = NetworkConfigEnv.Testing
+): NetworkConfig[] {
+  if (networkConfigEnv === NetworkConfigEnv.Testing) {
+    return [GoerliNetwork(), MumbaiNetwork()];
+  }
+  return [];
 }

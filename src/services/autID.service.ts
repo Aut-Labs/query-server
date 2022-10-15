@@ -1,11 +1,11 @@
 import { ethers } from 'ethers';
 import { HolderData } from '../models/holder';
 import { AutIDContract } from '../contracts/autID.contracts';
-import { getConfiguration } from '../services';
 import { DAOExpanderContract } from '../contracts/daoExpander.contracts';
+import { getNetworkConfig } from '../services';
 
 export async function getAutID(username: string, network: string): Promise<HolderData> {
-    const config = getConfiguration(network);
+    const config = getNetworkConfig(network);
     const autContract = new AutIDContract(config);
     const address = await autContract.getAddressByUsername(username.toLowerCase());
     if (!address)

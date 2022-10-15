@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc --resolveJsonModule",
+    "build": "tsc",
     "dev": "npm install && nodemon",
     "start": "npm run build && node ./dist/server.js",
     "testFlow": "npm run build && node ./dist/testFlow.js",

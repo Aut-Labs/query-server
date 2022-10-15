@@ -9,7 +9,7 @@ require('dotenv').config()
 export const autIDContract = (networkConfig: NetworkConfig): ethers.Contract => {
   try {
     let contract = new ethers.Contract(
-      networkConfig.autIDAddress,
+      networkConfig.contracts.autIDAddress,
       autID.abi,
       getSigner(networkConfig),
     );

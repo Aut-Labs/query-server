@@ -1,4 +1,3 @@
-
 export interface CommunityMembershipDetails {
   communityExtension: string;
   holderRole: string;
@@ -12,7 +11,6 @@ export interface CommunityMembershipDetails {
   discordServer: string;
 }
 
-
 export interface HolderData {
   tokenId: string;
   username: string;
@@ -21,7 +19,10 @@ export interface HolderData {
   communities: CommunityMembershipDetails[];
 }
 
-
+export interface Holder {
+  tokenId: string;
+  metadataUri: string;
+}
 
 export interface DAOMember {
   daoExpanderAddress: string;
@@ -29,7 +30,6 @@ export interface DAOMember {
   commitment: string;
   isActive: boolean;
 }
-
 
 export interface DAOData {
   contractType: string;

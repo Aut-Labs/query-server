@@ -1,13 +1,15 @@
 import { LoggerService } from "../services/logger.service";
 import { injectable } from "inversify";
 import { Response } from "express";
-import { getAutID, getNetworkConfig } from "../services";
+import {
+  checkForAutIdsOnAllowedNetworks,
+  getAutID,
+  getNetworkConfig,
+} from "../services";
 
 @injectable()
 export class HoldersController {
-  constructor(
-    private loggerService: LoggerService,
-  ) {}
+  constructor(private loggerService: LoggerService) {}
 
   public get = async (req: any, res: Response) => {
     try {
@@ -21,13 +23,33 @@ export class HoldersController {
         return res.status(400).send({ error: "Network not supported." });
 
       const holder = await getAutID(username, network);
-      if(!holder) {
+      if (!holder) {
         return res.status(404).send({ error: "No such autID." });
       }
       return res.status(200).send(holder);
     } catch (err) {
       this.loggerService.error(err);
-      return res.status(500).send({ error: "Something went wrong, please try again later." });
+      return res
+        .status(500)
+        .send({ error: "Something went wrong, please try again later." });
     }
-  }
+  };
+
+  public scanNetworks = async (req: any, res: Response) => {
+    try {
+      const address = req.params.address;
+      if (!address)
+        return res.status(400).send({ error: "Address not provided." });
+      const autIds = await checkForAutIdsOnAllowedNetworks(address);
+      if (autIds.length < 1) {
+        return res.status(404).send({ error: "No such autID." });
+      }
+      return res.status(200).send(autIds);
+    } catch (err) {
+      this.loggerService.error(err);
+      return res
+        .status(500)
+        .send({ error: "Something went wrong, please try again later." });
+    }
+  };
 }

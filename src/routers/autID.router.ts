@@ -31,6 +31,22 @@ export class AutIDRouter {
 
     /**
      * @swagger
+     * /api/autID/address:
+     *   get:
+     *     description: Scans all supported networks for autIds.
+     *     responses:
+     *       200:
+     *         description: Success
+     *       500:
+     *         description: Something went wrong, please try again later.
+     */
+    this._router.get(
+      "scanNetworks/:address",
+      this.holdersController.scanNetworks
+    );
+
+    /**
+     * @swagger
      * /api/autID/config/network/networkEnv:
      *   get:
      *     description: Gets all networks.
@@ -40,7 +56,10 @@ export class AutIDRouter {
      *       500:
      *         description: Something went wrong, please try again later.
      */
-    this._router.get("/config/network/:networkEnv", this.autController.getNetworks);
+    this._router.get(
+      "/config/network/:networkEnv",
+      this.autController.getNetworks
+    );
 
     /**
      * @swagger

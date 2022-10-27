@@ -22,6 +22,8 @@ export interface HolderData {
 export interface Holder {
   tokenId: string;
   metadataUri: string;
+  network: string;
+  chainId: number;
 }
 
 export interface DAOMember {

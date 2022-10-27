@@ -21,7 +21,6 @@ export class AutIDContract {
     }
   }
 
-
   public async getHolderDAOs(holder: string): Promise<string[]> {
     try {
       const daos = await this.autID.getHolderDAOs(holder);
@@ -31,20 +30,21 @@ export class AutIDContract {
       return undefined;
     }
   }
-  public async getCommunityMemberData(holder: string, daoExpander: string): Promise<DAOMember> {
+  public async getCommunityMemberData(
+    holder: string,
+    daoExpander: string
+  ): Promise<DAOMember> {
     try {
       const data = await this.autID.getMembershipData(holder, daoExpander);
-      if (data && data['commitment']) {
-
+      if (data && data["commitment"]) {
         const res: DAOMember = {
-          daoExpanderAddress: data['daoExpanderAddress'],
-          role: data['role'].toString(),
-          commitment: data['commitment'].toString(),
-          isActive: data['isActive']
-        }
+          daoExpanderAddress: data["daoExpanderAddress"],
+          role: data["role"].toString(),
+          commitment: data["commitment"].toString(),
+          isActive: data["isActive"],
+        };
         return res;
       } else return undefined;
-
     } catch (err) {
       console.log(err);
       return undefined;
@@ -70,4 +70,13 @@ export class AutIDContract {
     }
   }
 
+  public async balanceOf(address: string): Promise<number> {
+    try {
+      const balance = await this.autID.balanceOf(address);
+      return balance;
+    } catch (err) {
+      console.log(err);
+      return undefined;
+    }
+  }
 }

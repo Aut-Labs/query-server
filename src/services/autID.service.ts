@@ -32,7 +32,9 @@ export async function getAutID(
         daos[i],
         config
       );
-
+      const metadataUri = await DAOExpanderContract.getMetadataUri(daos[i], config);
+      const market = await DAOExpanderContract.getMarket(daos[i], config);
+   
       holderData.communities.push({
         communityExtension: daos[i],
         holderRole: comData.role,
@@ -40,8 +42,8 @@ export async function getAutID(
         holderIsActive: comData.isActive,
         contractType: communityMetadata.contractType,
         daoAddress: communityMetadata.daoAddress,
-        metadata: communityMetadata.metadata,
-        market: communityMetadata.market,
+        metadata: metadataUri,
+        market: market,
         discordServer: communityMetadata.discordServer,
       });
     }

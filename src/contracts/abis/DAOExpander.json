@@ -48,14 +48,15 @@
     },
     {
       "anonymous": false,
-      "inputs": [],
-      "name": "ActivitiesAddressAdded",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [],
-      "name": "ActivitiesAddressRemoved",
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "member",
+          "type": "address"
+        }
+      ],
+      "name": "AdminMemberAdded",
       "type": "event"
     },
     {
@@ -68,26 +69,25 @@
           "type": "address"
         }
       ],
-      "name": "CoreTeamMemberAdded",
+      "name": "AdminMemberRemoved",
       "type": "event"
     },
     {
       "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "member",
-          "type": "address"
-        }
-      ],
-      "name": "CoreTeamMemberRemoved",
+      "inputs": [],
+      "name": "CommitmentSet",
       "type": "event"
     },
     {
       "anonymous": false,
       "inputs": [],
       "name": "DiscordServerSet",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [],
+      "name": "MarketSet",
       "type": "event"
     },
     {
@@ -100,19 +100,6 @@
       "anonymous": false,
       "inputs": [],
       "name": "MetadataUriUpdated",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "member",
-          "type": "address"
-        }
-      ],
-      "name": "OnboardingPassed",
       "type": "event"
     },
     {
@@ -145,29 +132,11 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "activityAddr",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "actType",
-          "type": "uint256"
-        }
-      ],
-      "name": "addActivitiesAddress",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
           "name": "member",
           "type": "address"
         }
       ],
-      "name": "addToCoreTeam",
+      "name": "addAdmin",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -176,7 +145,7 @@
       "inputs": [
         {
           "internalType": "string",
-          "name": "_url",
+          "name": "url",
           "type": "string"
         }
       ],
@@ -186,8 +155,14 @@
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "autIDAddr",
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "admins",
       "outputs": [
         {
           "internalType": "address",
@@ -200,24 +175,12 @@
     },
     {
       "inputs": [],
-      "name": "getActivitiesWhitelist",
+      "name": "getAdmins",
       "outputs": [
         {
-          "components": [
-            {
-              "internalType": "address",
-              "name": "actAddr",
-              "type": "address"
-            },
-            {
-              "internalType": "uint256",
-              "name": "actType",
-              "type": "uint256"
-            }
-          ],
-          "internalType": "struct IDAOExpander.Activity[]",
+          "internalType": "address[]",
           "name": "",
-          "type": "tuple[]"
+          "type": "address[]"
         }
       ],
       "stateMutability": "view",
@@ -238,12 +201,25 @@
     },
     {
       "inputs": [],
-      "name": "getCoreTeamWhitelist",
+      "name": "getAutIDAddress",
       "outputs": [
         {
-          "internalType": "address[]",
+          "internalType": "address",
           "name": "",
-          "type": "address[]"
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getCommitment",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -264,29 +240,9 @@
               "internalType": "address",
               "name": "daoAddress",
               "type": "address"
-            },
-            {
-              "internalType": "string",
-              "name": "metadata",
-              "type": "string"
-            },
-            {
-              "internalType": "uint256",
-              "name": "commitment",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "market",
-              "type": "uint256"
-            },
-            {
-              "internalType": "string",
-              "name": "discordServer",
-              "type": "string"
             }
           ],
-          "internalType": "struct IDAOExpander.DAOData",
+          "internalType": "struct IDAOExpanderData.DAOExpanssionData",
           "name": "data",
           "type": "tuple"
         }
@@ -328,6 +284,32 @@
     },
     {
       "inputs": [],
+      "name": "getMarket",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getMetadataUri",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "getURLs",
       "outputs": [
         {
@@ -343,43 +325,11 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "member",
-          "type": "address"
-        }
-      ],
-      "name": "hasPassedOnboarding",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "interactionAddr",
-      "outputs": [
-        {
-          "internalType": "address",
           "name": "",
           "type": "address"
         }
       ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "name": "isActivityWhitelisted",
+      "name": "isAdmin",
       "outputs": [
         {
           "internalType": "bool",
@@ -398,26 +348,7 @@
           "type": "address"
         }
       ],
-      "name": "isCoreTeam",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "member",
-          "type": "address"
-        }
-      ],
-      "name": "isMemberOfExtendedDAO",
+      "name": "isMember",
       "outputs": [
         {
           "internalType": "bool",
@@ -437,25 +368,6 @@
         }
       ],
       "name": "isMemberOfOriginalDAO",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "name": "isMemberOfTheDAO",
       "outputs": [
         {
           "internalType": "bool",
@@ -501,27 +413,20 @@
     {
       "inputs": [
         {
-          "internalType": "address[]",
-          "name": "members",
-          "type": "address[]"
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
         }
       ],
-      "name": "passOnboarding",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
+      "name": "members",
+      "outputs": [
         {
           "internalType": "address",
-          "name": "activityAddr",
+          "name": "",
           "type": "address"
         }
       ],
-      "name": "removeActivitiesAddress",
-      "outputs": [],
-      "stateMutability": "nonpayable",
+      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -532,7 +437,7 @@
           "type": "address"
         }
       ],
-      "name": "removeFromCoreTeam",
+      "name": "removeAdmin",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -541,7 +446,7 @@
       "inputs": [
         {
           "internalType": "string",
-          "name": "_url",
+          "name": "url",
           "type": "string"
         }
       ],
@@ -553,12 +458,12 @@
     {
       "inputs": [
         {
-          "internalType": "string",
-          "name": "discordServer",
-          "type": "string"
+          "internalType": "uint256",
+          "name": "commitment",
+          "type": "uint256"
         }
       ],
-      "name": "setDiscordServer",
+      "name": "setCommitment",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"

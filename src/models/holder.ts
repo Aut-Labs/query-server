@@ -7,7 +7,7 @@ export interface CommunityMembershipDetails {
   contractType: string;
   daoAddress: string;
   metadata: string;
-  market: boolean;
+  market: string;
   discordServer: string;
 }
 
@@ -34,7 +34,5 @@ export interface DAOMember {
 export interface DAOData {
   contractType: string;
   daoAddress: string;
-  metadata: string;
-  market: boolean;
   discordServer: string;
 }

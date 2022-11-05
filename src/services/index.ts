@@ -5,9 +5,9 @@ import { GoerliNetwork, MumbaiNetwork } from "./networks";
 
 export function getNetworkConfig(
   network: string,
-  networkConfigEnv = NetworkConfigEnv.Testing
+  networkConfigEnv = NetworkConfigEnv.Testnet
 ): NetworkConfig {
-  if (networkConfigEnv === NetworkConfigEnv.Testing) {
+  if (networkConfigEnv === NetworkConfigEnv.Testnet) {
     switch (network) {
       case "mumbai":
         return MumbaiNetwork();
@@ -21,9 +21,9 @@ export function getNetworkConfig(
 }
 
 export function getNetworksConfig(
-  networkConfigEnv = NetworkConfigEnv.Testing
+  networkConfigEnv = NetworkConfigEnv.Testnet
 ): NetworkConfig[] {
-  if (networkConfigEnv === NetworkConfigEnv.Testing) {
+  if (networkConfigEnv === NetworkConfigEnv.Testnet) {
     return [GoerliNetwork(), MumbaiNetwork()];
   }
   return [];

@@ -31,9 +31,16 @@ export class AutIDRouter {
 
     /**
      * @swagger
-     * /api/autID/address:
+     * /api/autID/scanNetworks/{address}:
      *   get:
      *     description: Scans all supported networks for autIds.
+     *     parameters:
+     *       - in: path
+     *         name: address
+     *         required: true
+     *         description: Address to search for.
+     *         schema:
+     *           type: string
      *     responses:
      *       200:
      *         description: Success
@@ -41,7 +48,7 @@ export class AutIDRouter {
      *         description: Something went wrong, please try again later.
      */
     this._router.get(
-      "scanNetworks/:address",
+      "/scanNetworks/:address",
       this.holdersController.scanNetworks
     );
 

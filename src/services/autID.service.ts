@@ -59,11 +59,22 @@ export async function checkForAutIdsOnAllowedNetworks(
   //   const config = getNetworkConfig(network);
   const autIds: Holder[] = [];
   const networkConfigs = getNetworksConfig();
-  networkConfigs.map(async (config) => {
-    const autContract = new AutIDContract(config);
-    const tokenId = await autContract.getTokenIdByOwner(address);
-    const metadataUri = await autContract.getTokenUri(tokenId);
-    autIds.push({ tokenId, metadataUri });
-  });
+
+  await Promise.all(
+    networkConfigs.map(async (config) => {
+      const autContract = new AutIDContract(config);
+      const balance = await autContract.balanceOf(address);
+      if (balance > 0) {
+        const tokenId = await autContract.getTokenIdByOwner(address);
+        const metadataUri = await autContract.getTokenUri(tokenId);
+        autIds.push({
+          tokenId,
+          metadataUri,
+          network: config.network,
+          chainId: Number(config.chainId),
+        });
+      }
+    })
+  );
   return autIds;
 }

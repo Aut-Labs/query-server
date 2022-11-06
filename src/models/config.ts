@@ -1,5 +1,5 @@
 export enum NetworkConfigEnv {
-  Testing = "testing",
+  Testnet = "testing", // rename in the future to testnet
   Mainnet = "mainnet",
 }
 
@@ -18,4 +18,5 @@ export interface NetworkConfig {
   rpcUrls: string[];
   explorerUrls: string[];
   contracts: NetworkContracts;
+  biconomyApiKey: string;
 }

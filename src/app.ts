@@ -5,6 +5,7 @@ import { injectable } from "inversify";
 import {
   AutIDRouter,
 } from "./routers";
+import AutSDK from "@aut-protocol/sdk";
 // const rateLimit = require('express-rate-limit');
 // const slowDown = require("express-slow-down");
 const cookieParser = require("cookie-parser");
@@ -77,11 +78,16 @@ export class App {
 
     //Initialize app routes
     this._initRoutes();
+    this._initSdk();
 
   }
 
   private _initRoutes() {
     this._app.use("/api/autID", this.autIDRouter.router);
     this._app.use("/api/docs", swaggerUI.serve, swaggerUI.setup(swagger));
+  }
+
+  private _initSdk() {
+    const sdk = new AutSDK({});
   }
 }

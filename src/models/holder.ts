@@ -1,24 +1,3 @@
-export interface CommunityMembershipDetails {
-  communityExtension: string;
-  holderRole: string;
-  holderCommitment: string;
-  holderIsActive: boolean;
-
-  contractType: string;
-  daoAddress: string;
-  metadata: string;
-  market: string;
-  discordServer: string;
-}
-
-export interface HolderData {
-  tokenId: string;
-  username: string;
-  address: string;
-  metadataUri: string;
-  communities: CommunityMembershipDetails[];
-}
-
 export interface Holder {
   tokenId: string;
   metadataUri: string;

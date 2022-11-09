@@ -1,12 +1,14 @@
 export * from "./logger.service";
-export * from "./autID.service";
 import { NetworkConfigEnv, NetworkConfig } from "../models/config";
 import { GoerliNetwork, MumbaiNetwork } from "./networks";
 
 export function getNetworkConfig(
   network: string,
-  networkConfigEnv = NetworkConfigEnv.Testnet
+  networkConfigEnv: NetworkConfigEnv.Testnet
 ): NetworkConfig {
+  if (!networkConfigEnv) {
+    networkConfigEnv = NetworkConfigEnv.Testnet;
+  }
   if (networkConfigEnv === NetworkConfigEnv.Testnet) {
     switch (network) {
       case "mumbai":
@@ -21,8 +23,11 @@ export function getNetworkConfig(
 }
 
 export function getNetworksConfig(
-  networkConfigEnv = NetworkConfigEnv.Testnet
+  networkConfigEnv: NetworkConfigEnv
 ): NetworkConfig[] {
+  if (!networkConfigEnv) {
+    networkConfigEnv = NetworkConfigEnv.Testnet;
+  }
   if (networkConfigEnv === NetworkConfigEnv.Testnet) {
     return [GoerliNetwork(), MumbaiNetwork()];
   }

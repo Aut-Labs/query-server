@@ -83,13 +83,6 @@ export class AutIDRouter {
       "/config/network/:networkEnv/:networkName",
       this.autController.getNetwork
     );
-
-    // DEPRECATED
-    // TODO: Removed once replaced everywhere with the new endpoints
-    this._router.get(
-      "/config/:networkName",
-      this.autController.getLegacyNetwork
-    );
   }
 
   public get router(): Router {

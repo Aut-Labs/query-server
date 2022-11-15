@@ -87,7 +87,7 @@ export class AutIDRouter {
 
     /**
      * @swagger
-     * /api/autID/twitterVerif:
+     * /api/autID/config/twitterVerification:
      *   post:
      *     description: Twitter verification.
      *     responses:

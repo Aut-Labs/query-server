@@ -1,7 +1,7 @@
 import { LoggerService } from "../services/logger.service";
 import { injectable } from "inversify";
 import { Response } from "express";
-import { getNetworkConfig, getNetworksConfig } from "../services";
+import { getNetworkConfig, getNetworksConfig, validateTweet } from "../services";
 import { NetworkConfigEnv } from "../models/config";
 
 @injectable()
@@ -47,6 +47,25 @@ export class AutController {
         .send({ error: "Something went wrong, please try again later." });
     }
   };
+
+
+  public twitterVerification = async (req: any, res: Response) => {
+    try {
+      if (!req.body.signature)
+        return res.status(400).send({ error: "No signature passed." });
+      else if (!req.body.tweetID)
+        return res.status(400).send({ error: "No tweetID passed." });
+
+      const isValid = await validateTweet(req.body.signature, req.body.tweetID);
+      if (isValid)
+        return res.status(200).send({ isValid });
+      else
+        return res.status(500).send({ error: "Something went wrong, please try again later." });
+    } catch (err) {
+      this.loggerService.error(err);
+      return res.status(500).send({ error: "Something went wrong, please try again later." });
+    }
+  }
 
   public getNetworks = async (req: any, res: Response) => {
     try {

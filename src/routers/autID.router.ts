@@ -83,6 +83,23 @@ export class AutIDRouter {
       "/config/network/:networkEnv/:networkName",
       this.autController.getNetwork
     );
+
+
+    /**
+     * @swagger
+     * /api/autID/twitterVerif:
+     *   post:
+     *     description: Twitter verification.
+     *     responses:
+     *       200:
+     *         description: Success
+     *       500:
+     *         description: Something went wrong, please try again later.
+     */
+     this._router.get(
+      "/config/twitterVerification",
+      this.autController.twitterVerification
+    );
   }
 
   public get router(): Router {

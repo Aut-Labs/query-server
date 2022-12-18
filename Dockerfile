@@ -6,16 +6,13 @@ WORKDIR /app
 
 # Install app dependencies
 COPY package.json ./
-# COPY yarn.lock ./
 
 # Install libraries
-RUN yarn && yarn global add typescript ts-node
+RUN npm install
 
 # Bundle app source
 COPY . .
 
 # Build dist folder
-RUN yarn build
-
-EXPOSE 3003
-CMD [ "yarn", "start" ]
+EXPOSE 4005
+CMD [ "npm", "run", "start" ]

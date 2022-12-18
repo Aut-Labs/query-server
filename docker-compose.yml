@@ -16,7 +16,6 @@ services:
       - NODE_ENV=development
     ports:
       - "4005:4005"
-    command: /bin/bash -c 'yarn; yarn start;'
     networks:
       - aut-api
     deploy:

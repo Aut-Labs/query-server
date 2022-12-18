@@ -33,7 +33,7 @@ export class HoldersController {
       const signer = getSigner(networkConfig);
 
       const sdk = AutSDK.getInstance();
-      await sdk.init(signer, networkConfig.contracts);
+      await sdk.init(signer as any, networkConfig.contracts);
 
       const holder = await sdk.autID.getAutID({ username });
 
@@ -66,7 +66,7 @@ export class HoldersController {
       for (let i = 0; i < networkConfigs.length; i++) {
         const networkConfig = networkConfigs[i];
         const signer = getSigner(networkConfig);
-        await sdk.init(signer, networkConfig.contracts);
+        await sdk.init(signer as any, networkConfig.contracts);
         const response = await sdk.autID.findAutID(address);
 
         if (response.isSuccess) {

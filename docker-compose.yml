@@ -4,6 +4,9 @@ services:
   aut-api:
     container_name: aut-api
     image: node:16
+    build:
+      context: .
+      dockerfile: Dockerfile
     volumes:
       - .:/app
     working_dir: /app

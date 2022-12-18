@@ -5,7 +5,7 @@ import { injectable } from "inversify";
 import {
   AutIDRouter,
 } from "./routers";
-import AutSDK from "@aut-labs-private/sdk";
+import AutSDK from "@aut-protocol/sdk";
 // const rateLimit = require('express-rate-limit');
 // const slowDown = require("express-slow-down");
 const cookieParser = require("cookie-parser");

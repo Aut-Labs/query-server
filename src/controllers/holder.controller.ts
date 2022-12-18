@@ -4,7 +4,7 @@ import { Response } from "express";
 import { getNetworkConfig, getNetworksConfig } from "../services";
 import { ethers } from "ethers";
 import { getSigner } from "../tools/ethers";
-import AutSDK from "@aut-protocol/sdk";
+import AutSDK from "@aut-labs-private/sdk";
 import { Holder } from "../models/holder";
 
 @injectable()
@@ -30,7 +30,7 @@ export class HoldersController {
         return res.status(400).send({ error: "Network not supported." });
       }
 
-      const signer: ethers.Signer = getSigner(networkConfig);
+      const signer = getSigner(networkConfig);
 
       const sdk = AutSDK.getInstance();
       await sdk.init(signer, networkConfig.contracts);
@@ -65,7 +65,7 @@ export class HoldersController {
 
       for (let i = 0; i < networkConfigs.length; i++) {
         const networkConfig = networkConfigs[i];
-        const signer: ethers.Signer = getSigner(networkConfig);
+        const signer = getSigner(networkConfig);
         await sdk.init(signer, networkConfig.contracts);
         const response = await sdk.autID.findAutID(address);
 

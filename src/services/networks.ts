@@ -11,6 +11,8 @@ export const GoerliNetwork = (): NetworkConfig => ({
     autIDAddress: process.env.GOERLI_AUT_ID_ADDRESS,
     daoExpanderRegistryAddress: process.env.GOERLI_DAO_REGISTRY_ADDRESS,
     daoExpanderFactoryAddress: process.env.GOERLI_DAO_FACTORY_ADDRESS,
+    autDaoRegistryAddress: process.env.GOERLI_AUT_DAO_REGISTRY_ADDRESS,
+    autDaoFactoryAddress: process.env.GOERLI_AUT_DAO_FACTORY_ADDRESS,
     hackerDaoAddress: process.env.GOERLI_HACKERS_DAO_ADDRESS,
     daoTypesAddress: process.env.GOERLI_DAO_TYPES_ADDRESS
   },
@@ -27,6 +29,8 @@ export const MumbaiNetwork = (): NetworkConfig => ({
     autIDAddress: process.env.MUMBAI_AUT_ID_ADDRESS,
     daoExpanderRegistryAddress: process.env.MUMBAI_DAO_REGISTRY_ADDRESS,
     daoExpanderFactoryAddress: process.env.MUMBAI_DAO_FACTORY_ADDRESS,
+    autDaoRegistryAddress: process.env.MUMBAI_AUT_DAO_REGISTRY_ADDRESS,
+    autDaoFactoryAddress: process.env.MUMBAI_AUT_DAO_FACTORY_ADDRESS,
     hackerDaoAddress: process.env.MUMBAI_HACKERS_DAO_ADDRESS,
     daoTypesAddress: process.env.MUMBAI_DAO_TYPES_ADDRESS
   },

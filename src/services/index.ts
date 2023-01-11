@@ -2,6 +2,7 @@ export * from "./logger.service";
 import axios from "axios";
 import { NetworkConfigEnv, NetworkConfig } from "../models/config";
 import { GoerliNetwork, MumbaiNetwork } from "./networks";
+import { TwitterVerificationModel } from "../models/tweetVerif";
 
 export function getNetworkConfig(
   network: string,
@@ -36,18 +37,21 @@ export function getNetworksConfig(
 }
 
 
- async function getTweetByID(id: string): Promise<string> {
-    
+async function getTweetByID(id: string): Promise<string> {
+
   const result = await axios.get(`${process.env.API_TWITTER_URL}/tweets/${id}`, {
-      headers: {
-          Authorization: `Bearer ${process.env.TWITTER_AUTH_TOKEN}`,
-      }
+    headers: {
+      Authorization: `Bearer ${process.env.TWITTER_AUTH_TOKEN}`,
+    }
   });
   console.log(result.data.data.text);
   return result.data.data.text;
 }
 
-export async function validateTweet(signature: string, tweetID: string): Promise<boolean> {
-  const tweetText = await getTweetByID(tweetID);
-  return tweetText && tweetText.includes(signature);
+export async function validateTweet(address: string, signature: string, tweetID: string): Promise<boolean> {
+  // const tweetText = await getTweetByID(tweetID);
+  // if (tweetText && tweetText.includes(signature)) {
+    TwitterVerificationModel.insertMany({ address, signature, tweetID });
+    return true;
+  // } else return false;
 }

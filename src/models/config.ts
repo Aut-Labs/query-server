@@ -21,4 +21,5 @@ export interface NetworkConfig {
   explorerUrls: string[];
   contracts: NetworkContracts;
   biconomyApiKey: string;
+  ipfsGatewayUrl: string;
 }

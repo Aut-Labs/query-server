@@ -6,7 +6,7 @@ import { NetworkConfigEnv } from "../models/config";
 
 @injectable()
 export class AutController {
-  constructor(private loggerService: LoggerService) {}
+  constructor(private loggerService: LoggerService) { }
 
   public getNetwork = async (req: any, res: Response) => {
     try {
@@ -36,9 +36,11 @@ export class AutController {
 
       const configuration = getNetworkConfig(network, networkEnv);
       if (!configuration)
-        return res.status(400).send({ error: `Network not supported. Make sure you using the correct network environment. ${avaiableNetEnvs.join(
-          "|"
-        )}` });
+        return res.status(400).send({
+          error: `Network not supported. Make sure you using the correct network environment. ${avaiableNetEnvs.join(
+            "|"
+          )}`
+        });
       return res.status(200).send(configuration);
     } catch (err) {
       this.loggerService.error(err);
@@ -51,12 +53,15 @@ export class AutController {
 
   public twitterVerification = async (req: any, res: Response) => {
     try {
+
       if (!req.body.signature)
         return res.status(400).send({ error: "No signature passed." });
       else if (!req.body.tweetID)
         return res.status(400).send({ error: "No tweetID passed." });
+      else if (!req.body.address)
+        return res.status(400).send({ error: "No address passed." });
 
-      const isValid = await validateTweet(req.body.signature, req.body.tweetID);
+      const isValid = await validateTweet(req.body.address, req.body.signature, req.body.tweetID);
       if (isValid)
         return res.status(200).send({ isValid });
       else

@@ -7,6 +7,7 @@ export const GoerliNetwork = (): NetworkConfig => ({
   explorerUrls: process.env.GOERLI_BLOCK_EXPLORER_URLS.split("|"),
   rpcUrls: process.env.GOERLI_RPC_URLS.split("|"),
   biconomyApiKey: process.env.GOERLI_BICONOMY_API_KEY,
+  ipfsGatewayUrl: process.env.IPFS_GATEWAY,
   contracts: {
     autIDAddress: process.env.GOERLI_AUT_ID_ADDRESS,
     daoExpanderRegistryAddress: process.env.GOERLI_DAO_REGISTRY_ADDRESS,
@@ -25,6 +26,7 @@ export const MumbaiNetwork = (): NetworkConfig => ({
   explorerUrls: process.env.MUMBAI_BLOCK_EXPLORER_URLS.split("|"),
   rpcUrls: process.env.MUMBAI_RPC_URLS.split("|"),
   biconomyApiKey: process.env.MUMBAI_BICONOMY_API_KEY,
+  ipfsGatewayUrl: process.env.IPFS_GATEWAY,
   contracts: {
     autIDAddress: process.env.MUMBAI_AUT_ID_ADDRESS,
     daoExpanderRegistryAddress: process.env.MUMBAI_DAO_REGISTRY_ADDRESS,

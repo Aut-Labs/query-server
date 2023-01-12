@@ -22,4 +22,5 @@ export interface NetworkConfig {
   contracts: NetworkContracts;
   biconomyApiKey: string;
   ipfsGatewayUrl: string;
+  disabled: boolean,
 }

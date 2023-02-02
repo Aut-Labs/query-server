@@ -18,6 +18,8 @@ services:
       - "4005:4005"
     networks:
       - aut-api
+    depends_on:
+      - aut-db
     deploy:
       restart_policy:
         condition: on-failure
@@ -26,12 +28,18 @@ services:
     container_name: aut-db
     image: mongo
     volumes:
-      - ./data-dev:/data/db
+      - mongodata:/data/db
     ports:
       - "27017:27017"
     networks:
       - aut-api
+    deploy:
+      restart_policy:
+        condition: on-failure
 
+volumes:
+  mongodata:
 
 networks:
   aut-api:
+

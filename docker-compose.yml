@@ -42,4 +42,5 @@ volumes:
 
 networks:
   aut-api:
+    driver: bridge
 

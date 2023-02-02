@@ -84,7 +84,6 @@ export class AutIDRouter {
       this.autController.getNetwork
     );
 
-
     /**
      * @swagger
      * /api/autID/config/twitterVerification:
@@ -96,10 +95,23 @@ export class AutIDRouter {
      *       500:
      *         description: Something went wrong, please try again later.
      */
-     this._router.post(
+    this._router.post(
       "/config/twitterVerification",
       this.autController.twitterVerification
     );
+
+    /**
+     * @swagger
+     * /api/autID/config/twitterToken:
+     *   post:
+     *     description: Twitter token OAuth2.
+     *     responses:
+     *       200:
+     *         description: Success
+     *       500:
+     *         description: Something went wrong, please try again later.
+     */
+    this._router.post("/config/twitterToken", this.autController.twitterToken);
   }
 
   public get router(): Router {

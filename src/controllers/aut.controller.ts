@@ -1,12 +1,17 @@
 import { LoggerService } from "../services/logger.service";
 import { injectable } from "inversify";
 import { Response } from "express";
-import { getNetworkConfig, getNetworksConfig, validateTweet } from "../services";
+import axios from "axios";
+import {
+  getNetworkConfig,
+  getNetworksConfig,
+  validateTweet,
+} from "../services";
 import { NetworkConfigEnv } from "../models/config";
 
 @injectable()
 export class AutController {
-  constructor(private loggerService: LoggerService) { }
+  constructor(private loggerService: LoggerService) {}
 
   public getNetwork = async (req: any, res: Response) => {
     try {
@@ -39,7 +44,7 @@ export class AutController {
         return res.status(400).send({
           error: `Network not supported. Make sure you using the correct network environment. ${avaiableNetEnvs.join(
             "|"
-          )}`
+          )}`,
         });
       return res.status(200).send(configuration);
     } catch (err) {
@@ -50,10 +55,8 @@ export class AutController {
     }
   };
 
-
   public twitterVerification = async (req: any, res: Response) => {
     try {
-
       if (!req.body.signature)
         return res.status(400).send({ error: "No signature passed." });
       else if (!req.body.tweetID)
@@ -61,16 +64,70 @@ export class AutController {
       else if (!req.body.address)
         return res.status(400).send({ error: "No address passed." });
 
-      const isValid = await validateTweet(req.body.address, req.body.signature, req.body.tweetID);
-      if (isValid)
-        return res.status(200).send({ isValid });
+      const isValid = await validateTweet(
+        req.body.address,
+        req.body.signature,
+        req.body.tweetID
+      );
+      if (isValid) return res.status(200).send({ isValid });
       else
-        return res.status(500).send({ error: "Something went wrong, please try again later." });
+        return res
+          .status(500)
+          .send({ error: "Something went wrong, please try again later." });
     } catch (err) {
       this.loggerService.error(err);
-      return res.status(500).send({ error: "Something went wrong, please try again later." });
+      return res
+        .status(500)
+        .send({ error: "Something went wrong, please try again later." });
     }
-  }
+  };
+
+  public twitterToken = async (req: any, res: Response) => {
+    try {
+      var basicAuth = Buffer.from(
+        `${process.env.TWITTER_CLIENT_ID}:${process.env.TWITTER_CLIENT_SECRET}`
+      );
+      var basicAuthToBase64 = basicAuth.toString("base64");
+
+      var config = {
+        method: "post",
+        url: `${process.env.API_TWITTER_URL}/oauth2/token`,
+        headers: {
+          Authorization: `Basic ${basicAuthToBase64}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        data: new URLSearchParams({
+          code: req.body.code,
+          grant_type: "authorization_code",
+          client_id: process.env.TWITTER_CLIENT_ID,
+          redirect_uri: req.body.redirectUrl,
+          code_verifier: req.body.codeVerifier,
+        }),
+      };
+
+      const response = await axios(config);
+
+      var configLookup = {
+        method: "get",
+        url: `${process.env.API_TWITTER_URL}/users/me`,
+        headers: {
+          Authorization: `Bearer ${response.data.access_token}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      };
+
+      const lookupResponse = await axios(configLookup);
+
+      lookupResponse.data.data.token = response.data.access_token;
+
+      return res.status(200).send(lookupResponse.data.data);
+    } catch (err) {
+      this.loggerService.error(err);
+      return res
+        .status(500)
+        .send({ error: "Something went wrong, please try again later." });
+    }
+  };
 
   public getNetworks = async (req: any, res: Response) => {
     try {

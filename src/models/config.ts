@@ -11,6 +11,7 @@ export interface NetworkContracts {
   autDaoFactoryAddress: string;
   hackerDaoAddress: string;
   daoTypesAddress: string;
+  pluginRegistryAddress: string;
 }
 
 export interface NetworkConfig {

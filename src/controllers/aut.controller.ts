@@ -8,6 +8,53 @@ import {
   validateTweet,
 } from "../services";
 import { NetworkConfigEnv } from "../models/config";
+var OAuth = require("oauth").OAuth;
+
+const _oauth = new OAuth(
+  "https://api.twitter.com/oauth/request_token",
+  "https://api.twitter.com/oauth/access_token",
+  process.env.TWITTER_CONSUMER_ID,
+  process.env.TWITTER_CONSUMER_SECRET,
+  "1.0A",
+  process.env.CALLBACK_URL,
+  "HMAC-SHA1"
+);
+
+const oauth = {
+  getOAuthRequestToken: () => {
+    return new Promise((resolve, reject) => {
+      _oauth.getOAuthRequestToken(
+        (error, oauth_token, oauth_token_secret, results) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve({ oauth_token, oauth_token_secret, results });
+          }
+        }
+      );
+    });
+  },
+  getOAuthAccessToken: (oauth_token, oauth_token_secret, oauth_verifier) => {
+    return new Promise((resolve, reject) => {
+      _oauth.getOAuthAccessToken(
+        oauth_token,
+        oauth_token_secret,
+        oauth_verifier,
+        (error, oauth_access_token, oauth_access_token_secret, results) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve({
+              oauth_access_token,
+              oauth_access_token_secret,
+              results,
+            });
+          }
+        }
+      );
+    });
+  },
+};
 
 @injectable()
 export class AutController {
@@ -82,45 +129,28 @@ export class AutController {
     }
   };
 
-  public twitterToken = async (req: any, res: Response) => {
+  public getOAuthToken = async (_req: any, res: Response) => {
     try {
-      var basicAuth = Buffer.from(
-        `${process.env.TWITTER_CLIENT_ID}:${process.env.TWITTER_CLIENT_SECRET}`
+      const result = await oauth.getOAuthRequestToken();
+      console.log(result);
+      return res.status(200).send(result);
+    } catch (err) {
+      this.loggerService.error(err);
+      return res
+        .status(500)
+        .send({ error: "Something went wrong, please try again later." });
+    }
+  };
+
+  public getOAuthAccessToken = async (req: any, res: Response) => {
+    try {
+      const result = await oauth.getOAuthAccessToken(
+        req.body.oauthToken,
+        req.body.oauthTokenSecret,
+        req.body.oauthVerifier
       );
-      var basicAuthToBase64 = basicAuth.toString("base64");
-
-      var config = {
-        method: "post",
-        url: `${process.env.API_TWITTER_URL}/oauth2/token`,
-        headers: {
-          Authorization: `Basic ${basicAuthToBase64}`,
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        data: new URLSearchParams({
-          code: req.body.code,
-          grant_type: "authorization_code",
-          client_id: process.env.TWITTER_CLIENT_ID,
-          redirect_uri: req.body.redirectUrl,
-          code_verifier: req.body.codeVerifier,
-        }),
-      };
-
-      const response = await axios(config);
-
-      var configLookup = {
-        method: "get",
-        url: `${process.env.API_TWITTER_URL}/users/me`,
-        headers: {
-          Authorization: `Bearer ${response.data.access_token}`,
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-      };
-
-      const lookupResponse = await axios(configLookup);
-
-      lookupResponse.data.data.token = response.data.access_token;
-
-      return res.status(200).send(lookupResponse.data.data);
+      console.log(result);
+      return res.status(200).send(result);
     } catch (err) {
       this.loggerService.error(err);
       return res

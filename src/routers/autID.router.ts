@@ -103,6 +103,19 @@ export class AutIDRouter {
     /**
      * @swagger
      * /api/autID/config/twitterToken:
+     *   get:
+     *     description: Twitter token OAuth2.
+     *     responses:
+     *       200:
+     *         description: Success
+     *       500:
+     *         description: Something went wrong, please try again later.
+     */
+    this._router.get("/config/oauthToken", this.autController.getOAuthToken);
+
+    /**
+     * @swagger
+     * /api/autID/config/oauthAccessToken:
      *   post:
      *     description: Twitter token OAuth2.
      *     responses:
@@ -111,7 +124,10 @@ export class AutIDRouter {
      *       500:
      *         description: Something went wrong, please try again later.
      */
-    this._router.post("/config/twitterToken", this.autController.twitterToken);
+    this._router.post(
+      "/config/oauthAccessToken",
+      this.autController.getOAuthAccessToken
+    );
   }
 
   public get router(): Router {

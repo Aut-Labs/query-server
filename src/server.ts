@@ -11,5 +11,13 @@ const application = container.get<App>(App);
 const logger = container.get<LoggerService>(LoggerService);
 
 application.app.listen(PORT, async () => {
+  try {
+    // await connect(process.env.MONGODB_CONNECTION_STRING, {
+    //   keepAlive: true,
+    //   keepAliveInitialDelay: 300000,
+    // });
+  } catch (error) {
+    console.error('Could not connect to mongoose!')
+  }
   logger.info("Aut API is listening on port " + PORT);
 });

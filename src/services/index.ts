@@ -2,7 +2,7 @@ export * from "./logger.service";
 import axios from "axios";
 import { NetworkConfigEnv, NetworkConfig } from "../models/config";
 import { GoerliNetwork, MumbaiNetwork } from "./networks";
-import { TwitterVerificationModel } from "../models/tweetVerif";
+// import { TwitterVerificationModel } from "../models/tweetVerif";
 
 export function getNetworkConfig(
   network: string,
@@ -49,9 +49,10 @@ async function getTweetByID(id: string): Promise<string> {
 }
 
 export async function validateTweet(address: string, signature: string, tweetID: string): Promise<boolean> {
+  console.log(address);
   const tweetText = await getTweetByID(tweetID);
   if (tweetText && tweetText.includes(signature)) {
-    TwitterVerificationModel.insertMany({ address, signature, tweetID });
+    // TwitterVerificationModel.insertMany({ address, signature, tweetID });
     return true;
   } else return false;
 }

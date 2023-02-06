@@ -49,9 +49,9 @@ async function getTweetByID(id: string): Promise<string> {
 }
 
 export async function validateTweet(address: string, signature: string, tweetID: string): Promise<boolean> {
-  // const tweetText = await getTweetByID(tweetID);
-  // if (tweetText && tweetText.includes(signature)) {
+  const tweetText = await getTweetByID(tweetID);
+  if (tweetText && tweetText.includes(signature)) {
     TwitterVerificationModel.insertMany({ address, signature, tweetID });
     return true;
-  // } else return false;
+  } else return false;
 }

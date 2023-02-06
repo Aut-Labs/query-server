@@ -96,10 +96,10 @@ export class AutIDRouter {
      *       500:
      *         description: Something went wrong, please try again later.
      */
-     this._router.post(
-      "/config/twitterVerification",
-      this.autController.twitterVerification
-    );
+    //  this._router.post(
+    //   "/config/twitterVerification",
+    //   this.autController.twitterVerification
+    // );
   }
 
   public get router(): Router {

@@ -22,15 +22,18 @@ services:
       restart_policy:
         condition: on-failure
 
-  aut-db:
-    container_name: aut-db
-    image: mongo
-    volumes:
-      - ./data-dev:/data/db
-    ports:
-      - "27017:27017"
-    networks:
-      - aut-api
+  # aut-db:
+  #   container_name: aut-db
+  #   image: mongo
+  #   volumes:
+  #     - ./data-dev:/data/db
+  #   ports:
+  #     - "27017:27017"
+  #   networks:
+  #     - aut-api
+  #   deploy:
+  #     restart_policy:
+  #       condition: on-failure
 
 
 networks:

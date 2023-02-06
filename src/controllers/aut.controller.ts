@@ -51,26 +51,26 @@ export class AutController {
   };
 
 
-  public twitterVerification = async (req: any, res: Response) => {
-    try {
+  // public twitterVerification = async (req: any, res: Response) => {
+  //   try {
 
-      if (!req.body.signature)
-        return res.status(400).send({ error: "No signature passed." });
-      else if (!req.body.tweetID)
-        return res.status(400).send({ error: "No tweetID passed." });
-      else if (!req.body.address)
-        return res.status(400).send({ error: "No address passed." });
+  //     if (!req.body.signature)
+  //       return res.status(400).send({ error: "No signature passed." });
+  //     else if (!req.body.tweetID)
+  //       return res.status(400).send({ error: "No tweetID passed." });
+  //     else if (!req.body.address)
+  //       return res.status(400).send({ error: "No address passed." });
 
-      const isValid = await validateTweet(req.body.address, req.body.signature, req.body.tweetID);
-      if (isValid)
-        return res.status(200).send({ isValid });
-      else
-        return res.status(500).send({ error: "Something went wrong, please try again later." });
-    } catch (err) {
-      this.loggerService.error(err);
-      return res.status(500).send({ error: "Something went wrong, please try again later." });
-    }
-  }
+  //     const isValid = await validateTweet(req.body.address, req.body.signature, req.body.tweetID);
+  //     if (isValid)
+  //       return res.status(200).send({ isValid });
+  //     else
+  //       return res.status(500).send({ error: "Something went wrong, please try again later." });
+  //   } catch (err) {
+  //     this.loggerService.error(err);
+  //     return res.status(500).send({ error: "Something went wrong, please try again later." });
+  //   }
+  // }
 
   public getNetworks = async (req: any, res: Response) => {
     try {

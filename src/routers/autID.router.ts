@@ -95,10 +95,10 @@ export class AutIDRouter {
      *       500:
      *         description: Something went wrong, please try again later.
      */
-    this._router.post(
-      "/config/twitterVerification",
-      this.autController.twitterVerification
-    );
+    // this._router.post(
+    //   "/config/twitterVerification",
+    //   this.autController.twitterVerification
+    // );
 
     /**
      * @swagger
@@ -111,7 +111,7 @@ export class AutIDRouter {
      *       500:
      *         description: Something went wrong, please try again later.
      */
-    this._router.get("/config/oauthToken", this.autController.getOAuthToken);
+    // this._router.get("/config/oauthToken", this.autController.getOAuthToken);
 
     /**
      * @swagger
@@ -124,10 +124,10 @@ export class AutIDRouter {
      *       500:
      *         description: Something went wrong, please try again later.
      */
-    this._router.post(
-      "/config/oauthAccessToken",
-      this.autController.getOAuthAccessToken
-    );
+    // this._router.post(
+    //   "/config/oauthAccessToken",
+    //   this.autController.getOAuthAccessToken
+    // );
   }
 
   public get router(): Router {

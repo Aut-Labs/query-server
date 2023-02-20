@@ -2,9 +2,8 @@ import { LoggerService } from "../services/logger.service";
 import { injectable } from "inversify";
 import { Response } from "express";
 import { getNetworkConfig, getNetworksConfig } from "../services";
-import { ethers } from "ethers";
 import { getSigner } from "../tools/ethers";
-import AutSDK from "@aut-protocol/sdk";
+import AutSDK from "@aut-labs-private/sdk";
 import { Holder } from "../models/holder";
 
 @injectable()

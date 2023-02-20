@@ -6,6 +6,7 @@ WORKDIR /app
 
 # Install app dependencies
 COPY package.json ./
+COPY .npmrc ./
 
 # Install libraries
 RUN npm install

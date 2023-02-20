@@ -44,6 +44,7 @@
     "@types/express-serve-static-core": "4.16.2",
     "@types/mocha": "5.2.7",
     "@types/node": "^12.6.8",
+    "@types/reflect-metadata": "^0.1.0",
     "@types/request": "2.47.0",
     "@types/request-promise": "4.1.41",
     "chai": "^4.2.0",

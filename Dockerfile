@@ -9,6 +9,7 @@ COPY package.json ./
 
 # Install libraries
 RUN npm install
+RUN npm install -g typescript@4.6.2
 
 # Bundle app source
 COPY . .

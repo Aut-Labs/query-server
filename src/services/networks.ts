@@ -17,7 +17,9 @@ export const GoerliNetwork = (): NetworkConfig => ({
     autDaoFactoryAddress: process.env.GOERLI_AUT_DAO_FACTORY_ADDRESS,
     hackerDaoAddress: process.env.GOERLI_HACKERS_DAO_ADDRESS,
     daoTypesAddress: process.env.GOERLI_DAO_TYPES_ADDRESS,
-    pluginRegistryAddress: process.env.GOERLI_PLUGIN_REGISTRY_ADDRESS
+    pluginRegistryAddress: process.env.GOERLI_PLUGIN_REGISTRY_ADDRESS,
+    questOffchainTaskFactory: process.env.GOERLI_QUEST_OFFCHAIN_TASK_FACTORY_ADDRESS,
+    questOpenTaskFactory: process.env.GOERLI_QUEST_OPEN_TASK_FACTORY_ADDRESS,
   },
 });
 
@@ -38,6 +40,8 @@ export const MumbaiNetwork = (): NetworkConfig => ({
     autDaoFactoryAddress: process.env.MUMBAI_AUT_DAO_FACTORY_ADDRESS,
     hackerDaoAddress: process.env.MUMBAI_HACKERS_DAO_ADDRESS,
     daoTypesAddress: process.env.MUMBAI_DAO_TYPES_ADDRESS,
-    pluginRegistryAddress: process.env.MUMBAI_PLUGIN_REGISTRY_ADDRESS
+    pluginRegistryAddress: process.env.MUMBAI_PLUGIN_REGISTRY_ADDRESS,
+    questOffchainTaskFactory: process.env.MUMBAI_QUEST_OFFCHAIN_TASK_FACTORY_ADDRESS,
+    questOpenTaskFactory: process.env.MUMBAI_QUEST_OPEN_TASK_FACTORY_ADDRESS,
   },
 });

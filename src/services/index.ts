@@ -44,12 +44,10 @@ async function getTweetByID(id: string): Promise<string> {
       Authorization: `Bearer ${process.env.TWITTER_AUTH_TOKEN}`,
     }
   });
-  console.log(result.data.data.text);
   return result.data.data.text;
 }
 
 export async function validateTweet(address: string, signature: string, tweetID: string): Promise<boolean> {
-  console.log(address);
   const tweetText = await getTweetByID(tweetID);
   if (tweetText && tweetText.includes(signature)) {
     // TwitterVerificationModel.insertMany({ address, signature, tweetID });

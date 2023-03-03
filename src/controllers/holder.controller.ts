@@ -29,17 +29,12 @@ export class HoldersController {
         return res.status(400).send({ error: "Network not supported." });
       }
 
-      console.log(networkConfig);
-
       const signer = getSigner(networkConfig);
 
       const sdk = AutSDK.getInstance();
       await sdk.init(signer as any, networkConfig.contracts);
 
-      const a = await sdk.autID.findAutID('0x51f7a64e1ec1594ea0ad3b31931ea3c7634ce025');
-      console.log(a);
       const holder = await sdk.autID.getAutID({ username });
-      console.log('holder', holder);
       if (!holder) {
         return res.status(404).send({ error: "No such autID." });
       }

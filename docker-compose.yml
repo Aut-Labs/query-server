@@ -16,31 +16,23 @@ services:
       - NODE_ENV=development
     ports:
       - "4005:4005"
-    networks:
-      - aut-api
-    # depends_on:
-    #   - aut-db
+    depends_on:
+      - aut-db
     deploy:
       restart_policy:
         condition: on-failure
 
-  # aut-db:
-  #   container_name: aut-db
-  #   image: mongo
-  #   volumes:
-  #     - mongodata:/data/db
-  #   ports:
-  #     - "27017:27017"
-  #   networks:
-  #     - aut-api
-  #   deploy:
-  #     restart_policy:
-  #       condition: on-failure
+  aut-db:
+    container_name: aut-db
+    image: mongo
+    volumes:
+      - mongodata:/data/db
+    ports:
+      - "27017:27017"
+    deploy:
+      restart_policy:
+        condition: on-failure
 
 volumes:
   mongodata:
-
-networks:
-  aut-api:
-    driver: bridge
 

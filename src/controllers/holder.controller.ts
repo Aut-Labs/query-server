@@ -5,6 +5,8 @@ import { getNetworkConfig, getNetworksConfig } from "../services";
 import { getSigner } from "../tools/ethers";
 import AutSDK from "@aut-labs-private/sdk";
 import { Holder } from "../models/holder";
+import { ethers } from "ethers";
+import { AutIDQuery } from "@aut-labs-private/sdk/dist/services/autID.service";
 
 @injectable()
 export class HoldersController {
@@ -34,7 +36,13 @@ export class HoldersController {
       const sdk = AutSDK.getInstance();
       await sdk.init(signer as any, networkConfig.contracts);
 
-      const holder = await sdk.autID.getAutID({ username });
+      const isAddress = ethers.utils.isAddress(username);
+
+      const query: AutIDQuery = isAddress
+        ? { holderAddress: username }
+        : { username };
+
+      const holder = await sdk.autID.getAutID(query);
       if (!holder) {
         return res.status(404).send({ error: "No such autID." });
       }
@@ -51,7 +59,7 @@ export class HoldersController {
   public scanNetworks = async (req: any, res: Response) => {
     try {
       const address = req.params.address;
-       const networkEnv = req.query.networkEnv;
+      const networkEnv = req.query.networkEnv;
 
       if (!address) {
         return res.status(400).send({ error: "Address not provided." });

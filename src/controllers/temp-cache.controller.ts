@@ -1,0 +1,133 @@
+import { LoggerService } from "../services/logger.service";
+import { injectable } from "inversify";
+import { Response } from "express";
+import { TempCacheModel, TempCache } from "../models/temp-cache";
+
+const parseToMongooseModel = (request: any) => {
+  return Object.keys(request || {}).reduce(
+    (prev, key) => {
+      if (key === "address" || key === "_id") {
+        if (key === "address") {
+          prev.result[key] = request[key]?.toLowerCase();
+        } else {
+          prev.result[key] = request[key];
+        }
+      } else if (key === "list") {
+        const list = request[key].reduce((arrAcc, item) => {
+          const { result } = parseToMongooseModel(item);
+          arrAcc = [...arrAcc, result];
+          return arrAcc;
+        }, []);
+        prev.result[key] = list;
+      } else {
+        const value = request[key];
+        if (typeof value === "string") {
+          prev.result[`attrc${prev.strCount}`] = {
+            key,
+            value,
+          };
+          prev.strCount += 1;
+        } else {
+          prev.result[`attrn${prev.numCount}`] = {
+            key,
+            value,
+          };
+          prev.numCount += 1;
+        }
+      }
+      return prev;
+    },
+    {
+      result: {} as TempCache,
+      numCount: 1,
+      strCount: 1,
+    }
+  );
+};
+
+const parseToResponseModel = (request: TempCache) => {
+  return Object.keys(request).reduce((prev, key) => {
+    if (key === "address" || key === "_id") {
+      if (key === "address") {
+        prev[key] = request[key]?.toLowerCase();
+      } else {
+        prev[key] = request[key];
+      }
+    } else if (key === "list") {
+      const list = request[key].reduce((arrAcc, item) => {
+        const result = parseToResponseModel(item as any);
+        arrAcc = [...arrAcc, result];
+        return arrAcc;
+      }, []);
+      prev[key] = list;
+    } else if (key.startsWith("attr")) {
+      const attr = request[key];
+      prev[attr.key] = attr.value;
+    }
+    return prev;
+  }, {});
+};
+
+@injectable()
+export class TempCacheController {
+  constructor(private loggerService: LoggerService) {}
+
+  public getCache = async (req: any, res: Response) => {
+    try {
+      const address = req.params.address;
+      let parsedResult = null;
+      try {
+        const found = await TempCacheModel.findOne({
+          address: address.toLowerCase(),
+        });
+        parsedResult = parseToResponseModel(found?.toObject());
+      } catch (error) {}
+      return res.status(200).send(parsedResult);
+    } catch (err) {
+      this.loggerService.error(err);
+      return res
+        .status(500)
+        .send({ error: "Something went wrong, please try again later." });
+    }
+  };
+
+  public deleteCache = async (req: any, res: Response) => {
+    try {
+      const address = req.params.address;
+      const result = await TempCacheModel.deleteOne({
+        address: address.toLowerCase(),
+      });
+      return res.status(200).send(result);
+    } catch (err) {
+      this.loggerService.error(err);
+      return res
+        .status(500)
+        .send({ error: "Something went wrong, please try again later." });
+    }
+  };
+
+  public addOrUpdateCache = async (req: any, res: Response) => {
+    try {
+      const { result } = parseToMongooseModel(req.body);
+
+      await TempCacheModel.findOneAndUpdate(
+        {
+          address: result.address,
+        },
+        result,
+        {
+          upsert: true
+        }
+      );
+      const found = await TempCacheModel.findOne({
+        address: result.address,
+      });
+      return res.status(200).send(parseToResponseModel(found?.toObject()));
+    } catch (error) {
+      this.loggerService.error(error);
+      return res
+        .status(500)
+        .send({ error: "Something went wrong, please try again later." });
+    }
+  };
+}

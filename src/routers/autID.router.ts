@@ -1,11 +1,16 @@
 import { injectable } from "inversify";
 import { Router } from "express";
-import { AutController, HoldersController } from "../controllers";
+import {
+  AutController,
+  HoldersController,
+  TempCacheController,
+} from "../controllers";
 @injectable()
 export class AutIDRouter {
   private readonly _router: Router;
 
   constructor(
+    private tempCacheController: TempCacheController,
     private holdersController: HoldersController,
     private autController: AutController
   ) {
@@ -127,6 +132,21 @@ export class AutIDRouter {
     this._router.post(
       "/config/oauth2AccessToken",
       this.autController.getOAuth2AccessToken
+    );
+
+    this._router.post(
+      "/cache/addOrUpdateCache",
+      this.tempCacheController.addOrUpdateCache
+    );
+
+    this._router.get(
+      "/cache/getCache/:address",
+      this.tempCacheController.getCache
+    );
+
+    this._router.delete(
+      "/cache/deleteCache/:address",
+      this.tempCacheController.deleteCache
     );
   }
 

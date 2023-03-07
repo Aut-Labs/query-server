@@ -3,6 +3,7 @@ import * as dotenv from "dotenv";
 import { container } from "./inversify.config";
 import { App } from "./app";
 import { LoggerService } from "./services";
+import { connect } from "mongoose";
 // initialize configuration
 dotenv.config();
 
@@ -12,10 +13,16 @@ const logger = container.get<LoggerService>(LoggerService);
 
 application.app.listen(PORT, async () => {
   try {
-    // await connect(process.env.MONGODB_CONNECTION_STRING, {
-    //   keepAlive: true,
-    //   keepAliveInitialDelay: 300000,
-    // });
+    try {
+      await connect(process.env.MONGODB_CONNECTION_STRING, {
+        keepAlive: true,
+        keepAliveInitialDelay: 300000,
+      });
+    } catch (error) {
+      console.log(error, "error");
+      // handleError(error);
+    }
+    
   } catch (error) {
     console.error('Could not connect to mongoose!')
   }

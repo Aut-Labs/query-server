@@ -21,7 +21,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@aut-labs-private/sdk": "^0.0.14",
+    "@aut-labs-private/sdk": "^0.0.21",
     "axios": "^0.27.2",
     "body-parser": "^1.19.0",
     "cookie-parser": "1.4.5",
@@ -34,6 +34,7 @@
     "express-slow-down": "^1.4.0",
     "helmet": "^3.20.0",
     "inversify": "^5.0.1",
+    "mongoose": "^7.0.0",
     "reflect-metadata": "^0.1.13",
     "swagger-jsdoc": "^6.2.0",
     "swagger-ui-express": "^4.3.0",

@@ -122,17 +122,17 @@ export class AutIDRouter {
      * @swagger
      * /api/autID/config/oauthAccessToken:
      *   post:
-     *     description: Twitter token OAuth2.
+     *     description: Discord token OAuth2.
      *     responses:
      *       200:
      *         description: Success
      *       500:
      *         description: Something went wrong, please try again later.
      */
-    // this._router.post(
-    //   "/config/oauthAccessToken",
-    //   this.autController.getOAuthAccessToken
-    // );
+    this._router.post(
+      "/config/oauth2AccessToken",
+      this.autController.getOAuth2AccessToken
+    );
 
     this._router.post(
       "/cache/addOrUpdateCache",

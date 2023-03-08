@@ -1,18 +1,16 @@
 import express from "express";
-var bodyParser = require('body-parser')
+var bodyParser = require("body-parser");
 import helmet from "helmet";
 import { injectable } from "inversify";
-import {
-  AutIDRouter,
-} from "./routers";
+import { AutIDRouter } from "./routers";
 import AutSDK from "@aut-labs-private/sdk";
 // const rateLimit = require('express-rate-limit');
 // const slowDown = require("express-slow-down");
 const cookieParser = require("cookie-parser");
-const swaggerJSDoc = require('swagger-jsdoc');
-const swaggerUI = require('swagger-ui-express');
-var cors = require('cors');
-require('dotenv').config()
+const swaggerJSDoc = require("swagger-jsdoc");
+const swaggerUI = require("swagger-ui-express");
+var cors = require("cors");
+require("dotenv").config();
 
 // const limiter = rateLimit({
 // 	windowMs: 15 * 60 * 1000,
@@ -28,15 +26,15 @@ require('dotenv').config()
 
 const swaggerOptions = {
   definition: {
-    openapi: '3.0.0',
+    openapi: "3.0.0",
     info: {
-      title: 'Aut AutID API',
-      version: '1.0.0',
-      description: 'Aut AutID API Docs',
-      servers: ['http://localhost:4005']
+      title: "Aut AutID API",
+      version: "1.0.0",
+      description: "Aut AutID API Docs",
+      servers: ["http://localhost:4005"],
     },
   },
-  apis: ['./src/routers/autID.router.ts'],
+  apis: ["./src/routers/autID.router.ts"],
 };
 
 const swagger = swaggerJSDoc(swaggerOptions);
@@ -45,9 +43,7 @@ const swagger = swaggerJSDoc(swaggerOptions);
 export class App {
   private _app: express.Application;
 
-  constructor(
-    private autIDRouter: AutIDRouter
-  ) {
+  constructor(private autIDRouter: AutIDRouter) {
     this._app = express();
     this.config();
   }
@@ -57,9 +53,8 @@ export class App {
   }
 
   private config(): void {
-
     // parse application/x-www-form-urlencoded
-    this._app.use(bodyParser.urlencoded({ extended: false }))
+    this._app.use(bodyParser.urlencoded({ extended: false }));
 
     // parse application/json
     this._app.use(bodyParser.json());
@@ -70,8 +65,6 @@ export class App {
 
     this._app.use(cookieParser());
 
-
-
     this._app.use(cors());
     // this._app.use(limiter);
     // this._app.use(speedLimiter);
@@ -79,7 +72,6 @@ export class App {
     //Initialize app routes
     this._initRoutes();
     this._initSdk();
-
   }
 
   private _initRoutes() {

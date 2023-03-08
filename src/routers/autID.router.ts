@@ -4,7 +4,11 @@ import {
   AutController,
   HoldersController,
   TempCacheController,
+  UserController,
 } from "../controllers";
+import "../passport/passport.config";
+import passport from "passport";
+
 @injectable()
 export class AutIDRouter {
   private readonly _router: Router;
@@ -12,7 +16,8 @@ export class AutIDRouter {
   constructor(
     private tempCacheController: TempCacheController,
     private holdersController: HoldersController,
-    private autController: AutController
+    private autController: AutController,
+    private userController: UserController
   ) {
     this._router = Router({ strict: true });
     this.init();
@@ -147,6 +152,16 @@ export class AutIDRouter {
     this._router.delete(
       "/cache/deleteCache/:address",
       this.tempCacheController.deleteCache
+    );
+
+    this._router.get("/user/nonce/:address", this.userController.getUserNonce);
+
+    this._router.post("/user/getToken", this.userController.getToken);
+
+    this._router.get(
+      "/user/me",
+      passport.authenticate("jwt", { session: false }),
+      this.userController.getUser
     );
   }
 

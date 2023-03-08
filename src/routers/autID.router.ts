@@ -140,17 +140,20 @@ export class AutIDRouter {
     );
 
     this._router.post(
-      "/cache/addOrUpdateCache",
+      "/cache/addOrUpdateCache/:cacheKey",
+      passport.authenticate("jwt", { session: false }),
       this.tempCacheController.addOrUpdateCache
     );
 
     this._router.get(
-      "/cache/getCache/:address",
+      "/cache/getCache/:cacheKey",
+      passport.authenticate("jwt", { session: false }),
       this.tempCacheController.getCache
     );
 
     this._router.delete(
-      "/cache/deleteCache/:address",
+      "/cache/deleteCache/:cacheKey",
+      passport.authenticate("jwt", { session: false }),
       this.tempCacheController.deleteCache
     );
 

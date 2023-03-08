@@ -14,7 +14,8 @@ export class UserController {
 
   public getUser = async (req, res) => {
     try {
-      res.status(200).send(req.user);
+      const response = { address: req.user.address };
+      res.status(200).send(response);
     } catch (e) {
       this.loggerService.error(e);
       res.status(500).send("Something went wrong");
@@ -61,7 +62,7 @@ export class UserController {
               address: user.address,
             },
             process.env.JWT_SECRET,
-            { expiresIn: "6h" }
+            { expiresIn: "60 days" }
           );
           res.status(200).json({
             success: true,

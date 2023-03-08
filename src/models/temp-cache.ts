@@ -2,16 +2,16 @@ import { Schema, model } from "mongoose";
 
 const DynamicStringPropSchema = new Schema({
   key: String,
-  value: String
+  value: String,
 });
 
 const DynamicNumberPropSchema = new Schema({
   key: String,
-  value: Number
+  value: Number,
 });
 
-
 const TempCacheSchema = new Schema({
+  cacheKey: { type: String, required: true },
   address: { type: String, required: true },
   attrc1: DynamicStringPropSchema,
   attrc2: DynamicStringPropSchema,
@@ -33,18 +33,18 @@ const TempCacheSchema = new Schema({
 
 export const TempCacheModel = model("TempCache", TempCacheSchema);
 
-
 interface TempCacheString {
   key: string;
-  value: string
+  value: string;
 }
 
 interface TempCacheNumber {
   key: string;
-  value: string
+  value: string;
 }
 
 export interface TempCache {
+  cacheKey: string;
   address: string;
   attrc1: TempCacheString;
   attrc2: TempCacheString;

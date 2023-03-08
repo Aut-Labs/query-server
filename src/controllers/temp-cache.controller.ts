@@ -6,7 +6,7 @@ import { TempCacheModel, TempCache } from "../models/temp-cache";
 const parseToMongooseModel = (request: any) => {
   return Object.keys(request || {}).reduce(
     (prev, key) => {
-      if (key === "address" || key === "_id") {
+      if (key === "address" || key === "_id" || key === "cacheKey") {
         if (key === "address") {
           prev.result[key] = request[key]?.toLowerCase();
         } else {
@@ -47,7 +47,7 @@ const parseToMongooseModel = (request: any) => {
 
 const parseToResponseModel = (request: TempCache) => {
   return Object.keys(request).reduce((prev, key) => {
-    if (key === "address" || key === "_id") {
+    if (key === "address" || key === "_id" || key === "cacheKey") {
       if (key === "address") {
         prev[key] = request[key]?.toLowerCase();
       } else {
@@ -74,11 +74,13 @@ export class TempCacheController {
 
   public getCache = async (req: any, res: Response) => {
     try {
-      const address = req.params.address;
+      const { address } = req.user;
+      const { cacheKey } = req.params;
       let parsedResult = null;
       try {
         const found = await TempCacheModel.findOne({
           address: address.toLowerCase(),
+          cacheKey: cacheKey,
         });
         parsedResult = parseToResponseModel(found?.toObject());
       } catch (error) {}
@@ -93,9 +95,11 @@ export class TempCacheController {
 
   public deleteCache = async (req: any, res: Response) => {
     try {
-      const address = req.params.address;
+      const { address } = req.user;
+      const { cacheKey } = req.params;
       const result = await TempCacheModel.deleteOne({
         address: address.toLowerCase(),
+        cacheKey,
       });
       return res.status(200).send(result);
     } catch (err) {
@@ -109,18 +113,21 @@ export class TempCacheController {
   public addOrUpdateCache = async (req: any, res: Response) => {
     try {
       const { result } = parseToMongooseModel(req.body);
+      const { cacheKey } = req.params;
 
       await TempCacheModel.findOneAndUpdate(
         {
           address: result.address,
+          cacheKey,
         },
         result,
         {
-          upsert: true
+          upsert: true,
         }
       );
       const found = await TempCacheModel.findOne({
         address: result.address,
+        cacheKey,
       });
       return res.status(200).send(parseToResponseModel(found?.toObject()));
     } catch (error) {

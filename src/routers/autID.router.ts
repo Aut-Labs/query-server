@@ -159,6 +159,8 @@ export class AutIDRouter {
 
     this._router.get("/user/nonce/:address", this.userController.getUserNonce);
 
+    this._router.get("/user/daos", this.userController.getDaos);
+
     this._router.post("/user/getToken", this.userController.getToken);
 
     this._router.get(

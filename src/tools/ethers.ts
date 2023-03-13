@@ -4,10 +4,11 @@
 // Import the ethers library
 import { ethers } from "ethers";
 import { NetworkConfig } from "../models/config";
+import axios from 'axios';
 
 require("dotenv").config();
 
-export function getSigner(networkConfig: NetworkConfig): ethers.Signer {
+ function getSigner(networkConfig: NetworkConfig): ethers.Signer {
   const provider = new ethers.providers.JsonRpcProvider(
     networkConfig.rpcUrls[0]
   );
@@ -21,3 +22,16 @@ export function getSigner(networkConfig: NetworkConfig): ethers.Signer {
   let signer = senderWalletMnemonic.connect(provider);
   return signer;
 }
+
+function ipfsCIDToHttpUrl(url: string, isJson: boolean) {
+  if (!url.includes('https://'))
+    return isJson ? `https://hub.textile.io/${url.replace('ipfs://', '')}/metadata.json` : `https://hub.textile.io/${url.replace('ipfs://', '')}`;
+  else return url;
+}
+
+ async function getJSONFromURI(uri: string) {
+  const result = await axios.get(uri);
+  return result.data;
+}
+
+export { getSigner, ethers, ipfsCIDToHttpUrl, getJSONFromURI };

@@ -90,6 +90,7 @@ export class UserController {
           const quests = await onboardingQuest.getAllQuests();
 
           responseDaos.push({
+            daoAddress,
             daoMetadataUri: daoData.data,
             quests: quests.data,
           });

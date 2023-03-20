@@ -21,7 +21,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@aut-labs-private/sdk": "^0.0.26",
+    "@aut-labs-private/sdk": "^0.0.27",
     "axios": "^0.27.2",
     "body-parser": "^1.19.0",
     "cookie-parser": "1.4.5",

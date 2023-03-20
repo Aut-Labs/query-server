@@ -3,7 +3,7 @@ import { getJSONFromURI, ipfsCIDToHttpUrl } from "../../tools/ethers";
 import { finalizeTask, getTask } from "../../contracts/onboardingOffchainVerificationTask";
 
 
-export async function verifyQuestTask(taskAddress: string, taskID: string, address: string, answers: []): Promise<boolean> {
+export async function verifyQuizTask(taskAddress: string, taskID: string, address: string, answers: []): Promise<boolean> {
 
   const task = await getTask(taskAddress, taskID) as any;
   if(!task) return false; 

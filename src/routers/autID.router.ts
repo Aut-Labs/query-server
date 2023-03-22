@@ -3,6 +3,7 @@ import { Router } from "express";
 import {
   AutController,
   HoldersController,
+  QuizController,
   TempCacheController,
   UserController,
 } from "../controllers";
@@ -17,7 +18,8 @@ export class AutIDRouter {
     private tempCacheController: TempCacheController,
     private holdersController: HoldersController,
     private autController: AutController,
-    private userController: UserController
+    private userController: UserController,
+    private quizController: QuizController
   ) {
     this._router = Router({ strict: true });
     this.init();
@@ -168,6 +170,18 @@ export class AutIDRouter {
       passport.authenticate("jwt", { session: false }),
       this.userController.getUser
     );
+
+    this._router.post(
+      "/quiz",
+      passport.authenticate("jwt", { session: false }),
+      this.quizController.saveQestions
+    );
+    this._router.get(
+      "/quizAnswers/:taskAddress",
+      passport.authenticate("jwt", { session: false }),
+      this.quizController.getQuestionsAndAnswers
+    );
+    this._router.get("/quiz/:taskAddress", this.quizController.getQuestions);
   }
 
   public get router(): Router {

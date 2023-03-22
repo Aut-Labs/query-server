@@ -25,7 +25,7 @@ export class TaskVerifierRouter {
      * @swagger
      * /api/taskVerifier/transaction:
      *   post:
-     *     description: Discord token OAuth2.
+     *     description: Verifies and finalizes transaction task
      *     responses:
      *       200:
      *         description: Success
@@ -35,6 +35,39 @@ export class TaskVerifierRouter {
     this._router.post(
       "/transaction",
       this.taskVerifierController.verifyTransactionTask
+    );
+
+
+    /**
+     * @swagger
+     * /api/taskVerifier/quiz:
+     *   post:
+     *     description: Verifies and finalizes quiz task
+     *     responses:
+     *       200:
+     *         description: Success
+     *       500:
+     *         description: Something went wrong, please try again later.
+     */
+    this._router.post(
+      "/quiz",
+      this.taskVerifierController.verifyQuizTask
+    );
+
+    /**
+     * @swagger
+     * /api/taskVerifier/discordJoin:
+     *   post:
+     *     description: Verifies and finalizes discord join task
+     *     responses:
+     *       200:
+     *         description: Success
+     *       500:
+     *         description: Something went wrong, please try again later.
+     */
+    this._router.post(
+      "/discordJoin",
+      this.taskVerifierController.verifyDiscordJoinTask
     );
   }
 

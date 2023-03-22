@@ -9,7 +9,13 @@ import { PluginDefinitionType } from "@aut-labs-private/sdk/dist/models/plugin";
 import { FinalizeTaskResult } from "../../models/finalizeTask";
 
 
-export async function verifyTransaction(pluginAddress: string, taskAddress: string, taskID: number, address: string, network: string): Promise<FinalizeTaskResult> {
+export async function verifyTransaction(
+  pluginAddress: string,
+  taskAddress: string,
+  taskID: number,
+  address: string,
+  network: string
+): Promise<FinalizeTaskResult> {
 
   const sdk = AutSDK.getInstance();
   let questOnboarding: QuestOnboarding = sdk.questOnboarding;

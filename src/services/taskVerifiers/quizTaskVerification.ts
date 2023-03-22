@@ -1,23 +1,44 @@
 export * from "../logger.service";
 import { getJSONFromURI, ipfsCIDToHttpUrl } from "../../tools/ethers";
-import {
-  finalizeTask,
-  getTask,
-} from "../../contracts/onboardingOffchainVerificationTask";
 import { QuestionsModel } from "../../models/question";
+import AutSDK, { QuestOnboarding, Task } from "@aut-labs-private/sdk";
+import { FinalizeTaskResult } from "../../models/finalizeTask";
+import { PluginDefinitionType } from "@aut-labs-private/sdk/dist/models/plugin";
 
 export async function verifyQuizTask(
+  onboardingPluginAddress: string,
   taskAddress: string,
-  taskID: string,
+  taskID: number,
   address: string,
-  answers: []
-): Promise<boolean> {
-  const task = (await getTask(taskAddress, taskID)) as any;
-  if (!task) return false;
-  const metadataUri = ipfsCIDToHttpUrl(task.metadata, true);
+  answers: string[]
+): Promise<FinalizeTaskResult> {
+
+  const sdk = AutSDK.getInstance();
+  let questOnboarding: QuestOnboarding = sdk.questOnboarding;
+  if (!questOnboarding) {
+    questOnboarding = sdk.initService<QuestOnboarding>(
+      QuestOnboarding,
+      onboardingPluginAddress
+    );
+    sdk.questOnboarding = questOnboarding;
+  }
+  const response = await questOnboarding.getTaskById(
+    taskAddress,
+    taskID,
+  );
+
+  if (!response.isSuccess) {
+    return { isFinalized: false, error: "invalid task" };
+  }
+
+  const task = response.data;
+
+  const metadataUri = ipfsCIDToHttpUrl(task.metadataUri, true);
   const metadata = await getJSONFromURI(metadataUri);
 
-  if (metadata.questions.length != answers) return false;
+  if (metadata.questions.length != answers.length)
+    return { isFinalized: false, error: "missing answer" };
+  ;
 
   const localQuestionData = await QuestionsModel.findOne({
     taskId: taskID,
@@ -30,10 +51,19 @@ export async function verifyQuizTask(
     );
     const correctAnswer = localQuestion.answers.find((a) => a.correct);
     if (correctAnswer.value !== answers[i]) {
-      return false;
+      return { isFinalized: false, error: "incorrect answer" };
     }
   }
 
-  await finalizeTask(taskAddress, taskID, address);
-  return true;
+  const responseFinalize = await questOnboarding.finalizeFor(
+    { taskId: taskID, submitter: address } as Task,
+    taskAddress,
+    PluginDefinitionType.OnboardingQuizTaskPlugin
+  );
+
+  return {
+    isFinalized: responseFinalize.isSuccess,
+    txHash: responseFinalize.transactionHash,
+    error: responseFinalize.errorMessage
+  };
 }

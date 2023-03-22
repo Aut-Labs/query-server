@@ -17,10 +17,10 @@ const logger = container.get<LoggerService>(LoggerService);
 application.app.listen(PORT, async () => {
   try {
     try {
-      // await connect(process.env.MONGODB_CONNECTION_STRING, {
-      //   keepAlive: true,
-      //   keepAliveInitialDelay: 300000,
-      // });
+      await connect(process.env.MONGODB_CONNECTION_STRING, {
+        keepAlive: true,
+        keepAliveInitialDelay: 300000,
+      });
 
       const networkConfig = getNetworkConfig('mumbai', undefined);
 

@@ -30,12 +30,6 @@ application.app.listen(PORT, async () => {
       const sdk = AutSDK.getInstance();
       await sdk.init(signer as any, networkConfig.contracts);
       
-      await verifyTransaction(
-        '0xd34a0124b246E1dF8A2068112C15244c240b7fC9', 
-        '0xcFe8a416eDDd29e53B408223c887D765dc071502', 
-        2, 
-        '0x704f52eA3C4d8095e348027FdC0a4cFdc19D0008', 
-        'mumbai');
     } catch (error) {
       console.log(error, "error");
       // handleError(error);

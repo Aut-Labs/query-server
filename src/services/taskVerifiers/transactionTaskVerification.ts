@@ -6,9 +6,10 @@ import AutSDK, {
 } from "@aut-labs-private/sdk";
 import { getJSONFromURI, ipfsCIDToHttpUrl } from "../../tools/ethers";
 import { PluginDefinitionType } from "@aut-labs-private/sdk/dist/models/plugin";
+import { FinalizeTaskResult } from "../../models/finalizeTask";
 
 
-export async function verifyTransaction(pluginAddress: string, taskAddress: string, taskID: number, address: string, network: string): Promise<boolean> {
+export async function verifyTransaction(pluginAddress: string, taskAddress: string, taskID: number, address: string, network: string): Promise<FinalizeTaskResult> {
 
   const sdk = AutSDK.getInstance();
   let questOnboarding: QuestOnboarding = sdk.questOnboarding;
@@ -25,13 +26,12 @@ export async function verifyTransaction(pluginAddress: string, taskAddress: stri
   );
 
   if (!response.isSuccess) {
-    return false;
+    return { isFinalized: false, error: "invalid task" };
   }
 
   const task = response.data;
 
   const metadataUri = ipfsCIDToHttpUrl(task.metadataUri, true);
-  console.log(metadataUri);
   const metadata = await getJSONFromURI(metadataUri);
 
   const contractAddress = metadata.properties.smartContractAddress.toLowerCase();
@@ -57,12 +57,11 @@ export async function verifyTransaction(pluginAddress: string, taskAddress: stri
           taskAddress,
           PluginDefinitionType.OnboardingQuizTaskPlugin
         );
-
-        return response.isSuccess;
+        return { isFinalized: response.isSuccess, txHash: response.transactionHash, error: response.errorMessage };
       }
       pageNumber++
     } else finished = true;
   }
-  
-  return false;
+
+  return { isFinalized: false, error: "transaction not completed" };
 }

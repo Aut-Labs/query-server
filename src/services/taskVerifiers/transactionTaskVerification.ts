@@ -1,50 +1,73 @@
 export * from "../logger.service";
 import axios from "axios";
-import { finalizeTask, getTask } from "../../contracts/onboardingOffchainVerificationTask";
-import { ipfsCIDToHttpUrl, getJSONFromURI} from "../../tools/ethers";
+import { getNetworkConfig } from "../../services";
+import AutSDK, {
+  QuestOnboarding, Task,
+} from "@aut-labs-private/sdk";
+import { getJSONFromURI, ipfsCIDToHttpUrl } from "../../tools/ethers";
+import { PluginDefinitionType } from "@aut-labs-private/sdk/dist/models/plugin";
+import { FinalizeTaskResult } from "../../models/finalizeTask";
 
 
-export async function verifyTransaction(taskAddress: string, taskID: string, address: string): Promise<boolean> {
-  // The Validator helps you validate the Chainlink request data
-  console.log(taskID);
-  address = '0xca05bce175e9c39fe015a5fc1e98d2b735ff51d9';
+export async function verifyTransaction(
+  pluginAddress: string,
+  taskAddress: string,
+  taskID: number,
+  address: string,
+  network: string
+): Promise<FinalizeTaskResult> {
 
-  const task = await getTask(taskAddress, taskID) as any;
-  if(!task) return false; 
-  const metadataUri = ipfsCIDToHttpUrl(task.metadata, true);
+  const sdk = AutSDK.getInstance();
+  let questOnboarding: QuestOnboarding = sdk.questOnboarding;
+  if (!questOnboarding) {
+    questOnboarding = sdk.initService<QuestOnboarding>(
+      QuestOnboarding,
+      pluginAddress
+    );
+    sdk.questOnboarding = questOnboarding;
+  }
+  const response = await questOnboarding.getTaskById(
+    taskAddress,
+    taskID,
+  );
+
+  if (!response.isSuccess) {
+    return { isFinalized: false, error: "invalid task" };
+  }
+
+  const task = response.data;
+
+  const metadataUri = ipfsCIDToHttpUrl(task.metadataUri, true);
   const metadata = await getJSONFromURI(metadataUri);
 
-  // const task = {
-  //   network: '',
-  //   contractAddress: '0x4d407a5ba5c2c7d38ef0f7e4ee87c570fbd8cca0',
-  //   chainID: 80001,
-  // }
+  const contractAddress = metadata.properties.smartContractAddress.toLowerCase();
+
   let finished = false;
   let pageNumber = 0;
-  console.log(process.env.COVALENT_API_KEY);
-  // const chainID = getChinID(network);
+  const chainID = getNetworkConfig(network, undefined).chainId;
   while (!finished) {
-
-    const url = `https://api.covalenthq.com/v1/${metadata.chainID}/address/${address}/transactions_v2/?key=${process.env.COVALENT_API_KEY}&no-logs=true&page-size=1000&page-number=${pageNumber}`
-    console.log(url);
+    const url = `https://api.covalenthq.com/v1/${chainID}/address/${address}/transactions_v2/?key=${process.env.COVALENT_API_KEY}&no-logs=true&page-size=1000&page-number=${pageNumber}`
     const result = await axios.get(url)
     if (result.data.data.items.length > 0) {
-      const txs = result.data.data.items.filter(
+      const txs = result.data.data.items.map(
         (tx) =>
           tx.to_address &&
           tx.block_height > 0 &&
-          tx.to_address == metadata.contractAddress,
+          tx.to_address == contractAddress,
       )
 
-      console.log(txs);
-
       if (txs.length > 0) {
-      await finalizeTask(taskAddress, taskID, address);
-      return true;
+        finished = true;
+        const response = await questOnboarding.finalizeFor(
+          { taskId: taskID, submitter: address } as Task,
+          taskAddress,
+          PluginDefinitionType.OnboardingQuizTaskPlugin
+        );
+        return { isFinalized: response.isSuccess, txHash: response.transactionHash, error: response.errorMessage };
       }
-    } else finished = true
-    pageNumber++
+      pageNumber++
+    } else finished = true;
   }
 
-  return false;
+  return { isFinalized: false, error: "transaction not completed" };
 }

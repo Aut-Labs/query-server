@@ -2,8 +2,11 @@ import "reflect-metadata";
 import * as dotenv from "dotenv";
 import { container } from "./inversify.config";
 import { App } from "./app";
-import { LoggerService } from "./services";
+import { LoggerService, getNetworkConfig } from "./services";
 import { connect } from "mongoose";
+import { verifyTransaction } from "./services/taskVerifiers/transactionTaskVerification";
+import { getSigner } from "./tools/ethers";
+import AutSDK from "@aut-labs-private/sdk";
 // initialize configuration
 dotenv.config();
 
@@ -18,6 +21,15 @@ application.app.listen(PORT, async () => {
         keepAlive: true,
         keepAliveInitialDelay: 300000,
       });
+
+      const networkConfig = getNetworkConfig('mumbai', undefined);
+
+     
+      const signer = getSigner(networkConfig);
+
+      const sdk = AutSDK.getInstance();
+      await sdk.init(signer as any, networkConfig.contracts);
+      
     } catch (error) {
       console.log(error, "error");
       // handleError(error);

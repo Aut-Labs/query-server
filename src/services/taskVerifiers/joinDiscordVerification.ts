@@ -1,23 +1,43 @@
 export * from "../logger.service";
 import axios from "axios";
 import { getJSONFromURI, ipfsCIDToHttpUrl } from "../../tools/ethers";
-import {
-  finalizeTask,
-  getTask,
-} from "../../contracts/onboardingOffchainVerificationTask";
+import { FinalizeTaskResult } from "../../models/finalizeTask";
+import AutSDK, { QuestOnboarding, Task } from "@aut-labs-private/sdk";
+import { PluginDefinitionType } from "@aut-labs-private/sdk/dist/models/plugin";
 
 export async function verifyJoinDiscordTask(
+  onboardingPluginAddress: string,
   taskAddress: string,
-  taskID: string,
+  taskID: number,
   address: string,
   bearerToken: string
-): Promise<boolean> {
-  const task = (await getTask(taskAddress, taskID)) as any;
-  if (!task) return false;
-  const metadataUri = ipfsCIDToHttpUrl(task.metadata, true);
+): Promise<FinalizeTaskResult> {
+  const sdk = AutSDK.getInstance();
+  let questOnboarding: QuestOnboarding = sdk.questOnboarding;
+  if (!questOnboarding) {
+    questOnboarding = sdk.initService<QuestOnboarding>(
+      QuestOnboarding,
+      onboardingPluginAddress
+    );
+    sdk.questOnboarding = questOnboarding;
+  }
+  const response = await questOnboarding.getTaskById(
+    taskAddress,
+    taskID,
+  );
+
+  if (!response.isSuccess) {
+    return { isFinalized: false, error: "invalid task" };
+  }
+
+  const task = response.data;
+
+  const metadataUri = ipfsCIDToHttpUrl(task.metadataUri, true);
   const metadata = await getJSONFromURI(metadataUri);
 
-  if (!metadata.inviteLink) return false;
+  if (!metadata.properties.inviteLink)     
+  return { isFinalized: false, error: "invalid task" };
+
 
   const serverIdResponse = await axios.get(
     `https://discord.com/api/invites/${metadata.inviteLink.split("/")[3]}`
@@ -40,9 +60,12 @@ export async function verifyJoinDiscordTask(
   const guild = guilds.find((g) => g.id === discordServerId);
 
   if (!guild) {
-    return false;
+    return { isFinalized: false, error: "task not completed" };
   } else {
-    await finalizeTask(taskAddress, taskID, address);
-    return true;
-  }
+    const response = await questOnboarding.finalizeFor(
+      { taskId: taskID, submitter: address } as Task,
+      taskAddress,
+      PluginDefinitionType.OnboardingQuizTaskPlugin
+    );
+    return { isFinalized: response.isSuccess, txHash: response.transactionHash, error: response.errorMessage };  }
 }

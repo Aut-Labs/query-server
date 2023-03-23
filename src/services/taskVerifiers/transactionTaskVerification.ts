@@ -58,12 +58,12 @@ export async function verifyTransaction(
 
       if (txs.length > 0) {
         finished = true;
-        const response = await questOnboarding.finalizeFor(
+        const responseFinalize = await questOnboarding.finalizeFor(
           { taskId: taskID, submitter: address } as Task,
           taskAddress,
           PluginDefinitionType.OnboardingQuizTaskPlugin
         );
-        return { isFinalized: response.isSuccess, txHash: response.transactionHash, error: response.errorMessage };
+        return { isFinalized: responseFinalize.isSuccess, txHash: responseFinalize.transactionHash, error: responseFinalize.errorMessage };
       }
       pageNumber++
     } else finished = true;

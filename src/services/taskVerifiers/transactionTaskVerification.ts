@@ -61,7 +61,7 @@ export async function verifyTransaction(
         const responseFinalize = await questOnboarding.finalizeFor(
           { taskId: taskID, submitter: address } as Task,
           taskAddress,
-          PluginDefinitionType.OnboardingQuizTaskPlugin
+          PluginDefinitionType.OnboardingTransactionTaskPlugin
         );
         return { isFinalized: responseFinalize.isSuccess, txHash: responseFinalize.transactionHash, error: responseFinalize.errorMessage };
       }

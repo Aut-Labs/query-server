@@ -17,7 +17,7 @@ export class TaskVerifierController {
       const pluginAddress: string = req.body.onboardingPluginAddress;
       const taskAddress: string = req.body.taskAddress;
       const taskId: number = req.body.taskId;
-      const submitter: string = req.body.submitter;
+      const submitter: string = req.user.address;
       const finalizedResult = await verifyTransaction(
         pluginAddress,
         taskAddress,

@@ -6,6 +6,7 @@ import {
   verifyQuizTask,
   verifyJoinDiscordTask,
 } from "../services/taskVerifiers";
+import { Question } from "../models/question";
 
 @injectable()
 export class TaskVerifierController {
@@ -39,21 +40,21 @@ export class TaskVerifierController {
     try {
       const submitter: string = req.user.address;
       const onboardingPluginAddress: string = req.body.onboardingPluginAddress;
-      if (onboardingPluginAddress) {
+      if (!onboardingPluginAddress) {
         return res
           .status(400)
           .send({ error: "onboardingPluginAddress not provided." });
       }
       const taskAddress: string = req.body.taskAddress;
-      if (taskAddress) {
+      if (!taskAddress) {
         return res.status(400).send({ error: "taskAddress not provided." });
       }
       const taskId: number = req.body.taskId;
-      if (taskId) {
+      if (!taskId) {
         return res.status(400).send({ error: "taskId not provided." });
       }
-      const answers: string[] = req.body.answers;
-      if (answers) {
+      const userQuestionsAndAnswers: Question[] = req.body.questionsAndAnswers;
+      if (!userQuestionsAndAnswers?.length) {
         return res.status(400).send({ error: "answers not provided." });
       }
       const finalizedResult = await verifyQuizTask(
@@ -61,7 +62,7 @@ export class TaskVerifierController {
         taskAddress,
         taskId,
         submitter,
-        answers
+        userQuestionsAndAnswers
       );
       if (finalizedResult.isFinalized)
         return res.status(200).send(finalizedResult);

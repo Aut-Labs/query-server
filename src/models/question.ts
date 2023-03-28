@@ -18,18 +18,16 @@ const QuestionsSchema = new Schema({
 
 export const QuestionsModel = model("Questions", QuestionsSchema);
 
+export interface Question {
+  question: string;
+  answers: {
+    value: string;
+    correct: boolean;
+  }[];
+}
+
 export interface Questions {
   taskId: string;
   taskAddress: boolean;
-  questions: [
-    {
-      question: string;
-      answers: [
-        {
-          value: string;
-          correct: boolean;
-        }
-      ];
-    }
-  ];
+  questions: Question[];
 }

@@ -73,15 +73,15 @@ export class QuizController {
       answers.taskId = req.body.taskId;
       answers.questions = req.body.questions;
       if (req.body.questions && req.body.questions.length > 0) {
-        const tempQuestions = req.body.questions.map(function (q) {
-          return q.question;
-        });
-        const duplicatesExist = tempQuestions.some(function (item, idx) {
-          return tempQuestions.indexOf(item) != idx;
-        });
-        if (duplicatesExist) {
-          return res.status(400).send("Duplicate questions are not allowed.");
-        }
+        // const tempQuestions = req.body.questions.map(function (q) {
+        //   return q.question;
+        // });
+        // const duplicatesExist = tempQuestions.some(function (item, idx) {
+        //   return tempQuestions.indexOf(item) != idx;
+        // });
+        // if (duplicatesExist) {
+        //   return res.status(400).send("Duplicate questions are not allowed.");
+        // }
         for (let index = 0; index < req.body.questions.length; index++) {
           const question = req.body.questions[index];
           if (question.answers && question.answers.length > 1) {
@@ -126,38 +126,6 @@ export class QuizController {
       }
       await answers.save();
       return res.status(200).send();
-    } catch (err) {
-      this.loggerService.error(err);
-      return res
-        .status(500)
-        .send({ error: "Something went wrong, please try again later." });
-    }
-  };
-
-  public getQuestions = async (req: any, res: Response) => {
-    try {
-      if (!req.params.taskAddress) {
-        return res.status(400).send("Task Address not provided.");
-      }
-
-      const questions = await QuestionsModel.findOne({
-        taskId: req.params.taskAddress,
-      });
-      console.log(questions);
-      if (questions) {
-        const response = questions.questions.map((q) => {
-          return {
-            question: q.question,
-            answers: q.answers.map((a) => {
-              return {
-                value: a.value,
-              };
-            }),
-          };
-        });
-        return res.status(200).send(response);
-      }
-      return res.status(404).send("Questions not found");
     } catch (err) {
       this.loggerService.error(err);
       return res

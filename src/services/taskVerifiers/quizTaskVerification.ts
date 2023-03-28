@@ -1,6 +1,5 @@
 export * from "../logger.service";
-import { getJSONFromURI, ipfsCIDToHttpUrl } from "../../tools/ethers";
-import { QuestionsModel } from "../../models/question";
+import { Question, QuestionsModel } from "../../models/question";
 import AutSDK, { QuestOnboarding, Task } from "@aut-labs-private/sdk";
 import { FinalizeTaskResult } from "../../models/finalizeTask";
 import { PluginDefinitionType } from "@aut-labs-private/sdk/dist/models/plugin";
@@ -10,9 +9,8 @@ export async function verifyQuizTask(
   taskAddress: string,
   taskID: number,
   address: string,
-  answers: string[]
+  userQuestionsAndAnswers: Question[]
 ): Promise<FinalizeTaskResult> {
-
   const sdk = AutSDK.getInstance();
   let questOnboarding: QuestOnboarding = sdk.questOnboarding;
   if (!questOnboarding) {
@@ -33,26 +31,57 @@ export async function verifyQuizTask(
 
   const task = response.data;
 
-  const metadataUri = ipfsCIDToHttpUrl(task.metadataUri, true);
-  const metadata = await getJSONFromURI(metadataUri);
+  // const metadataUri = ipfsCIDToHttpUrl(task.metadataUri, true);
+  // const metadata = await getJSONFromURI(metadataUri);
 
-  if (metadata.questions.length != answers.length)
-    return { isFinalized: false, error: "missing answer" };
-  ;
+  // const questions: Question[] = metadata?.properties?.questions || [];
 
-  const localQuestionData = await QuestionsModel.findOne({
+  // if (questions.length != questionsAndAnswersResponse.length)
+  //   return { isFinalized: false, error: "Question was not answered!" };
+
+  const taskAnsweredQuestions = await QuestionsModel.findOne({
+    taskAddress: taskAddress,
     taskId: taskID,
   });
 
-  for (let i = 0; i < metadata.questions.length; i++) {
-    const question = metadata.questions[i];
-    const localQuestion = localQuestionData.questions.find(
-      (q) => q.question === question
-    );
-    const correctAnswer = localQuestion.answers.find((a) => a.correct);
-    if (correctAnswer.value !== answers[i]) {
-      return { isFinalized: false, error: "incorrect answer" };
+  if (!taskAnsweredQuestions) {
+    return {
+      isFinalized: false,
+      error: `No answers found for task ${task?.metadata?.name}`
+    };
+  }
+
+  let incorrectAnsweredQuestions = {};
+
+  for (let i = 0; i < userQuestionsAndAnswers.length; i++) {
+    const question = taskAnsweredQuestions.questions[i];
+    const answers = question.answers;
+
+    const userQuestion: Question = userQuestionsAndAnswers[i];
+    const userAnswers = userQuestion.answers;
+   
+    for (let j = 0; j < userAnswers.length; j++) {
+      const answer = answers[j];
+      const userAnswer = userAnswers[j];
+
+      if (answer?.correct !== userAnswer?.correct) {
+        incorrectAnsweredQuestions[i] = true;
+      }
     }
+  }
+
+  const totalTasksCount = taskAnsweredQuestions.questions.length;
+  const MIN_CORRECT_ANSWERS = totalTasksCount;
+  const TOTAL_ANSWERED_CORRECTLY = totalTasksCount - Object.keys(incorrectAnsweredQuestions).length;
+  if (TOTAL_ANSWERED_CORRECTLY < MIN_CORRECT_ANSWERS) {
+    let helperInfo = `In order to complete the task you need to answer correctly ${MIN_CORRECT_ANSWERS} questions.`
+    if (MIN_CORRECT_ANSWERS === totalTasksCount) {
+      helperInfo = `In order to complete the task you need to answer correctly all the questions.`
+    }
+    return {
+      isFinalized: false,
+      error: `You have answered correctly ${TOTAL_ANSWERED_CORRECTLY} out of ${totalTasksCount} questions. ${helperInfo}`
+    };
   }
 
   const responseFinalize = await questOnboarding.finalizeFor(

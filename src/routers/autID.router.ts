@@ -181,7 +181,6 @@ export class AutIDRouter {
       passport.authenticate("jwt", { session: false }),
       this.quizController.getQuestionsAndAnswers
     );
-    this._router.get("/quiz/:taskAddress", this.quizController.getQuestions);
   }
 
   public get router(): Router {

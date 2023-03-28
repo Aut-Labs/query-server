@@ -4,11 +4,11 @@
 // Import the ethers library
 import { ethers } from "ethers";
 import { NetworkConfig } from "../models/config";
-import axios from 'axios';
+import axios from "axios";
 
 require("dotenv").config();
 
- function getSigner(networkConfig: NetworkConfig): ethers.Signer {
+function getSigner(networkConfig: NetworkConfig): ethers.Signer {
   const provider = new ethers.providers.JsonRpcProvider(
     networkConfig.rpcUrls[0]
   );
@@ -24,12 +24,12 @@ require("dotenv").config();
 }
 
 function ipfsCIDToHttpUrl(url: string, isJson: boolean) {
-  if (!url.includes('https://'))
-    return `https://ipfs.io/ipfs/${url.replace('ipfs://', '')}`;
+  if (!url.includes("https://"))
+    return `${process.env.IPFS_GATEWAY}/${url.replace("ipfs://", "")}`;
   else return url;
 }
 
- async function getJSONFromURI(uri: string) {
+async function getJSONFromURI(uri: string) {
   const result = await axios.get(uri);
   return result.data;
 }

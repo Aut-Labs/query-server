@@ -9,7 +9,7 @@ export async function verifyJoinDiscordTask(
   onboardingPluginAddress: string,
   taskAddress: string,
   taskID: number,
-  address: string,
+  submitter: string,
   bearerToken: string
 ): Promise<FinalizeTaskResult> {
   const sdk = AutSDK.getInstance();
@@ -21,10 +21,7 @@ export async function verifyJoinDiscordTask(
     );
     sdk.questOnboarding = questOnboarding;
   }
-  const response = await questOnboarding.getTaskById(
-    taskAddress,
-    taskID,
-  );
+  const response = await questOnboarding.getTaskById(taskAddress, taskID);
 
   if (!response.isSuccess) {
     return { isFinalized: false, error: "invalid task" };
@@ -32,15 +29,17 @@ export async function verifyJoinDiscordTask(
 
   const task = response.data;
 
-  const metadataUri = ipfsCIDToHttpUrl(task.metadataUri, true);
-  const metadata = await getJSONFromURI(metadataUri);
+  const metadata = await getJSONFromURI(
+    ipfsCIDToHttpUrl(task.metadataUri, true)
+  );
 
-  if (!metadata.properties.inviteLink)     
-  return { isFinalized: false, error: "invalid task" };
+  const { inviteUrl } = metadata?.properties;
 
+  if (!inviteUrl) return { isFinalized: false, error: "invalid task" };
 
+  const serverCode = inviteUrl.match(/discord\.gg\/(.+)/i)[1];
   const serverIdResponse = await axios.get(
-    `https://discord.com/api/invites/${metadata.inviteLink.split("/")[3]}`
+    `https://discord.com/api/invites/${serverCode}`
   );
   const discordServerId = serverIdResponse.data.guild.id;
 
@@ -63,9 +62,14 @@ export async function verifyJoinDiscordTask(
     return { isFinalized: false, error: "task not completed" };
   } else {
     const response = await questOnboarding.finalizeFor(
-      { taskId: taskID, submitter: address } as Task,
+      { taskId: taskID, submitter: submitter } as Task,
       taskAddress,
-      PluginDefinitionType.OnboardingQuizTaskPlugin
+      PluginDefinitionType.OnboardingJoinDiscordTaskPlugin
     );
-    return { isFinalized: response.isSuccess, txHash: response.transactionHash, error: response.errorMessage };  }
+    return {
+      isFinalized: response.isSuccess,
+      txHash: response.transactionHash,
+      error: response.errorMessage,
+    };
+  }
 }

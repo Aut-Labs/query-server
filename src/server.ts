@@ -4,7 +4,6 @@ import { container } from "./inversify.config";
 import { App } from "./app";
 import { LoggerService, getNetworkConfig } from "./services";
 import { connect } from "mongoose";
-import { verifyTransaction } from "./services/taskVerifiers/transactionTaskVerification";
 import { getSigner } from "./tools/ethers";
 import AutSDK from "@aut-labs-private/sdk";
 // initialize configuration

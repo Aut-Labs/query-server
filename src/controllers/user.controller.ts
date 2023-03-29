@@ -107,6 +107,62 @@ export class UserController {
     }
   };
 
+  public getLeaderDAOs = async (req, res) => {
+    try {
+      const sdk = AutSDK.getInstance();
+      const networkConfig = getNetworkConfig("mumbai", "testing" as any);
+
+      const signer = getSigner(networkConfig);
+
+      await sdk.init(signer as any, networkConfig.contracts);
+      const daosRes = await sdk.daoExpanderRegistry.contract.getDAOExpanders();
+      const autDaoRes = await sdk.autDaoRegistry.contract.getAutDAOs();
+
+      const MAX_DAOS = -30;
+      const allDaos = [...daosRes.data, ...autDaoRes.data].splice(MAX_DAOS);
+
+      const responseDaos = [];
+
+      for (let index = 0; index < allDaos.length; index++) {
+        const daoAddress = allDaos[index];
+        const expander = sdk.initService<DAOExpander>(DAOExpander, daoAddress);
+        const daoData = await expander.contract.metadata.getMetadataUri();
+
+        let members = [];
+        let totalMembers = 0;
+
+        try {
+          const membersResponse =
+            await expander.contract.members.getAllMembers();
+          members = membersResponse.data;
+          totalMembers = membersResponse.data.length;
+        } catch (error) {}
+
+        responseDaos.push({
+          daoAddress,
+          daoMetadataUri: daoData.data,
+          members,
+          totalMembers,
+        });
+      }
+
+      function compare(a, b) {
+        if (a.totalMembers > b.totalMembers) {
+          return -1;
+        }
+        if (a.totalMembers < b.totalMembers) {
+          return 1;
+        }
+        return 0;
+      }
+
+      res.status(200).send(responseDaos.sort(compare));
+    } catch (e) {
+      this.loggerService.error(e);
+      res.status(500).send("Something went wrong");
+    }
+  };
+
   // Get user nonce
   public getUserNonce = async (req, res) => {
     try {

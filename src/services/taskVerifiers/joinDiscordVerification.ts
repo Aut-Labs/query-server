@@ -48,7 +48,7 @@ export async function verifyJoinDiscordTask(
     maxBodyLength: Infinity,
     url: "https://discord.com/api/users/@me/guilds",
     headers: {
-      Authorization: `Bearer ${bearerToken}`,
+      Authorization: bearerToken,
     },
   };
 

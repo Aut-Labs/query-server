@@ -72,58 +72,58 @@ export class QuizController {
       answers.taskAddress = req.body.taskAddress;
       answers.taskId = req.body.taskId;
       answers.questions = req.body.questions;
-      if (req.body.questions && req.body.questions.length > 0) {
-        // const tempQuestions = req.body.questions.map(function (q) {
-        //   return q.question;
-        // });
-        // const duplicatesExist = tempQuestions.some(function (item, idx) {
-        //   return tempQuestions.indexOf(item) != idx;
-        // });
-        // if (duplicatesExist) {
-        //   return res.status(400).send("Duplicate questions are not allowed.");
-        // }
-        for (let index = 0; index < req.body.questions.length; index++) {
-          const question = req.body.questions[index];
-          if (question.answers && question.answers.length > 1) {
-            const tempAnswers = question.answers.map(function (a) {
-              return a.value;
-            });
-            const duplicatesAnswersExist = tempAnswers.some(function (
-              item,
-              idx
-            ) {
-              return tempAnswers.indexOf(item) != idx;
-            });
-            if (duplicatesAnswersExist) {
-              return res.status(400).send("Duplicate answers are not allowed.");
-            }
-            let foundCorrectAnswer = false;
-            for (let j = 0; j < question.answers.length; j++) {
-              const answer = question.answers[j];
-              if (answer.correct) {
-                if (foundCorrectAnswer) {
-                  return res
-                    .status(400)
-                    .send("Questions cannot have multiple correct answers.");
-                } else {
-                  foundCorrectAnswer = true;
-                }
-              }
-            }
-            if (!foundCorrectAnswer) {
-              return res
-                .status(400)
-                .send("Questions should have at least one correct answer.");
-            }
-          } else {
-            return res
-              .status(400)
-              .send("Some questions don't have enough answers.");
-          }
-        }
-      } else {
-        return res.status(400).send("Questions not provided");
-      }
+      // if (req.body.questions && req.body.questions.length > 0) {
+      //   // const tempQuestions = req.body.questions.map(function (q) {
+      //   //   return q.question;
+      //   // });
+      //   // const duplicatesExist = tempQuestions.some(function (item, idx) {
+      //   //   return tempQuestions.indexOf(item) != idx;
+      //   // });
+      //   // if (duplicatesExist) {
+      //   //   return res.status(400).send("Duplicate questions are not allowed.");
+      //   // }
+      //   for (let index = 0; index < req.body.questions.length; index++) {
+      //     const question = req.body.questions[index];
+      //     if (question.answers && question.answers.length > 1) {
+      //       const tempAnswers = question.answers.map(function (a) {
+      //         return a.value;
+      //       });
+      //       const duplicatesAnswersExist = tempAnswers.some(function (
+      //         item,
+      //         idx
+      //       ) {
+      //         return tempAnswers.indexOf(item) != idx;
+      //       });
+      //       if (duplicatesAnswersExist) {
+      //         return res.status(400).send("Duplicate answers are not allowed.");
+      //       }
+      //       let foundCorrectAnswer = false;
+      //       for (let j = 0; j < question.answers.length; j++) {
+      //         const answer = question.answers[j];
+      //         if (answer.correct) {
+      //           if (foundCorrectAnswer) {
+      //             return res
+      //               .status(400)
+      //               .send("Questions cannot have multiple correct answers.");
+      //           } else {
+      //             foundCorrectAnswer = true;
+      //           }
+      //         }
+      //       }
+      //       if (!foundCorrectAnswer) {
+      //         return res
+      //           .status(400)
+      //           .send("Questions should have at least one correct answer.");
+      //       }
+      //     } else {
+      //       return res
+      //         .status(400)
+      //         .send("Some questions don't have enough answers.");
+      //     }
+      //   }
+      // } else {
+      //   return res.status(400).send("Questions not provided");
+      // }
       await answers.save();
       return res.status(200).send();
     } catch (err) {

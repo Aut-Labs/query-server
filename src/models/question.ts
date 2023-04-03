@@ -1,7 +1,7 @@
 import { Schema, model } from "mongoose";
 
 const QuestionsSchema = new Schema({
-  taskId: { type: String },
+  taskId: { type: Number },
   taskAddress: { type: String },
   questions: [
     {
@@ -27,7 +27,7 @@ export interface Question {
 }
 
 export interface Questions {
-  taskId: string;
+  taskId: number;
   taskAddress: boolean;
   questions: Question[];
 }

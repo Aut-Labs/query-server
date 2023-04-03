@@ -134,6 +134,19 @@ export class QuizController {
     }
   };
 
+  public getAllQuestionsAndAnswers = async (req: any, res: Response) => {
+    try {
+      const questions = await QuestionsModel.find({});
+
+      return res.status(200).send(questions);
+    } catch (err) {
+      this.loggerService.error(err);
+      return res
+        .status(500)
+        .send({ error: "Something went wrong, please try again later." });
+    }
+  };
+
   public getQuestionsAndAnswers = async (req: any, res: Response) => {
     try {
       if (!req.params.taskAddress) {

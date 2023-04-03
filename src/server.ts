@@ -16,19 +16,19 @@ const logger = container.get<LoggerService>(LoggerService);
 application.app.listen(PORT, async () => {
   try {
     try {
-      await connect(process.env.MONGODB_CONNECTION_STRING, {
+      const db = await connect(process.env.MONGODB_CONNECTION_STRING, {
         keepAlive: true,
         keepAliveInitialDelay: 300000,
       });
 
-      const networkConfig = getNetworkConfig('mumbai', undefined);
+      // await db.connection.db.dropDatabase();
 
-     
+      const networkConfig = getNetworkConfig("mumbai", undefined);
+
       const signer = getSigner(networkConfig);
 
       const sdk = AutSDK.getInstance();
       await sdk.init(signer as any, networkConfig.contracts);
-      
     } catch (error) {
       console.log(error, "error");
       // handleError(error);

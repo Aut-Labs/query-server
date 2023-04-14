@@ -88,11 +88,8 @@ export class UserController {
           );
 
           const quests = await onboardingQuest.getAllQuests();
-          const questOnboardingAddress =
-            onboardingQuest.questPlugin.contract.address;
-
           responseDaos.push({
-            onboardingQuestAddress: questOnboardingAddress,
+            onboardingQuestAddress: onboardingQuest.contract.contract.address,
             daoAddress,
             daoMetadataUri: daoData.data,
             quests: quests.data,

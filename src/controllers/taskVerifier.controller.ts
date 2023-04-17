@@ -10,14 +10,15 @@ import { Question } from "../models/question";
 
 @injectable()
 export class TaskVerifierController {
-  constructor(private loggerService: LoggerService) {}
+  constructor(private loggerService: LoggerService) { }
 
   public verifyTransactionTask = async (req: any, res: Response) => {
     try {
       const pluginAddress: string = req.body.onboardingPluginAddress;
       const taskAddress: string = req.body.taskAddress;
       const taskId: number = req.body.taskId;
-      const submitter: string = '0xFbE9431DBf22c774b36Fd268d2229350B45C372e';
+      const submitter: string = req.user.address;
+      console.log('submitter', submitter);
       const finalizedResult = await verifyTransaction(
         pluginAddress,
         taskAddress,
@@ -38,6 +39,8 @@ export class TaskVerifierController {
   public verifyQuizTask = async (req: any, res: Response) => {
     try {
       const submitter: string = req.user.address;
+      console.log('submitter', submitter);
+
       const onboardingPluginAddress: string = req.body.onboardingPluginAddress;
       if (!onboardingPluginAddress) {
         return res
@@ -76,7 +79,9 @@ export class TaskVerifierController {
 
   public verifyDiscordJoinTask = async (req: any, res: Response) => {
     try {
-      const submitter: string = '0xFbE9431DBf22c774b36Fd268d2229350B45C372e';
+      const submitter: string = req.user.address;
+      console.log('submitter', submitter);
+
       const onboardingPluginAddress: string = req.body.onboardingPluginAddress;
       if (!onboardingPluginAddress) {
         return res

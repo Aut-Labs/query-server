@@ -1,6 +1,5 @@
 export * from "../logger.service";
 import axios from "axios";
-import { getNetworkConfig } from "../../services";
 import AutSDK, {
   QuestOnboarding, Task,
 } from "@aut-labs-private/sdk";
@@ -13,8 +12,7 @@ export async function verifyTransaction(
   pluginAddress: string,
   taskAddress: string,
   taskID: number,
-  address: string,
-  network: string
+  address: string
 ): Promise<FinalizeTaskResult> {
 
   const sdk = AutSDK.getInstance();
@@ -38,18 +36,19 @@ export async function verifyTransaction(
   const task = response.data;
 
   const metadataUri = ipfsCIDToHttpUrl(task.metadataUri, true);
+
   const metadata = await getJSONFromURI(metadataUri);
 
   const contractAddress = metadata.properties.smartContractAddress.toLowerCase();
+  const network = metadata.properties.network;
 
   let finished = false;
   let pageNumber = 0;
-  const chainID = getNetworkConfig(network, undefined).chainId;
   while (!finished) {
-    const url = `https://api.covalenthq.com/v1/${chainID}/address/${address}/transactions_v2/?key=${process.env.COVALENT_API_KEY}&no-logs=true&page-size=1000&page-number=${pageNumber}`
+    const url = `https://api.covalenthq.com/v1/${network}/address/${address}/transactions_v2/?key=${process.env.COVALENT_API_KEY}&no-logs=true&page-size=1000&page-number=${pageNumber}`
     const result = await axios.get(url)
     if (result.data.data.items.length > 0) {
-      const txs = result.data.data.items.map(
+      const txs = result.data.data.items.filter(
         (tx) =>
           tx.to_address &&
           tx.block_height > 0 &&
@@ -58,6 +57,10 @@ export async function verifyTransaction(
 
       if (txs.length > 0) {
         finished = true;
+        console.log(txs);
+        console.log('taskId', taskID);
+        console.log('submitter', address);
+        console.log('taskAddress', taskAddress);
         const responseFinalize = await questOnboarding.finalizeFor(
           { taskId: taskID, submitter: address } as Task,
           taskAddress,

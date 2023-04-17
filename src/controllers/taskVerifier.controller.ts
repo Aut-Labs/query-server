@@ -17,13 +17,12 @@ export class TaskVerifierController {
       const pluginAddress: string = req.body.onboardingPluginAddress;
       const taskAddress: string = req.body.taskAddress;
       const taskId: number = req.body.taskId;
-      const submitter: string = req.user.address;
+      const submitter: string = '0xFbE9431DBf22c774b36Fd268d2229350B45C372e';
       const finalizedResult = await verifyTransaction(
         pluginAddress,
         taskAddress,
         taskId,
-        submitter,
-        "mumbai"
+        submitter
       );
       if (finalizedResult.isFinalized)
         return res.status(200).send(finalizedResult);
@@ -77,7 +76,7 @@ export class TaskVerifierController {
 
   public verifyDiscordJoinTask = async (req: any, res: Response) => {
     try {
-      const submitter: string = req.user.address;
+      const submitter: string = '0xFbE9431DBf22c774b36Fd268d2229350B45C372e';
       const onboardingPluginAddress: string = req.body.onboardingPluginAddress;
       if (!onboardingPluginAddress) {
         return res

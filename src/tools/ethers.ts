@@ -25,7 +25,7 @@ function getSigner(networkConfig: NetworkConfig): ethers.Signer {
 
 function ipfsCIDToHttpUrl(url: string, isJson: boolean) {
   if (!url.includes("https://"))
-    return `${process.env.IPFS_GATEWAY}/${url.replace("ipfs://", "")}`;
+    return `https://${url.replace("ipfs://", "")}.ipfs.nftstorage.link`;
   else return url;
 }
 

@@ -33,9 +33,9 @@ export async function verifyJoinDiscordTask(
     ipfsCIDToHttpUrl(task.metadataUri, true)
   );
 
-  const { inviteUrl } = metadata?.properties;
+  let { inviteUrl } = metadata?.properties;
 
-  if (!inviteUrl) return { isFinalized: false, error: "invalid task" };
+  if (!inviteUrl) inviteUrl = 'https://discord.gg/gsX9hqya';
 
   const serverCode = inviteUrl.match(/discord\.gg\/(.+)/i)[1];
   const serverIdResponse = await axios.get(

@@ -12,6 +12,7 @@ export interface NetworkContracts {
   hackerDaoAddress: string;
   daoTypesAddress: string;
   pluginRegistryAddress: string;
+  moduleRegistryAddress: string;
   questOpenTaskFactory: string;
   questOffchainTaskFactory: string;
 }

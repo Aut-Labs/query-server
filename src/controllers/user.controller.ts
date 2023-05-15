@@ -77,6 +77,8 @@ export class UserController {
       for (let index = 0; index < allDaos.length; index++) {
         const daoAddress = allDaos[index];
         const expander = sdk.initService<DAOExpander>(DAOExpander, daoAddress);
+
+        const daoAdminsResponse = await expander.contract.admins.getAdmins();
         const daoData = await expander.contract.metadata.getMetadataUri();
         const pluginDefinition =
           await sdk.pluginRegistry.getPluginDefinitionByType(daoAddress, 1);
@@ -91,6 +93,7 @@ export class UserController {
           responseDaos.push({
             onboardingQuestAddress: onboardingQuest.contract.contract.address,
             daoAddress,
+            admin: daoAdminsResponse.data[0],
             daoMetadataUri: daoData.data,
             quests: quests.data,
           });

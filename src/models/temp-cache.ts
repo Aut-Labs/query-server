@@ -10,26 +10,29 @@ const DynamicNumberPropSchema = new Schema({
   value: Number,
 });
 
-const TempCacheSchema = new Schema({
-  cacheKey: { type: String, required: true },
-  address: { type: String, required: true },
-  attrc1: DynamicStringPropSchema,
-  attrc2: DynamicStringPropSchema,
-  attrc3: DynamicStringPropSchema,
-  attrc4: DynamicStringPropSchema,
-  attrn1: DynamicNumberPropSchema,
-  attrn2: DynamicNumberPropSchema,
-  list: [
-    new Schema({
-      attrc1: DynamicStringPropSchema,
-      attrc2: DynamicStringPropSchema,
-      attrc3: DynamicStringPropSchema,
-      attrc4: DynamicStringPropSchema,
-      attrn1: DynamicNumberPropSchema,
-      attrn2: DynamicNumberPropSchema,
-    }),
-  ],
-});
+const TempCacheSchema = new Schema(
+  {
+    cacheKey: { type: String, required: true },
+    address: { type: String, required: true },
+    attrc1: DynamicStringPropSchema,
+    attrc2: DynamicStringPropSchema,
+    attrc3: DynamicStringPropSchema,
+    attrc4: DynamicStringPropSchema,
+    attrn1: DynamicNumberPropSchema,
+    attrn2: DynamicNumberPropSchema,
+    list: [
+      new Schema({
+        attrc1: DynamicStringPropSchema,
+        attrc2: DynamicStringPropSchema,
+        attrc3: DynamicStringPropSchema,
+        attrc4: DynamicStringPropSchema,
+        attrn1: DynamicNumberPropSchema,
+        attrn2: DynamicNumberPropSchema,
+      }),
+    ],
+  },
+  { timestamps: true }
+);
 
 export const TempCacheModel = model("TempCache", TempCacheSchema);
 

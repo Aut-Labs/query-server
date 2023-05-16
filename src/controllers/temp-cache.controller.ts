@@ -82,7 +82,11 @@ export class TempCacheController {
           address: address.toLowerCase(),
           cacheKey: cacheKey,
         });
-        parsedResult = parseToResponseModel(found?.toObject());
+
+        let updated_object = parseToResponseModel(found?.toObject());
+        updated_object['createdAt'] = found.createdAt;
+        updated_object['updatedAt'] = found.updatedAt;
+        parsedResult = updated_object;
       } catch (error) {}
       return res.status(200).send(parsedResult);
     } catch (err) {
@@ -129,7 +133,11 @@ export class TempCacheController {
         address: result.address,
         cacheKey,
       });
-      return res.status(200).send(parseToResponseModel(found?.toObject()));
+
+      let updated_object = parseToResponseModel(found?.toObject());
+      updated_object['createdAt'] = found.createdAt;
+      updated_object['updatedAt'] = found.updatedAt;
+      return res.status(200).send(updated_object);
     } catch (error) {
       this.loggerService.error(error);
       return res

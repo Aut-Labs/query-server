@@ -6,6 +6,7 @@ import AutSDK, {
 import { getJSONFromURI, ipfsCIDToHttpUrl } from "../../tools/ethers";
 import { PluginDefinitionType } from "@aut-labs-private/sdk/dist/models/plugin";
 import { FinalizeTaskResult } from "../../models/finalizeTask";
+import { supportFunction } from "../../constants/supportedNetworks";
 
 
 export async function verifyTransaction(
@@ -40,7 +41,7 @@ export async function verifyTransaction(
   const metadata = await getJSONFromURI(metadataUri);
 
   const contractAddress = metadata.properties.smartContractAddress.toLowerCase();
-  const network = metadata.properties.network;
+  const network = supportFunction(metadata.properties.network) ? metadata.properties.network : 'matic-mumbai';
 
   let finished = false;
   let pageNumber = 0;

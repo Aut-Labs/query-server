@@ -15,16 +15,11 @@ export async function verifyTransaction(
   taskID: number,
   address: string
 ): Promise<FinalizeTaskResult> {
-
   const sdk = AutSDK.getInstance();
-  let questOnboarding: QuestOnboarding = sdk.questOnboarding;
-  if (!questOnboarding) {
-    questOnboarding = sdk.initService<QuestOnboarding>(
-      QuestOnboarding,
-      pluginAddress
-    );
-    sdk.questOnboarding = questOnboarding;
-  }
+  const questOnboarding = sdk.initService<QuestOnboarding>(
+    QuestOnboarding,
+    pluginAddress
+  );
   const response = await questOnboarding.getTaskById(
     taskAddress,
     taskID,

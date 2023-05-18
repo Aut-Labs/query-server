@@ -13,14 +13,10 @@ export async function verifyJoinDiscordTask(
   bearerToken: string
 ): Promise<FinalizeTaskResult> {
   const sdk = AutSDK.getInstance();
-  let questOnboarding: QuestOnboarding = sdk.questOnboarding;
-  if (!questOnboarding) {
-    questOnboarding = sdk.initService<QuestOnboarding>(
-      QuestOnboarding,
-      onboardingPluginAddress
-    );
-    sdk.questOnboarding = questOnboarding;
-  }
+  const questOnboarding = sdk.initService<QuestOnboarding>(
+    QuestOnboarding,
+    onboardingPluginAddress
+  );
   const response = await questOnboarding.getTaskById(taskAddress, taskID);
 
   if (!response.isSuccess) {

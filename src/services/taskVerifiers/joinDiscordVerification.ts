@@ -31,7 +31,7 @@ export async function verifyJoinDiscordTask(
 
   let { inviteUrl } = metadata?.properties;
 
-  if (!inviteUrl) inviteUrl = 'https://discord.gg/gsX9hqya';
+  if (!inviteUrl) inviteUrl = "https://discord.gg/gsX9hqya";
 
   const serverCode = inviteUrl.match(/discord\.gg\/(.+)/i)[1];
   const serverIdResponse = await axios.get(
@@ -55,7 +55,7 @@ export async function verifyJoinDiscordTask(
   const guild = guilds.find((g) => g.id === discordServerId);
 
   if (!guild) {
-    return { isFinalized: false, error: "task not completed" };
+    return { isFinalized: false, error: "Not a member of this server." };
   } else {
     const response = await questOnboarding.finalizeFor(
       { taskId: taskID, submitter: submitter } as Task,

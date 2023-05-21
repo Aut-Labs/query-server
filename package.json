@@ -22,7 +22,7 @@
   "license": "ISC",
   "dependencies": {
     "@aut-labs-private/abi-types": "^0.0.34",
-    "@aut-labs-private/sdk": "^0.0.51",
+    "@aut-labs-private/sdk": "^0.0.54",
     "axios": "^0.27.2",
     "body-parser": "^1.19.0",
     "cookie-parser": "1.4.5",

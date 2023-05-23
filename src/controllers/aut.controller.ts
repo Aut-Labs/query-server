@@ -98,12 +98,17 @@ export class AutController {
 
   public getOAuth2AccessToken = async (req: any, res: Response) => {
     try {
-      const code = req.body.code;
-      console.log(code);
+      const { code, callbackUrl } = req.body;
 
       if (!code) {
         return res.status(400).send({
           error: `OAuth2 code not provided.`,
+        });
+      }
+
+      if (!callbackUrl) {
+        return res.status(400).send({
+          error: `callbackUrl not provided.`,
         });
       }
 
@@ -112,7 +117,7 @@ export class AutController {
         client_secret: process.env.DISCORD_CLIENT_SECRET,
         grant_type: "authorization_code",
         code: code,
-        redirect_uri: process.env.DISCORD_REDIRECT_URI,
+        redirect_uri: callbackUrl,
       });
       const config = {
         method: "post",

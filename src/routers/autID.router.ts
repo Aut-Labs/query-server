@@ -177,6 +177,13 @@ export class AutIDRouter {
       passport.authenticate("jwt", { session: false }),
       this.quizController.saveQestions
     );
+
+    this._router.post(
+      "/removeQuiz",
+      passport.authenticate("jwt", { session: false }),
+      this.quizController.deleteQestions
+    );
+
     this._router.get(
       "/quizAnswers/:taskAddress",
       passport.authenticate("jwt", { session: false }),

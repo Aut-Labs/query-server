@@ -45,6 +45,36 @@ const ipfsCIDToHttpUrl = (url: string, isJson = false) => {
   return url;
 };
 
+const getDaoDetailsPromise = async (sdk: AutSDK, daoAddress: string) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const pluginDefinition =
+        await sdk.pluginRegistry.getPluginDefinitionByType(daoAddress, 1);
+      if (pluginDefinition.data) {
+        const expander = sdk.initService<DAOExpander>(DAOExpander, daoAddress);
+        const daoAdminsResponse = await expander.contract.admins.getAdmins();
+        const daoData = await expander.contract.metadata.getMetadataUri();
+        const onboardingQuest = sdk.initService<QuestOnboarding>(
+          QuestOnboarding,
+          pluginDefinition.data
+        );
+        const quests = await onboardingQuest.getAllQuests();
+        resolve({
+          onboardingQuestAddress: onboardingQuest.contract.contract.address,
+          daoAddress,
+          admin: daoAdminsResponse.data[0],
+          daoMetadataUri: daoData.data,
+          quests: quests.data,
+        });
+      } else {
+        resolve(null);
+      }
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
 @injectable()
 export class UserController {
   constructor(private loggerService: LoggerService) {}
@@ -74,46 +104,19 @@ export class UserController {
 
       const allDaos = [...daosRes.data, ...autDaoRes.data];
 
-      const getDaoDetailsPromise = async (daoAddress) => {
-        return new Promise(async (resolve, reject) => {
-          const pluginDefinition =
-            await sdk.pluginRegistry.getPluginDefinitionByType(daoAddress, 1);
-
-          if (pluginDefinition.data) {
-            const expander = sdk.initService<DAOExpander>(
-              DAOExpander,
-              daoAddress
-            );
-            const daoAdminsResponse =
-              await expander.contract.admins.getAdmins();
-            const daoData = await expander.contract.metadata.getMetadataUri();
-            const onboardingQuest = sdk.initService<QuestOnboarding>(
-              QuestOnboarding,
-              pluginDefinition.data
-            );
-            const quests = await onboardingQuest.getAllQuests();
-            resolve({
-              onboardingQuestAddress: onboardingQuest.contract.contract.address,
-              daoAddress,
-              admin: daoAdminsResponse.data[0],
-              daoMetadataUri: daoData.data,
-              quests: quests.data,
-            });
-          } else {
-            resolve(null);
-          }
-        });
-      };
-
       for (let index = 0; index < allDaos.length; index++) {
         const daoAddress = allDaos[index];
-        promises.push(getDaoDetailsPromise(daoAddress));
+        promises.push(getDaoDetailsPromise(sdk, daoAddress));
       }
 
-      const results = await Promise.all(promises);
-      const pruned = results.filter((x) => x);
-      console.timeEnd("getDaos");
-      res.status(200).send(pruned);
+      await Promise.all(promises)
+        .then((values) => {
+          const pruned = values.filter((x) => x);
+          return res.status(200).send(pruned);
+        })
+        .catch((e) => {
+          throw e;
+        });
 
       // const responseDaos = [];
 

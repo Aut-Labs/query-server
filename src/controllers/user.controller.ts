@@ -60,7 +60,9 @@ export class UserController {
   };
 
   public getDaos = async (req, res) => {
+    const promises = [];
     try {
+      console.time("getDaos");
       const sdk = AutSDK.getInstance();
       const networkConfig = getNetworkConfig("mumbai", "testing" as any);
 
@@ -72,35 +74,86 @@ export class UserController {
 
       const allDaos = [...daosRes.data, ...autDaoRes.data];
 
-      const responseDaos = [];
+      const getDaoDetailsPromise = async (daoAddress) => {
+        return new Promise(async (resolve, reject) => {
+          const pluginDefinition =
+            await sdk.pluginRegistry.getPluginDefinitionByType(daoAddress, 1);
+
+          if (pluginDefinition.data) {
+            const expander = sdk.initService<DAOExpander>(
+              DAOExpander,
+              daoAddress
+            );
+            const daoAdminsResponse =
+              await expander.contract.admins.getAdmins();
+            const daoData = await expander.contract.metadata.getMetadataUri();
+            const onboardingQuest = sdk.initService<QuestOnboarding>(
+              QuestOnboarding,
+              pluginDefinition.data
+            );
+            const quests = await onboardingQuest.getAllQuests();
+            resolve({
+              onboardingQuestAddress: onboardingQuest.contract.contract.address,
+              daoAddress,
+              admin: daoAdminsResponse.data[0],
+              daoMetadataUri: daoData.data,
+              quests: quests.data,
+            });
+          } else {
+            resolve(null);
+          }
+        });
+      };
 
       for (let index = 0; index < allDaos.length; index++) {
         const daoAddress = allDaos[index];
-        const expander = sdk.initService<DAOExpander>(DAOExpander, daoAddress);
-
-        const daoAdminsResponse = await expander.contract.admins.getAdmins();
-        const daoData = await expander.contract.metadata.getMetadataUri();
-        const pluginDefinition =
-          await sdk.pluginRegistry.getPluginDefinitionByType(daoAddress, 1);
-
-        if (pluginDefinition.data) {
-          const onboardingQuest = sdk.initService<QuestOnboarding>(
-            QuestOnboarding,
-            pluginDefinition.data
-          );
-
-          const quests = await onboardingQuest.getAllQuests();
-          responseDaos.push({
-            onboardingQuestAddress: onboardingQuest.contract.contract.address,
-            daoAddress,
-            admin: daoAdminsResponse.data[0],
-            daoMetadataUri: daoData.data,
-            quests: quests.data,
-          });
-        }
+        promises.push(getDaoDetailsPromise(daoAddress));
       }
 
-      res.status(200).send(responseDaos);
+      const results = await Promise.all(promises);
+      const pruned = results.filter((x) => x);
+      console.timeEnd("getDaos");
+      res.status(200).send(pruned);
+
+      // const responseDaos = [];
+
+      // console.timeEnd("getDaos");
+      // console.time("getDetails");
+      // for (let index = 0; index < allDaos.length; index++) {
+      //   console.time(`details ${index}`);
+      //   const daoAddress = allDaos[index];
+      //   console.time(`getPluginDefinitionByType ${index}`);
+      //   const pluginDefinition =
+      //     await sdk.pluginRegistry.getPluginDefinitionByType(daoAddress, 1);
+      //   console.timeEnd(`getPluginDefinitionByType ${index}`);
+
+      //   console.timeEnd(`details ${index}`);
+      //   if (pluginDefinition.data) {
+      //     const expander = sdk.initService<DAOExpander>(
+      //       DAOExpander,
+      //       daoAddress
+      //     );
+      //     const daoAdminsResponse = await expander.contract.admins.getAdmins();
+      //     const daoData = await expander.contract.metadata.getMetadataUri();
+      //     console.time(`quests ${index}`);
+      //     const onboardingQuest = sdk.initService<QuestOnboarding>(
+      //       QuestOnboarding,
+      //       pluginDefinition.data
+      //     );
+      //     const quests = await onboardingQuest.getAllQuests();
+      //     responseDaos.push({
+      //       onboardingQuestAddress: onboardingQuest.contract.contract.address,
+      //       daoAddress,
+      //       admin: daoAdminsResponse.data[0],
+      //       daoMetadataUri: daoData.data,
+      //       quests: quests.data,
+      //     });
+      //     console.timeEnd(`quests ${index}`);
+      //   }
+      // }
+      // console.timeEnd("getDetails");
+
+      // res.status(200).send(responseDaos);
     } catch (e) {
       this.loggerService.error(e);
       res.status(500).send("Something went wrong");

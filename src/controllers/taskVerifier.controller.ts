@@ -39,7 +39,6 @@ export class TaskVerifierController {
   public verifyQuizTask = async (req: any, res: Response) => {
     try {
       const submitter: string = req.user.address;
-      console.log('submitter', submitter);
 
       const onboardingPluginAddress: string = req.body.onboardingPluginAddress;
       if (!onboardingPluginAddress) {
@@ -55,6 +54,11 @@ export class TaskVerifierController {
       if (!taskId) {
         return res.status(400).send({ error: "taskId not provided." });
       }
+
+      const uuid: string = req.body.uuid;
+      if (!uuid) {
+        return res.status(400).send({ error: "uuid not provided." });
+      }
       const userQuestionsAndAnswers: Question[] = req.body.questionsAndAnswers;
       if (!userQuestionsAndAnswers?.length) {
         return res.status(400).send({ error: "answers not provided." });
@@ -63,6 +67,7 @@ export class TaskVerifierController {
         onboardingPluginAddress,
         taskAddress,
         taskId,
+        uuid,
         submitter,
         userQuestionsAndAnswers
       );

@@ -8,6 +8,7 @@ export async function verifyQuizTask(
   onboardingPluginAddress: string,
   taskAddress: string,
   taskID: number,
+  uuid: string,
   address: string,
   userQuestionsAndAnswers: Question[]
 ): Promise<FinalizeTaskResult> {
@@ -28,17 +29,9 @@ export async function verifyQuizTask(
 
   const task = response.data;
 
-  // const metadataUri = ipfsCIDToHttpUrl(task.metadataUri, true);
-  // const metadata = await getJSONFromURI(metadataUri);
-
-  // const questions: Question[] = metadata?.properties?.questions || [];
-
-  // if (questions.length != questionsAndAnswersResponse.length)
-  //   return { isFinalized: false, error: "Question was not answered!" };
-
   const taskAnsweredQuestions = await QuestionsModel.findOne({
     taskAddress: taskAddress,
-    taskId: taskID,
+    uuid: uuid,
   });
 
   if (!taskAnsweredQuestions) {
@@ -60,8 +53,10 @@ export async function verifyQuizTask(
     for (let j = 0; j < userAnswers.length; j++) {
       const answer = answers[j];
       const userAnswer = userAnswers[j];
+      const correntAnswer = !!answer?.correct;
+      const correctUserAnswer = !!userAnswer?.correct;
 
-      if (answer?.correct !== userAnswer?.correct) {
+      if (correntAnswer !== correctUserAnswer) {
         incorrectAnsweredQuestions[i] = true;
       }
     }

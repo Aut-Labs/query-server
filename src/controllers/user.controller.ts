@@ -59,13 +59,18 @@ const getDaoDetailsPromise = async (sdk: AutSDK, daoAddress: string) => {
           pluginDefinition.data
         );
         const quests = await onboardingQuest.getAllQuests();
-        resolve({
-          onboardingQuestAddress: onboardingQuest.contract.contract.address,
-          daoAddress,
-          admin: daoAdminsResponse.data[0],
-          daoMetadataUri: daoData.data,
-          quests: quests.data,
-        });
+        const activeQuests = quests?.data?.filter((x) => x.active);
+        if (activeQuests.length !== quests?.data?.length) {
+          resolve(null);
+        } else {
+          resolve({
+            onboardingQuestAddress: onboardingQuest.contract.contract.address,
+            daoAddress,
+            admin: daoAdminsResponse.data[0],
+            daoMetadataUri: daoData.data,
+            quests: quests.data,
+          });
+        }
       } else {
         resolve(null);
       }
@@ -117,46 +122,6 @@ export class UserController {
         .catch((e) => {
           throw e;
         });
-
-      // const responseDaos = [];
-
-      // console.timeEnd("getDaos");
-      // console.time("getDetails");
-      // for (let index = 0; index < allDaos.length; index++) {
-      //   console.time(`details ${index}`);
-      //   const daoAddress = allDaos[index];
-      //   console.time(`getPluginDefinitionByType ${index}`);
-      //   const pluginDefinition =
-      //     await sdk.pluginRegistry.getPluginDefinitionByType(daoAddress, 1);
-      //   console.timeEnd(`getPluginDefinitionByType ${index}`);
-
-      //   console.timeEnd(`details ${index}`);
-      //   if (pluginDefinition.data) {
-      //     const expander = sdk.initService<DAOExpander>(
-      //       DAOExpander,
-      //       daoAddress
-      //     );
-      //     const daoAdminsResponse = await expander.contract.admins.getAdmins();
-      //     const daoData = await expander.contract.metadata.getMetadataUri();
-      //     console.time(`quests ${index}`);
-      //     const onboardingQuest = sdk.initService<QuestOnboarding>(
-      //       QuestOnboarding,
-      //       pluginDefinition.data
-      //     );
-      //     const quests = await onboardingQuest.getAllQuests();
-      //     responseDaos.push({
-      //       onboardingQuestAddress: onboardingQuest.contract.contract.address,
-      //       daoAddress,
-      //       admin: daoAdminsResponse.data[0],
-      //       daoMetadataUri: daoData.data,
-      //       quests: quests.data,
-      //     });
-      //     console.timeEnd(`quests ${index}`);
-      //   }
-      // }
-      // console.timeEnd("getDetails");
-
-      // res.status(200).send(responseDaos);
     } catch (e) {
       this.loggerService.error(e);
       res.status(500).send("Something went wrong");

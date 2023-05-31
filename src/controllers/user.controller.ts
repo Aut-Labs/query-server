@@ -15,6 +15,7 @@ import axios from "axios";
 import { PluginDefinitionType } from "@aut-labs-private/sdk/dist/models/plugin";
 import { AutIDBadgeGenerator } from "../tools/ImageGeneration/AutIDBadge/AutIDBadgeGenerator";
 import { SWIDParams } from "../tools/ImageGeneration/AutIDBadge/Badge.model";
+const fs = require("fs");
 
 const generateNewNonce = () => {
   return `Nonce: ${Math.floor(Math.random() * 1000000).toString()}`;
@@ -79,6 +80,24 @@ const getDaoDetailsPromise = async (sdk: AutSDK, daoAddress: string) => {
     } catch (e) {
       reject(e);
     }
+  });
+};
+
+const convertFileToBuffer = (file) => {
+  return new Promise((resolve, reject) => {
+    const fileStream = fs.createReadStream(file.path);
+    const chunks = [];
+
+    fileStream.on("data", (chunk) => {
+      chunks.push(chunk);
+    });
+
+    fileStream.on("error", reject);
+
+    fileStream.on("end", () => {
+      const buffer = Buffer.concat(chunks);
+      resolve(buffer);
+    });
   });
 };
 
@@ -188,20 +207,41 @@ export class UserController {
 
   public generate = async (req, res) => {
     try {
+      if (!req.body.config) {
+        return res.status(400).send(`"config" not provided.`);
+      }
+      const requestConfig = JSON.parse(req.body.config);
+      if (!requestConfig.name) {
+        return res.status(400).send(`"name" not provided.`);
+      }
+      if (!requestConfig.role) {
+        return res.status(400).send(`"role" not provided.`);
+      }
+      if (!requestConfig.dao) {
+        return res.status(400).send(`"dao" not provided.`);
+      }
+      if (!requestConfig.hash) {
+        return res.status(400).send(`"hash" not provided.`);
+      }
+      if (!requestConfig.network) {
+        return res.status(400).send(`"network" not provided.`);
+      }
+      if (!requestConfig.expanderAddress) {
+        return res.status(400).send(`"expanderAddress" not provided.`);
+      }
+      if (!requestConfig.timestamp) {
+        return res.status(400).send(`"timestamp" not provided.`);
+      }
+      const avatarBuffer = req.files.find(
+        (x) => x.fieldname === "avatar"
+      )?.buffer;
       const config = {
-        name: "Sasservcho",
-        role: "Member",
-        dao: "Community",
-        avatar: req.picture,
-        hash: `#12312312s`,
-        network: "mumbai",
-        expanderAddress: "0x3Dd9ca9b596465172D9247BEb0c3653d3f6f2130",
-        timestamp: `11:11:11 || 23/24/2121`,
+        avatar: avatarBuffer,
+        ...requestConfig,
       } as SWIDParams;
-      const { toFile } = await AutIDBadgeGenerator(config);
-      const file = await toFile();
-
-      res.status(200).send({ file: toFile() });
+      const { toBase64 } = await AutIDBadgeGenerator(config);
+      const badge = await toBase64();
+      res.status(200).send({ badge });
     } catch (e) {
       this.loggerService.error(e);
       res.status(500).send("Something went wrong");

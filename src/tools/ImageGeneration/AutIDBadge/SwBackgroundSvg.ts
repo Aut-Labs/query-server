@@ -7,38 +7,13 @@ import svg2img from "svg2img";
 import { Image } from "canvas";
 const fs = require("fs");
 
-export const AutAvatarGradient = (): string => {
-  const SVGDomElement = new DOMParser().parseFromString(
-    `
-    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="383" height="342" viewBox="0 0 383 342">
-    <defs>
-      <linearGradient id="linear-gradient" x1="0.5" y1="0.248" x2="0.5" y2="0.927" gradientUnits="objectBoundingBox">
-        <stop offset="0" stop-color="#fff" stop-opacity="0"/>
-        <stop offset="1" stop-color="#ebebf2"/>
-      </linearGradient>
-      <linearGradient id="linear-gradient-2" y1="0.248" y2="0.88" xlink:href="#linear-gradient"/>
-    </defs>
-    <rect id="Gradient" width="383" height="217" transform="translate(0 125)" fill="url(#linear-gradient)"/>
-    <rect id="Gradient-2" data-name="Gradient" width="383" height="110" transform="translate(383 110) rotate(180)" fill="url(#linear-gradient-2)"/>
-  </svg>
-  
-   
-  `,
-    "application/xml"
-  );
-  const serializedSVG = new XMLSerializer().serializeToString(SVGDomElement);
-  return `data:image/svg+xml;base64, ${btoa(
-    unescape(encodeURIComponent(serializedSVG))
-  )}`;
-};
-
 async function convertSvgToImage(svgString, name) {
   return new Promise<Image>((resolve, reject) => {
     svg2img(svgString, (error, buffer) => {
       if (error) {
         reject(error);
       } else {
-        fs.writeFileSync(name + ".png", buffer);
+        // fs.writeFileSync(name + ".png", buffer);
         const img = new Image();
 
         img.onload = function () {
@@ -55,26 +30,43 @@ async function convertSvgToImage(svgString, name) {
   });
 }
 
+export const AutAvatarGradient = async (): Promise<Image> => {
+  const stringSvg = `
+  <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="383" height="342" viewBox="0 0 383 342">
+  <defs>
+    <linearGradient id="linear-gradient" x1="0.5" y1="0.248" x2="0.5" y2="0.927" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="1" stop-color="#ebebf2"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-2" y1="0.248" y2="0.88" xlink:href="#linear-gradient"/>
+  </defs>
+  <rect id="Gradient" width="383" height="217" transform="translate(0 125)" fill="url(#linear-gradient)"/>
+  <rect id="Gradient-2" data-name="Gradient" width="383" height="110" transform="translate(383 110) rotate(180)" fill="url(#linear-gradient-2)"/>
+</svg>
+`;
+
+  const image = await convertSvgToImage(stringSvg, "cst");
+  return image;
+};
+
 export const AutMumbaiLabel = async (): Promise<Image> => {
   const stringSvg = `
   <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="224" height="90.279" viewBox="0 0 224 90.279">    
 <style>
-  <![CDATA[
     @font-face {
-      font-family: 'FractulAltBold';
+      font-family: 'FractulAlt-Bold';
       src: url(${FractulAltBoldWoffBase64}) format('woff');
     }
     
     @font-face {
-      font-family: 'FractulAltLight';
+      font-family: 'FractulAlt-Light';
       src: url(${FractulAltLightWoffBase64}) format('woff');
     }
 
     @font-face {
-      font-family: 'FractulRegular';
+      font-family: 'Fractul-Regular';
       src: url(${FractulRegularWoffBase64}) format('woff');
     }
-  ]]>
 </style>
   <defs>
     <clipPath id="clip-path">
@@ -154,13 +146,13 @@ export const AutMumbaiLabel = async (): Promise<Image> => {
       </g>
     </g>
   </g>
-  <text id="Mumbai" transform="translate(91 40.273)" fill="#ebebf2" font-size="25" font-family="FractulAltBold" font-weight="700"><tspan x="0" y="0">Mumbai</tspan></text>
+  <text id="Mumbai" transform="translate(91 40.273)" fill="#ebebf2" font-size="25" font-family="FractulAlt-Bold" font-weight="700"><tspan x="0" y="0">Mumbai</tspan></text>
   <g id="polygon-matic-seeklogo.com" transform="translate(60 20.373)">
     <path id="Path_25330" data-name="Path 25330" d="M16.981,5.931a1.492,1.492,0,0,0-1.405,0L12.3,7.863l-2.225,1.23-3.22,1.932a1.492,1.492,0,0,1-1.405,0L2.928,9.5a1.427,1.427,0,0,1-.7-1.23V5.346a1.444,1.444,0,0,1,.7-1.23L5.446,2.652a1.492,1.492,0,0,1,1.405,0L9.369,4.174a1.427,1.427,0,0,1,.7,1.23V7.336L12.3,6.048V4.057a1.444,1.444,0,0,0-.7-1.23L6.909.076A1.492,1.492,0,0,0,5.5.076L.7,2.886A1.288,1.288,0,0,0,0,4.057v5.5a1.444,1.444,0,0,0,.7,1.23l4.743,2.752a1.492,1.492,0,0,0,1.405,0l3.22-1.874L12.3,10.381l3.22-1.874a1.492,1.492,0,0,1,1.405,0L19.44,9.971a1.427,1.427,0,0,1,.7,1.23v2.928a1.444,1.444,0,0,1-.7,1.23l-2.459,1.464a1.492,1.492,0,0,1-1.405,0l-2.518-1.464a1.427,1.427,0,0,1-.7-1.23V12.255L10.13,13.543v1.932a1.444,1.444,0,0,0,.7,1.23l4.743,2.752a1.492,1.492,0,0,0,1.405,0l4.743-2.752a1.427,1.427,0,0,0,.7-1.23V9.913a1.444,1.444,0,0,0-.7-1.23Z" fill="#ebebf2"/>
   </g>
 </svg>
 `;
-  const image = await convertSvgToImage(stringSvg, "label");
+  const image = await convertSvgToImage(stringSvg, "ast");
   return image;
 };
 
@@ -171,25 +163,23 @@ export const AutBackgroundSvg = async ({
   role,
   dao,
 }): Promise<Image> => {
-  const svgString = `
+  const stringSvg = `
   <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="506.27" height="762.5" viewBox="0 0 506.27 762.5">    
 <style>
-  <![CDATA[
     @font-face {
-      font-family: 'FractulAltBold';
+      font-family: 'FractulAlt-Bold';
       src: url(${FractulAltBoldWoffBase64}) format('woff');
     }
     
     @font-face {
-      font-family: 'FractulAltLight';
+      font-family: 'FractulAlt-Light';
       src: url(${FractulAltLightWoffBase64}) format('woff');
     }
 
     @font-face {
-      font-family: 'FractulRegular';
+      font-family: 'Fractul-Regular';
       src: url(${FractulRegularWoffBase64}) format('woff');
     }
-  ]]>
 </style>
   <defs>
     <clipPath id="clip-path">
@@ -328,17 +318,17 @@ export const AutBackgroundSvg = async ({
       <rect x="0.5" y="0.5" width="398" height="569" rx="19.5" fill="none"/>
     </g>
   </g> 
-    <text id="Āut_ID" data-name="Āut ID" transform="translate(52.635 77.25)" fill="#ebebf2" font-size="37" font-family="FractulAltBold" font-weight="700"><tspan x="0" y="0">Āut</tspan><tspan y="0" xml:space="preserve" font-family="FractulAltLight" font-weight="300"> ID</tspan></text> 
-  <text id="${name}" data-name="${name}" transform="translate(85.635 496.25)" fill="#262626" font-size="40" font-family="FractulAltBold" font-weight="700" letter-spacing="0.001em"><tspan x="0" y="0">${name}</tspan></text>
-  <text id="${timestamp}" data-name="${timestamp}" transform="translate(140.635 538.25)" fill="#262626" font-size="12" font-family="FractulRegular" letter-spacing="0.02em"><tspan x="0" y="0">${timestamp}</tspan></text>
-  <text id="Rabit_Whole" data-name="${dao}" transform="translate(140.635 565.25)" fill="#262626" font-size="12" font-family="FractulRegular" letter-spacing="0.02em"><tspan x="0" y="0">${dao}</tspan></text>
-  <text id="${role}" transform="translate(140.635 585.25)" fill="#262626" font-size="12" font-family="FractulRegular" letter-spacing="0.02em"><tspan x="0" y="0">${role}</tspan></text>
-  <text id="_039531" data-name="${hash}" transform="translate(85.635 624.25)" fill="#fff" font-size="14" font-family="FractulRegular" letter-spacing="0.02em" style="mix-blend-mode: difference;isolation: isolate"><tspan x="0" y="0">${hash}</tspan></text>
-  <text id="Joined" transform="translate(85.635 538.25)" fill="#256bb0" font-size="12" font-family="FractulAltBold" font-weight="700" letter-spacing="0.02em"><tspan x="0" y="0">Joined</tspan></text>
-  <text id="DAO" transform="translate(85.635 565.25)" fill="#256bb0" font-size="12" font-family="FractulAltBold" font-weight="700" letter-spacing="0.02em"><tspan x="0" y="0">DAO</tspan></text>
-  <text id="Role" transform="translate(85.635 585.25)" fill="#256bb0" font-size="12" font-family="FractulAltBold" font-weight="700" letter-spacing="0.02em"><tspan x="0" y="0">Role</tspan></text>
+    <text id="Āut_ID" data-name="Āut ID" transform="translate(52.635 77.25)" fill="#ebebf2" font-size="37" font-family="FractulAlt-Bold" font-weight="700"><tspan x="0" y="0">Āut</tspan><tspan y="0" xml:space="preserve" font-family="FractulAlt-Light" font-weight="300"> ID</tspan></text> 
+  <text id="${name}" data-name="${name}" transform="translate(85.635 496.25)" fill="#262626" font-size="40" font-family="FractulAlt-Bold" font-weight="700" letter-spacing="0.001em"><tspan x="0" y="0">${name}</tspan></text>
+  <text id="${timestamp}" data-name="${timestamp}" transform="translate(140.635 538.25)" fill="#262626" font-size="12" font-family="Fractul-Regular" letter-spacing="0.02em"><tspan x="0" y="0">${timestamp}</tspan></text>
+  <text id="Rabit_Whole" data-name="${dao}" transform="translate(140.635 565.25)" fill="#262626" font-size="12" font-family="Fractul-Regular" letter-spacing="0.02em"><tspan x="0" y="0">${dao}</tspan></text>
+  <text id="${role}" transform="translate(140.635 585.25)" fill="#262626" font-size="12" font-family="Fractul-Regular" letter-spacing="0.02em"><tspan x="0" y="0">${role}</tspan></text>
+  <text id="_039531" data-name="${hash}" transform="translate(85.635 624.25)" fill="#fff" font-size="14" font-family="Fractul-Regular" letter-spacing="0.02em" style="mix-blend-mode: difference;isolation: isolate"><tspan x="0" y="0">${hash}</tspan></text>
+  <text id="Joined" transform="translate(85.635 538.25)" fill="#256bb0" font-size="12" font-family="FractulAlt-Bold" font-weight="700" letter-spacing="0.02em"><tspan x="0" y="0">Joined</tspan></text>
+  <text id="DAO" transform="translate(85.635 565.25)" fill="#256bb0" font-size="12" font-family="FractulAlt-Bold" font-weight="700" letter-spacing="0.02em"><tspan x="0" y="0">DAO</tspan></text>
+  <text id="Role" transform="translate(85.635 585.25)" fill="#256bb0" font-size="12" font-family="FractulAlt-Bold" font-weight="700" letter-spacing="0.02em"><tspan x="0" y="0">Role</tspan></text>
 </svg>
 `;
-  const image = await convertSvgToImage(svgString, "bg");
+  const image = await convertSvgToImage(stringSvg, "bst");
   return image;
 };

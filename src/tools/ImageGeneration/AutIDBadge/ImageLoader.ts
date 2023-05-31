@@ -1,7 +1,7 @@
 import { Image } from "canvas";
 
 export const LoadImage = (
-  url: string,
+  url: string | Buffer,
   width: number = null,
   height: number = null
 ): Promise<Image> => {

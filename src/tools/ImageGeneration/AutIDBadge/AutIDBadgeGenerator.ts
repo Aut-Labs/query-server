@@ -28,7 +28,7 @@ const drawCanvasElements = (
     ctx.drawImage(image, 27, 0);
   };
 
-  const drawAvatar = async (avatar: string) => {
+  const drawAvatar = async (avatar: Buffer) => {
     const avatarImage = await LoadImage(avatar);
     const maxWidth = 362;
     const maxHeight = 339;
@@ -46,10 +46,9 @@ const drawCanvasElements = (
   };
 
   const drawAvatarGradient = async () => {
-    let url = null;
-    url = AutAvatarGradient();
-    const avatarGradient = await LoadImage(url);
-    ctx.drawImage(avatarGradient, 87, 112);
+    let gradient = null;
+    gradient = await AutAvatarGradient();
+    ctx.drawImage(gradient, 87, 112);
   };
 
   const drawLabel = async () => {
@@ -76,7 +75,7 @@ const drawCanvasElements = (
 
 const defaulConfig = (
   config: ContentConfig,
-  avatar: string,
+  avatar: Buffer,
   name: string,
   dao: string,
   role: string,
@@ -161,7 +160,7 @@ export const AutIDBadgeGenerator = async ({
   canvas.height = config.height;
   const ctxContents = drawCanvasElements(canvas, ctx, config);
   await ctxContents.drawBackground();
-  // await ctxContents.drawAvatar(avatar);
+  await ctxContents.drawAvatar(avatar);
   await ctxContents.drawAvatarGradient();
   await ctxContents.drawSigil(expanderAddress);
   await ctxContents.drawLabel();
@@ -169,16 +168,16 @@ export const AutIDBadgeGenerator = async ({
   return {
     previewElement: canvas,
     toBase64: () => canvas.toDataURL("image/png"),
-    toFile: async (filename = "AutID.png", mimeType = "image/png") => {
+    toBuffer: async (filename = "AutID.png", mimeType = "image/png") => {
       return new Promise(async (resolve) => {
         const base64 = canvas.toDataURL("image/png");
         const base64Data = base64.replace(/^data:image\/png;base64,/, "");
         const buffer = Buffer.from(base64Data, "base64");
         // file object to be a of type File
-        const newFileName = "nodejs.png";
+        // const newFileName = "nodejs.png";
         // now buffer contains the contents of the file we just read
-        await fs.writeFile(`./${newFileName}`, buffer, "utf-8");
-        resolve(null);
+        // await fs.writeFile(`./${newFileName}`, buffer, "utf-8");
+        resolve(buffer);
       });
     },
   } as SWIDOutput;

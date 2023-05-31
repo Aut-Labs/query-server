@@ -43,7 +43,10 @@ const swagger = swaggerJSDoc(swaggerOptions);
 export class App {
   private _app: express.Application;
 
-  constructor(private autIDRouter: AutIDRouter, private taskVerifierRouter: TaskVerifierRouter) {
+  constructor(
+    private autIDRouter: AutIDRouter,
+    private taskVerifierRouter: TaskVerifierRouter
+  ) {
     this._app = express();
     this.config();
   }

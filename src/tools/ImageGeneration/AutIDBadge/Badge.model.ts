@@ -7,7 +7,7 @@ export interface SWIDParams {
   timestamp: string;
   hash: string;
   expanderAddress: string;
-  avatar?: string;
+  avatar?: Buffer;
   tokenId?: string;
   canvas?: HTMLCanvasElement;
   config?: ContentConfig;
@@ -18,7 +18,7 @@ export interface SWIDOutput {
   previewElement?: Canvas;
   download?: (filename?: string) => void;
   toBase64?: (mimeType?: string) => string;
-  toFile?: (filename?: string, mimeType?: string) => Promise<File>;
+  toFile?: (filename?: string, mimeType?: string) => Promise<Buffer>;
 }
 
 export interface QRConfig {

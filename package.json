@@ -25,6 +25,7 @@
     "@aut-labs-private/sdk": "^0.0.54",
     "axios": "^0.27.2",
     "body-parser": "^1.19.0",
+    "canvas": "^2.11.2",
     "cookie-parser": "1.4.5",
     "cors": "2.8.5",
     "dotenv": "^8.0.0",
@@ -33,6 +34,7 @@
     "express-prom-bundle": "^5.1.5",
     "express-rate-limit": "^6.3.0",
     "express-slow-down": "^1.4.0",
+    "fs-extra": "^11.1.1",
     "helmet": "^3.20.0",
     "inversify": "^5.0.1",
     "jsonwebtoken": "^9.0.0",
@@ -40,9 +42,11 @@
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.1.13",
+    "svg2img": "^1.0.0-beta.2",
     "swagger-jsdoc": "^6.2.0",
     "swagger-ui-express": "^4.3.0",
-    "winston": "^3.2.1"
+    "winston": "^3.2.1",
+    "xmldom": "^0.6.0"
   },
   "devDependencies": {
     "@types/express": "^4.17.1",

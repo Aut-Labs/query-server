@@ -13,6 +13,8 @@ import { getSigner } from "../tools/ethers";
 import { BaseNFTModel } from "@aut-labs-private/sdk/dist/models/baseNFTModel";
 import axios from "axios";
 import { PluginDefinitionType } from "@aut-labs-private/sdk/dist/models/plugin";
+import { AutIDBadgeGenerator } from "../tools/ImageGeneration/AutIDBadge/AutIDBadgeGenerator";
+import { SWIDParams } from "../tools/ImageGeneration/AutIDBadge/Badge.model";
 
 const generateNewNonce = () => {
   return `Nonce: ${Math.floor(Math.random() * 1000000).toString()}`;
@@ -178,6 +180,28 @@ export class UserController {
       }
 
       res.status(200).send(responseDaos.sort(compare));
+    } catch (e) {
+      this.loggerService.error(e);
+      res.status(500).send("Something went wrong");
+    }
+  };
+
+  public generate = async (req, res) => {
+    try {
+      const config = {
+        name: "Sasservcho",
+        role: "Member",
+        dao: "Community",
+        avatar: req.picture,
+        hash: `#12312312s`,
+        network: "mumbai",
+        expanderAddress: "0x3Dd9ca9b596465172D9247BEb0c3653d3f6f2130",
+        timestamp: `11:11:11 || 23/24/2121`,
+      } as SWIDParams;
+      const { toFile } = await AutIDBadgeGenerator(config);
+      const file = await toFile();
+
+      res.status(200).send({ file: toFile() });
     } catch (e) {
       this.loggerService.error(e);
       res.status(500).send("Something went wrong");

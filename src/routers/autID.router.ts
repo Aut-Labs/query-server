@@ -159,6 +159,8 @@ export class AutIDRouter {
       this.tempCacheController.deleteCache
     );
 
+    this._router.get("/user/generate", this.userController.generate);
+
     this._router.get("/user/nonce/:address", this.userController.getUserNonce);
 
     this._router.get("/user/daos", this.userController.getDaos);

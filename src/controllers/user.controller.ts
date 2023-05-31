@@ -83,24 +83,6 @@ const getDaoDetailsPromise = async (sdk: AutSDK, daoAddress: string) => {
   });
 };
 
-const convertFileToBuffer = (file) => {
-  return new Promise((resolve, reject) => {
-    const fileStream = fs.createReadStream(file.path);
-    const chunks = [];
-
-    fileStream.on("data", (chunk) => {
-      chunks.push(chunk);
-    });
-
-    fileStream.on("error", reject);
-
-    fileStream.on("end", () => {
-      const buffer = Buffer.concat(chunks);
-      resolve(buffer);
-    });
-  });
-};
-
 @injectable()
 export class UserController {
   constructor(private loggerService: LoggerService) {}

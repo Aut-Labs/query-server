@@ -7,7 +7,6 @@ import {
 } from "./SwBackgroundSvg";
 import { generateAutIdDAOSigil } from "../AutSIgilGenerator/SigilGenerator";
 import { Canvas, CanvasRenderingContext2D, createCanvas } from "canvas";
-import fs from "fs-extra";
 
 const drawCanvasElements = (
   canvas: Canvas,

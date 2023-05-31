@@ -15,7 +15,6 @@ import axios from "axios";
 import { PluginDefinitionType } from "@aut-labs-private/sdk/dist/models/plugin";
 import { AutIDBadgeGenerator } from "../tools/ImageGeneration/AutIDBadge/AutIDBadgeGenerator";
 import { SWIDParams } from "../tools/ImageGeneration/AutIDBadge/Badge.model";
-const fs = require("fs");
 
 const generateNewNonce = () => {
   return `Nonce: ${Math.floor(Math.random() * 1000000).toString()}`;

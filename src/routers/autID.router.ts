@@ -9,6 +9,8 @@ import {
 } from "../controllers";
 import "../passport/passport.config";
 import passport from "passport";
+const multer = require("multer");
+const upload = multer();
 
 @injectable()
 export class AutIDRouter {
@@ -157,6 +159,12 @@ export class AutIDRouter {
       "/cache/deleteCache/:cacheKey",
       passport.authenticate("jwt", { session: false }),
       this.tempCacheController.deleteCache
+    );
+
+    this._router.post(
+      "/user/generateBadge",
+      upload.any(),
+      this.userController.generate
     );
 
     this._router.get("/user/nonce/:address", this.userController.getUserNonce);

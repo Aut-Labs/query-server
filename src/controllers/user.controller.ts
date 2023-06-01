@@ -13,6 +13,8 @@ import { getSigner } from "../tools/ethers";
 import { BaseNFTModel } from "@aut-labs-private/sdk/dist/models/baseNFTModel";
 import axios from "axios";
 import { PluginDefinitionType } from "@aut-labs-private/sdk/dist/models/plugin";
+import { AutIDBadgeGenerator } from "../tools/ImageGeneration/AutIDBadge/AutIDBadgeGenerator";
+import { SWIDParams } from "../tools/ImageGeneration/AutIDBadge/Badge.model";
 
 const generateNewNonce = () => {
   return `Nonce: ${Math.floor(Math.random() * 1000000).toString()}`;
@@ -178,6 +180,49 @@ export class UserController {
       }
 
       res.status(200).send(responseDaos.sort(compare));
+    } catch (e) {
+      this.loggerService.error(e);
+      res.status(500).send("Something went wrong");
+    }
+  };
+
+  public generate = async (req, res) => {
+    try {
+      if (!req.body.config) {
+        return res.status(400).send(`"config" not provided.`);
+      }
+      const requestConfig = JSON.parse(req.body.config);
+      if (!requestConfig.name) {
+        return res.status(400).send(`"name" not provided.`);
+      }
+      if (!requestConfig.role) {
+        return res.status(400).send(`"role" not provided.`);
+      }
+      if (!requestConfig.dao) {
+        return res.status(400).send(`"dao" not provided.`);
+      }
+      if (!requestConfig.hash) {
+        return res.status(400).send(`"hash" not provided.`);
+      }
+      if (!requestConfig.network) {
+        return res.status(400).send(`"network" not provided.`);
+      }
+      if (!requestConfig.expanderAddress) {
+        return res.status(400).send(`"expanderAddress" not provided.`);
+      }
+      if (!requestConfig.timestamp) {
+        return res.status(400).send(`"timestamp" not provided.`);
+      }
+      const avatarBuffer = req.files.find(
+        (x) => x.fieldname === "avatar"
+      )?.buffer;
+      const config = {
+        avatar: avatarBuffer,
+        ...requestConfig,
+      } as SWIDParams;
+      const { toBase64 } = await AutIDBadgeGenerator(config);
+      const badge = await toBase64();
+      res.status(200).send({ badge });
     } catch (e) {
       this.loggerService.error(e);
       res.status(500).send("Something went wrong");

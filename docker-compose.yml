@@ -3,7 +3,7 @@ version: "3.9"
 services:
   aut-api:
     container_name: aut-api
-    image: node:latest
+    image: node:16.19.1
     build:
       context: .
       dockerfile: Dockerfile

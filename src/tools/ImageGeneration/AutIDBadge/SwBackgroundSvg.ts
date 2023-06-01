@@ -54,18 +54,8 @@ export const AutMumbaiLabel = async (): Promise<Image> => {
   <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="224" height="90.279" viewBox="0 0 224 90.279">    
 <style>
     @font-face {
-      font-family: 'FractulAlt-Bold';
+      font-family: 'FractulAlt';
       src: url(${FractulAltBoldWoffBase64}) format('woff');
-    }
-    
-    @font-face {
-      font-family: 'FractulAlt-Light';
-      src: url(${FractulAltLightWoffBase64}) format('woff');
-    }
-
-    @font-face {
-      font-family: 'Fractul-Regular';
-      src: url(${FractulRegularWoffBase64}) format('woff');
     }
 </style>
   <defs>
@@ -167,17 +157,17 @@ export const AutBackgroundSvg = async ({
   <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="506.27" height="762.5" viewBox="0 0 506.27 762.5">    
 <style>
     @font-face {
-      font-family: 'FractulAlt-Bold';
+      font-family: 'FractulAlt';
       src: url(${FractulAltBoldWoffBase64}) format('woff');
     }
     
     @font-face {
-      font-family: 'FractulAlt-Light';
+      font-family: 'FractulAlt';
       src: url(${FractulAltLightWoffBase64}) format('woff');
     }
 
     @font-face {
-      font-family: 'Fractul-Regular';
+      font-family: 'Fractul';
       src: url(${FractulRegularWoffBase64}) format('woff');
     }
 </style>
@@ -320,10 +310,10 @@ export const AutBackgroundSvg = async ({
   </g> 
     <text id="Āut_ID" data-name="Āut ID" transform="translate(52.635 77.25)" fill="#ebebf2" font-size="37" font-family="FractulAlt-Bold" font-weight="700"><tspan x="0" y="0">Āut</tspan><tspan y="0" xml:space="preserve" font-family="FractulAlt-Light" font-weight="300"> ID</tspan></text> 
   <text id="${name}" data-name="${name}" transform="translate(85.635 496.25)" fill="#262626" font-size="40" font-family="FractulAlt-Bold" font-weight="700" letter-spacing="0.001em"><tspan x="0" y="0">${name}</tspan></text>
-  <text id="${timestamp}" data-name="${timestamp}" transform="translate(140.635 538.25)" fill="#262626" font-size="12" font-family="Fractul-Regular" letter-spacing="0.02em"><tspan x="0" y="0">${timestamp}</tspan></text>
-  <text id="Rabit_Whole" data-name="${dao}" transform="translate(140.635 565.25)" fill="#262626" font-size="12" font-family="Fractul-Regular" letter-spacing="0.02em"><tspan x="0" y="0">${dao}</tspan></text>
-  <text id="${role}" transform="translate(140.635 585.25)" fill="#262626" font-size="12" font-family="Fractul-Regular" letter-spacing="0.02em"><tspan x="0" y="0">${role}</tspan></text>
-  <text id="_039531" data-name="${hash}" transform="translate(85.635 624.25)" fill="#fff" font-size="14" font-family="Fractul-Regular" letter-spacing="0.02em" style="mix-blend-mode: difference;isolation: isolate"><tspan x="0" y="0">${hash}</tspan></text>
+  <text id="${timestamp}" data-name="${timestamp}" transform="translate(140.635 538.25)" fill="#262626" font-size="12" font-family="Fractul" letter-spacing="0.02em"><tspan x="0" y="0">${timestamp}</tspan></text>
+  <text id="Rabit_Whole" data-name="${dao}" transform="translate(140.635 565.25)" fill="#262626" font-size="12" font-family="Fractul" letter-spacing="0.02em"><tspan x="0" y="0">${dao}</tspan></text>
+  <text id="${role}" transform="translate(140.635 585.25)" fill="#262626" font-size="12" font-family="Fractul" letter-spacing="0.02em"><tspan x="0" y="0">${role}</tspan></text>
+  <text id="_039531" data-name="${hash}" transform="translate(85.635 624.25)" fill="#fff" font-size="14" font-family="Fractul" letter-spacing="0.02em" style="mix-blend-mode: difference;isolation: isolate"><tspan x="0" y="0">${hash}</tspan></text>
   <text id="Joined" transform="translate(85.635 538.25)" fill="#256bb0" font-size="12" font-family="FractulAlt-Bold" font-weight="700" letter-spacing="0.02em"><tspan x="0" y="0">Joined</tspan></text>
   <text id="DAO" transform="translate(85.635 565.25)" fill="#256bb0" font-size="12" font-family="FractulAlt-Bold" font-weight="700" letter-spacing="0.02em"><tspan x="0" y="0">DAO</tspan></text>
   <text id="Role" transform="translate(85.635 585.25)" fill="#256bb0" font-size="12" font-family="FractulAlt-Bold" font-weight="700" letter-spacing="0.02em"><tspan x="0" y="0">Role</tspan></text>

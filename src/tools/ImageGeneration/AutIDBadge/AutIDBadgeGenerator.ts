@@ -60,7 +60,7 @@ const drawCanvasElements = (
     const { toBase64 } = await generateAutIdDAOSigil(expanderAddress);
     const sigilImage = await LoadImage(toBase64());
     const { iwScaled, ihScaled } = ScaleImage(245, 245, sigilImage);
-    ctx.drawImage(sigilImage, 242, 460, iwScaled, ihScaled);
+    ctx.drawImage(sigilImage, 253, 460, iwScaled, ihScaled);
   };
 
   return {

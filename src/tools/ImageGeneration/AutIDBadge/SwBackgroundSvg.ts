@@ -3,32 +3,82 @@
 import { FractulAltBoldWoffBase64 } from "../Fractul/FractulAltBold/base64";
 import { FractulAltLightWoffBase64 } from "../Fractul/FractulAltLight/base64";
 import { FractulRegularWoffBase64 } from "../Fractul/FractulRegular/base64";
-import svg2img from "svg2img";
 import { Image } from "canvas";
+import { Resvg } from "@resvg/resvg-js";
 const fs = require("fs");
 
-async function convertSvgToImage(svgString, name) {
-  return new Promise<Image>((resolve, reject) => {
-    svg2img(svgString, (error, buffer) => {
-      if (error) {
-        reject(error);
-      } else {
-        // fs.writeFileSync(name + ".png", buffer);
-        const img = new Image();
-
-        img.onload = function () {
-          resolve(img);
-        };
-
-        img.onerror = function (error) {
-          reject(error);
-        };
-
-        img.src = buffer;
-      }
-    });
+const createSvgFileFromString = (svgString): Promise<Buffer> => {
+  return new Promise<Buffer>((resolve, reject) => {
+    const svgData = Buffer.from(svgString, "utf-8");
+    resolve(svgData);
   });
+};
+
+async function convertSvgToImage(svgString, name) {
+  const svg = await createSvgFileFromString(svgString);
+  // const opts = {
+  //   background: "rgba(238, 235, 230, .9)",
+  //   fitTo: {
+  //     mode: "width",
+  //     value: 1200,
+  //   },
+  //   font: {
+  //     fontFiles: ["./example/SourceHanSerifCN-Light-subset.ttf"], // Load custom fonts.
+  //     loadSystemFonts: false, // It will be faster to disable loading system fonts.
+  //     defaultFontFamily: "Source Han Serif CN Light",
+  //   },
+  //   // imageRendering: 1,
+  //   // shapeRendering: 2,
+  //   logLevel: "debug", // Default Value: error
+  // };
+  const resvg = new Resvg(svg);
+  const pngData = resvg.render();
+  const pngBuffer = pngData.asPng();
+
+  return new Promise<Image>((resolve, reject) => {
+    // fs.writeFileSync(name + ".png", pngBuffer);
+    const img = new Image();
+
+    img.onload = function () {
+      resolve(img);
+    };
+
+    img.onerror = function (error) {
+      reject(error);
+    };
+
+    img.src = pngBuffer;
+  });
+
+  // return pngBuffer;
+
+  // console.info("Original SVG Size:", `${resvg.width} x ${resvg.height}`);
+  // console.info("Output PNG Size  :", `${pngData.width} x ${pngData.height}`);
+  // console.info("✨ Done in", performance.now() - t, "ms");
 }
+
+// async function convertSvgToImage(svgString, name) {
+//   return new Promise<Image>((resolve, reject) => {
+//     svg2img(svgString, (error, buffer) => {
+//       if (error) {
+//         reject(error);
+//       } else {
+//         // fs.writeFileSync(name + ".png", buffer);
+//         const img = new Image();
+
+//         img.onload = function () {
+//           resolve(img);
+//         };
+
+//         img.onerror = function (error) {
+//           reject(error);
+//         };
+
+//         img.src = buffer;
+//       }
+//     });
+//   });
+// }
 
 export const AutAvatarGradient = async (): Promise<Image> => {
   const stringSvg = `

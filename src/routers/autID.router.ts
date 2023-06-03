@@ -149,6 +149,8 @@ export class AutIDRouter {
       this.tempCacheController.addOrUpdateCache
     );
 
+    this._router.get("/cache/getDAOData/:daoAddress", this.tempCacheController.getDAOBetaProgress);
+
     this._router.get(
       "/cache/getCache/:cacheKey",
       passport.authenticate("jwt", { session: false }),

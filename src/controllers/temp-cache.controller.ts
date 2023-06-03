@@ -72,6 +72,31 @@ const parseToResponseModel = (request: TempCache) => {
 export class TempCacheController {
   constructor(private loggerService: LoggerService) {}
 
+  public getDAOBetaProgress = async (req: any, res: Response) => {
+    try {
+      const { daoAddress } = req.params;
+      let parsedResult = null;
+      try {
+        const found = await TempCacheModel.find({
+          cacheKey: "UserPhases",
+        });
+
+        parsedResult = found.map((obj) => {
+          let updated_object = parseToResponseModel(obj?.toObject());
+          updated_object['createdAt'] = obj.createdAt;
+          updated_object['updatedAt'] = obj.updatedAt;
+          return updated_object
+        }).filter((obj) => obj['daoAddress'] === daoAddress);
+      } catch (error) {}
+      return res.status(200).send(parsedResult);
+    } catch (err) {
+      this.loggerService.error(err);
+      return res
+        .status(500)
+        .send({ error: "Something went wrong, please try again later." });
+    }
+  };
+
   public getCache = async (req: any, res: Response) => {
     try {
       const { address } = req.user;

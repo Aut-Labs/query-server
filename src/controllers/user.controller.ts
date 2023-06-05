@@ -107,9 +107,9 @@ export class UserController {
 
       await sdk.init(signer as any, networkConfig.contracts);
       const daosRes = await sdk.daoExpanderRegistry.contract.getDAOExpanders();
-      const autDaoRes = await sdk.autDaoRegistry.contract.getAutDAOs();
+      const novaRes = await sdk.novaRegistry.contract.getNovas();
 
-      const allDaos = [...daosRes.data, ...autDaoRes.data];
+      const allDaos = [...daosRes.data, ...novaRes.data];
 
       for (let index = 0; index < allDaos.length; index++) {
         const daoAddress = allDaos[index];
@@ -139,10 +139,10 @@ export class UserController {
 
       await sdk.init(signer as any, networkConfig.contracts);
       const daosRes = await sdk.daoExpanderRegistry.contract.getDAOExpanders();
-      const autDaoRes = await sdk.autDaoRegistry.contract.getAutDAOs();
+      const novaRes = await sdk.novaRegistry.contract.getNovas();
 
       const MAX_DAOS = -30;
-      const allDaos = [...daosRes.data, ...autDaoRes.data].splice(MAX_DAOS);
+      const allDaos = [...daosRes.data, ...novaRes.data].splice(MAX_DAOS);
 
       const responseDaos = [];
 

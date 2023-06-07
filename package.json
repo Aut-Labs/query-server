@@ -21,8 +21,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@aut-labs-private/abi-types": "^0.0.34",
-    "@aut-labs-private/sdk": "^0.0.54",
+    "@aut-labs-private/abi-types": "^0.0.36",
+    "@aut-labs-private/sdk": "^0.0.58",
     "@resvg/resvg-js": "^2.4.1",
     "@types/node": "latest",
     "axios": "^0.27.2",

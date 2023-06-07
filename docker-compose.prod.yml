@@ -1,9 +1,9 @@
-version: '3.4'
+version: "3.9"
 
 services:
-  aut-api:
-    container_name: aut-api
-    image: node
+  aut-api-prod:
+    container_name: aut-api-prod
+    image: node:16.19.1
     build:
       context: .
       dockerfile: Dockerfile
@@ -11,13 +11,27 @@ services:
       - .:/app
     working_dir: /app
     environment:
-      - SERVER_PORT=4006
-      - NODE_ENV=production
+      - ENVIRONMENT_IP=localhost
+      - SERVER_PORT=4005
+      - NODE_ENV=development
     ports:
-      - "4006:4006"
-    command: /bin/bash -c 'yarn; yarn start;'
-    networks:
-      - aut-api
+      - "4006:4005"
+    depends_on:
+      - aut-db-prod
+    deploy:
+      restart_policy:
+        condition: on-failure
 
-networks:
-  aut-api:
+  aut-db-prod:
+    container_name: aut-db-prod
+    image: mongo
+    volumes:
+      - mongodataprod:/data/db
+    ports:
+      - "27018:27017"
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+volumes:
+  mongodataprod:

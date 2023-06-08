@@ -10,6 +10,8 @@ export interface NetworkContracts {
   novaRegistryAddress: string;
   novaFactoryAddress: string;
   hackerDaoAddress: string;
+  allowListAddress: string;
+  offchainVerifierAddress: string;
   daoTypesAddress: string;
   pluginRegistryAddress: string;
   moduleRegistryAddress: string;

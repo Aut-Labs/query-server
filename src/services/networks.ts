@@ -17,6 +17,8 @@ export const GoerliNetwork = (): NetworkConfig => ({
     novaFactoryAddress: process.env.GOERLI_AUT_DAO_FACTORY_ADDRESS,
     hackerDaoAddress: process.env.GOERLI_HACKERS_DAO_ADDRESS,
     daoTypesAddress: process.env.GOERLI_DAO_TYPES_ADDRESS,
+    allowListAddress: process.env.GOERLI_ALLOW_LIST_ADDRESS,
+    offchainVerifierAddress: process.env.GOERLI_OFFCHAIN_VERIFIER_ADDRESS,
     pluginRegistryAddress: process.env.GOERLI_PLUGIN_REGISTRY_ADDRESS,
     moduleRegistryAddress: process.env.GOERLI_MODULE_REGISTRY_ADDRESS,
     questOffchainTaskFactory:
@@ -42,6 +44,8 @@ export const MumbaiNetwork = (): NetworkConfig => ({
     novaFactoryAddress: process.env.MUMBAI_AUT_DAO_FACTORY_ADDRESS,
     hackerDaoAddress: process.env.MUMBAI_HACKERS_DAO_ADDRESS,
     daoTypesAddress: process.env.MUMBAI_DAO_TYPES_ADDRESS,
+    allowListAddress: process.env.MUMBAI_ALLOW_LIST_ADDRESS,
+    offchainVerifierAddress: process.env.MUMBAI_OFFCHAIN_VERIFIER_ADDRESS,
     pluginRegistryAddress: process.env.MUMBAI_PLUGIN_REGISTRY_ADDRESS,
     moduleRegistryAddress: process.env.MUMBAI_MODULE_REGISTRY_ADDRESS,
     questOffchainTaskFactory:

@@ -15,6 +15,12 @@ import axios from "axios";
 import { PluginDefinitionType } from "@aut-labs-private/sdk/dist/models/plugin";
 import { AutIDBadgeGenerator } from "../tools/ImageGeneration/AutIDBadge/AutIDBadgeGenerator";
 import { SWIDParams } from "../tools/ImageGeneration/AutIDBadge/Badge.model";
+import NovaContract from "@aut-labs-private/sdk/dist/contracts/nova";
+
+const getHiddenAdminAddressesArray = () => {
+  if (!process.env.HIDDEN_ADMIN_ADDRESSES) return [];
+  return process.env.HIDDEN_ADMIN_ADDRESSES.split(",");
+};
 
 const generateNewNonce = () => {
   return `Nonce: ${Math.floor(Math.random() * 1000000).toString()}`;
@@ -50,31 +56,80 @@ const ipfsCIDToHttpUrl = (url: string, isJson = false) => {
 const getDaoDetailsPromise = async (sdk: AutSDK, daoAddress: string) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const pluginDefinition =
-        await sdk.pluginRegistry.getPluginDefinitionByType(daoAddress, 1);
-      if (pluginDefinition.data) {
-        const expander = sdk.initService<DAOExpander>(DAOExpander, daoAddress);
-        const daoAdminsResponse = await expander.contract.admins.getAdmins();
-        const daoData = await expander.contract.metadata.getMetadataUri();
-        const onboardingQuest = sdk.initService<QuestOnboarding>(
-          QuestOnboarding,
-          pluginDefinition.data
-        );
-        const quests = await onboardingQuest.getAllQuests();
-        const activeQuests = quests?.data?.filter((x) => x.active);
-        if (activeQuests.length !== quests?.data?.length) {
-          resolve(null);
-        } else {
-          resolve({
-            onboardingQuestAddress: onboardingQuest.contract.contract.address,
-            daoAddress,
-            admin: daoAdminsResponse.data[0],
-            daoMetadataUri: daoData.data,
-            quests: quests.data,
-          });
-        }
-      } else {
+      const nova = sdk.initService<NovaContract>(NovaContract, daoAddress);
+      const admins = await nova.contract.getAdmins();
+      const hiddenAdmins = getHiddenAdminAddressesArray();
+      if (hiddenAdmins.includes(admins[0])) {
         resolve(null);
+      } else {
+        const pluginDefinition =
+          await sdk.pluginRegistry.getPluginDefinitionByType(daoAddress, 1);
+        if (pluginDefinition.data) {
+          const expander = sdk.initService<DAOExpander>(
+            DAOExpander,
+            daoAddress
+          );
+          const daoAdminsResponse = await expander.contract.admins.getAdmins();
+          const daoData = await expander.contract.metadata.getMetadataUri();
+          const onboardingQuest = sdk.initService<QuestOnboarding>(
+            QuestOnboarding,
+            pluginDefinition.data
+          );
+          const quests = await onboardingQuest.getAllQuests();
+          const activeQuests = quests?.data?.filter((x) => x.active);
+          if (activeQuests.length !== quests?.data?.length) {
+            resolve(null);
+          } else {
+            resolve({
+              onboardingQuestAddress: onboardingQuest.contract.contract.address,
+              daoAddress,
+              admin: daoAdminsResponse.data[0],
+              daoMetadataUri: daoData.data,
+              quests: quests.data,
+            });
+          }
+        } else {
+          resolve(null);
+        }
+      }
+    } catch (e) {
+      return reject(e);
+    }
+  });
+};
+
+const getLeaderBoardDaoDetailsPromise = async (
+  sdk: AutSDK,
+  daoAddress: string
+) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const nova = sdk.initService<NovaContract>(NovaContract, daoAddress);
+      const admins = await nova.contract.getAdmins();
+      const hiddenAdmins = getHiddenAdminAddressesArray();
+      if (hiddenAdmins.includes(admins[0])) {
+        resolve(null);
+      } else {
+        const expander = sdk.initService<DAOExpander>(DAOExpander, daoAddress);
+        const daoData = await expander.contract.metadata.getMetadataUri();
+
+        let members = [];
+        let totalMembers = 0;
+
+        try {
+          const membersResponse =
+            await expander.contract.members.getAllMembers();
+          members = membersResponse.data;
+          totalMembers = membersResponse.data.length;
+        } catch (error) {
+          resolve(null);
+        }
+        resolve({
+          daoAddress,
+          daoMetadataUri: daoData.data,
+          members,
+          totalMembers,
+        });
       }
     } catch (e) {
       reject(e);
@@ -131,6 +186,7 @@ export class UserController {
   };
 
   public getLeaderDAOs = async (req, res) => {
+    const promises = [];
     try {
       const sdk = AutSDK.getInstance();
       const networkConfig = getNetworkConfig("mumbai", "testing" as any);
@@ -144,29 +200,9 @@ export class UserController {
       const MAX_DAOS = -30;
       const allDaos = [...daosRes.data, ...novaRes.data].splice(MAX_DAOS);
 
-      const responseDaos = [];
-
       for (let index = 0; index < allDaos.length; index++) {
         const daoAddress = allDaos[index];
-        const expander = sdk.initService<DAOExpander>(DAOExpander, daoAddress);
-        const daoData = await expander.contract.metadata.getMetadataUri();
-
-        let members = [];
-        let totalMembers = 0;
-
-        try {
-          const membersResponse =
-            await expander.contract.members.getAllMembers();
-          members = membersResponse.data;
-          totalMembers = membersResponse.data.length;
-        } catch (error) {}
-
-        responseDaos.push({
-          daoAddress,
-          daoMetadataUri: daoData.data,
-          members,
-          totalMembers,
-        });
+        promises.push(getLeaderBoardDaoDetailsPromise(sdk, daoAddress));
       }
 
       function compare(a, b) {
@@ -179,7 +215,14 @@ export class UserController {
         return 0;
       }
 
-      res.status(200).send(responseDaos.sort(compare));
+      await Promise.all(promises)
+        .then((values) => {
+          const pruned = values.filter((x) => x);
+          return res.status(200).send(pruned.sort(compare));
+        })
+        .catch((e) => {
+          throw e;
+        });
     } catch (e) {
       this.loggerService.error(e);
       res.status(500).send("Something went wrong");

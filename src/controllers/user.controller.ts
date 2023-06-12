@@ -110,26 +110,35 @@ const getLeaderBoardDaoDetailsPromise = async (
       if (hiddenAdmins.includes(admins[0])) {
         resolve(null);
       } else {
-        const expander = sdk.initService<DAOExpander>(DAOExpander, daoAddress);
-        const daoData = await expander.contract.metadata.getMetadataUri();
+        const pluginDefinition =
+          await sdk.pluginRegistry.getPluginDefinitionByType(daoAddress, 1);
+        if (pluginDefinition.data) {
+          const expander = sdk.initService<DAOExpander>(
+            DAOExpander,
+            daoAddress
+          );
+          const daoData = await expander.contract.metadata.getMetadataUri();
 
-        let members = [];
-        let totalMembers = 0;
+          let members = [];
+          let totalMembers = 0;
 
-        try {
-          const membersResponse =
-            await expander.contract.members.getAllMembers();
-          members = membersResponse.data;
-          totalMembers = membersResponse.data.length;
-        } catch (error) {
+          try {
+            const membersResponse =
+              await expander.contract.members.getAllMembers();
+            members = membersResponse.data;
+            totalMembers = membersResponse.data.length;
+          } catch (error) {
+            resolve(null);
+          }
+          resolve({
+            daoAddress,
+            daoMetadataUri: daoData.data,
+            members,
+            totalMembers,
+          });
+        } else {
           resolve(null);
         }
-        resolve({
-          daoAddress,
-          daoMetadataUri: daoData.data,
-          members,
-          totalMembers,
-        });
       }
     } catch (e) {
       reject(e);
@@ -154,7 +163,6 @@ export class UserController {
   public getDaos = async (req, res) => {
     const promises = [];
     try {
-      console.time("getDaos");
       const sdk = AutSDK.getInstance();
       const networkConfig = getNetworkConfig("mumbai", "testing" as any);
 

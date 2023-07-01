@@ -76,8 +76,8 @@ const getDaoDetailsPromise = async (sdk: AutSDK, daoAddress: string) => {
             pluginDefinition.data
           );
           const quests = await onboardingQuest.getAllQuests();
-          const isThereAnyActiveQuest = quests?.data?.some((x) => x.active);
-          if (!isThereAnyActiveQuest) {
+          const activeQuests = quests?.data?.filter((x) => x.active);
+          if (!activeQuests?.length) {
             resolve(null);
           } else {
             resolve({
@@ -85,7 +85,7 @@ const getDaoDetailsPromise = async (sdk: AutSDK, daoAddress: string) => {
               daoAddress,
               admin: daoAdminsResponse.data[0],
               daoMetadataUri: daoData.data,
-              quests: quests.data,
+              quests: activeQuests,
             });
           }
         } else {

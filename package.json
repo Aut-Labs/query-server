@@ -22,7 +22,7 @@
   "license": "ISC",
   "dependencies": {
     "@aut-labs-private/abi-types": "^0.0.38",
-    "@aut-labs-private/sdk": "^0.0.67",
+    "@aut-labs-private/sdk": "^0.0.68",
     "@resvg/resvg-js": "^2.4.1",
     "@types/node": "latest",
     "axios": "^0.27.2",

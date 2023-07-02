@@ -76,11 +76,11 @@ const getDaoDetailsPromise = async (sdk: AutSDK, daoAddress: string) => {
             pluginDefinition.data
           );
           const quests = await onboardingQuest.getAllQuests();
-          const { pastQuests, validQuests, allQuests } = (
+          const { pastQuests, allQuests, activeQuests } = (
             quests?.data || []
           ).reduce((prev, curr) => {
-            if (curr.tasksCount > 1) {
-              prev.validQuests += 1;
+            if (curr.active) {
+              prev.activeQuests += 1;
             }
             if (curr.isExpired) {
               prev.pastQuests += 1;
@@ -88,14 +88,14 @@ const getDaoDetailsPromise = async (sdk: AutSDK, daoAddress: string) => {
             prev.allQuests.push(curr);
             return prev;
           }, {
+            activeQuests: 0,
             pastQuests: 0,
-            validQuests: 0,
             allQuests: [],
           });
 
-          const isThereAtLeastOneValidQuest = validQuests > 0;
+          const isThereAtLeastOneActive = activeQuests > 0;
           const isNovaExpired = pastQuests === allQuests.length;
-          if (!isThereAtLeastOneValidQuest) {
+          if (!isThereAtLeastOneActive) {
             resolve(null);
           } else {
             resolve({

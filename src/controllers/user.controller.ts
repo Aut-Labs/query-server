@@ -7,15 +7,15 @@ import AutSDK, {
   DAOExpander,
   fetchMetadata,
   QuestOnboarding,
-} from "@aut-labs-private/sdk";
+} from "@aut-labs/sdk";
 import { getNetworkConfig } from "../services";
 import { getSigner } from "../tools/ethers";
-import { BaseNFTModel } from "@aut-labs-private/sdk/dist/models/baseNFTModel";
+import { BaseNFTModel } from "@aut-labs/sdk/dist/models/baseNFTModel";
 import axios from "axios";
-import { PluginDefinitionType } from "@aut-labs-private/sdk/dist/models/plugin";
+import { PluginDefinitionType } from "@aut-labs/sdk/dist/models/plugin";
 import { AutIDBadgeGenerator } from "../tools/ImageGeneration/AutIDBadge/AutIDBadgeGenerator";
 import { SWIDParams } from "../tools/ImageGeneration/AutIDBadge/Badge.model";
-import NovaContract from "@aut-labs-private/sdk/dist/contracts/nova";
+import NovaContract from "@aut-labs/sdk/dist/contracts/nova";
 
 const getHiddenAdminAddressesArray = () => {
   if (!process.env.HIDDEN_ADMIN_ADDRESSES) return [];

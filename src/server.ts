@@ -5,7 +5,7 @@ import { App } from "./app";
 import { LoggerService, getNetworkConfig } from "./services";
 import { connect } from "mongoose";
 import { getSigner } from "./tools/ethers";
-import AutSDK from "@aut-labs-private/sdk";
+import AutSDK from "@aut-labs/sdk";
 // initialize configuration
 dotenv.config();
 

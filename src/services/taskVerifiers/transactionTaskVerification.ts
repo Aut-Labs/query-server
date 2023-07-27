@@ -2,9 +2,9 @@ export * from "../logger.service";
 import axios from "axios";
 import AutSDK, {
   QuestOnboarding, Task,
-} from "@aut-labs-private/sdk";
+} from "@aut-labs/sdk";
 import { getJSONFromURI, ipfsCIDToHttpUrl } from "../../tools/ethers";
-import { PluginDefinitionType } from "@aut-labs-private/sdk/dist/models/plugin";
+import { PluginDefinitionType } from "@aut-labs/sdk/dist/models/plugin";
 import { FinalizeTaskResult } from "../../models/finalizeTask";
 import { supportFunction } from "../../constants/supportedNetworks";
 

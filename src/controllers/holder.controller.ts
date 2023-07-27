@@ -3,10 +3,10 @@ import { injectable } from "inversify";
 import { Response } from "express";
 import { getNetworkConfig, getNetworksConfig } from "../services";
 import { getSigner } from "../tools/ethers";
-import AutSDK from "@aut-labs-private/sdk";
+import AutSDK from "@aut-labs/sdk";
 import { Holder } from "../models/holder";
 import { ethers } from "ethers";
-import { AutIDQuery } from "@aut-labs-private/sdk/dist/services/autID.service";
+import { AutIDQuery } from "@aut-labs/sdk/dist/services/autID.service";
 
 @injectable()
 export class HoldersController {

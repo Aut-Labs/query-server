@@ -1,7 +1,7 @@
 import { LoggerService } from "../services/logger.service";
 import { injectable } from "inversify";
 import { Response } from "express";
-import AutSDK, { DAOExpander } from "@aut-labs-private/sdk";
+import AutSDK, { DAOExpander } from "@aut-labs/sdk";
 import { QuestionsModel } from "../models/question";
 
 const verifyIsAdmin = async (

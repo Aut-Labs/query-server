@@ -3,16 +3,9 @@ import { injectable } from "inversify";
 import { UserModel } from "../models/user";
 import jwt from "jsonwebtoken";
 import { verifyMessage } from "@ethersproject/wallet";
-import AutSDK, {
-  DAOExpander,
-  fetchMetadata,
-  QuestOnboarding,
-} from "@aut-labs/sdk";
+import AutSDK, { DAOExpander, QuestOnboarding } from "@aut-labs/sdk";
 import { getNetworkConfig } from "../services";
 import { getSigner } from "../tools/ethers";
-import { BaseNFTModel } from "@aut-labs/sdk/dist/models/baseNFTModel";
-import axios from "axios";
-import { PluginDefinitionType } from "@aut-labs/sdk/dist/models/plugin";
 import { AutIDBadgeGenerator } from "../tools/ImageGeneration/AutIDBadge/AutIDBadgeGenerator";
 import { SWIDParams } from "../tools/ImageGeneration/AutIDBadge/Badge.model";
 import NovaContract from "@aut-labs/sdk/dist/contracts/nova";

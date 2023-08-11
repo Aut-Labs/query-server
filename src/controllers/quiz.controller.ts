@@ -55,7 +55,7 @@ export class QuizController {
         return res.status(400).send("Task Id not provided.");
       }
       const isAdmin = await verifyIsAdmin(
-        req.user.address,
+        req.body.address,
         req.body.taskAddress
       );
 
@@ -89,7 +89,7 @@ export class QuizController {
         return res.status(400).send("Task Id not provided.");
       }
       const isAdmin = await verifyIsAdmin(
-        req.user.address,
+        req.body.address,
         req.body.taskAddress
       );
 
@@ -131,8 +131,8 @@ export class QuizController {
       }
 
       const isAdmin = await verifyIsAdmin(
-        req.user.address,
-        req.body.taskAddress
+        req.query.address,
+        req.params.taskAddress
       );
 
       if (!isAdmin) {

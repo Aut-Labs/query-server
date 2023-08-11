@@ -145,7 +145,7 @@ export class AutIDRouter {
 
     this._router.post(
       "/cache/addOrUpdateCache/:cacheKey",
-      passport.authenticate("jwt", { session: false }),
+      // passport.authenticate("jwt", { session: false }),
       this.tempCacheController.addOrUpdateCache
     );
 
@@ -156,13 +156,13 @@ export class AutIDRouter {
 
     this._router.get(
       "/cache/getCache/:cacheKey",
-      passport.authenticate("jwt", { session: false }),
+      // passport.authenticate("jwt", { session: false }),
       this.tempCacheController.getCache
     );
 
     this._router.delete(
       "/cache/deleteCache/:cacheKey",
-      passport.authenticate("jwt", { session: false }),
+      // passport.authenticate("jwt", { session: false }),
       this.tempCacheController.deleteCache
     );
 
@@ -204,21 +204,11 @@ export class AutIDRouter {
       this.userController.getUser
     );
 
-    this._router.post(
-      "/quiz",
-      passport.authenticate("jwt", { session: false }),
-      this.quizController.saveQestions
-    );
-
-    this._router.post(
-      "/removeQuiz",
-      passport.authenticate("jwt", { session: false }),
-      this.quizController.deleteQestions
-    );
+    this._router.post("/quiz", this.quizController.saveQestions);
+    this._router.post("/removeQuiz", this.quizController.deleteQestions);
 
     this._router.get(
       "/quizAnswers/:taskAddress",
-      passport.authenticate("jwt", { session: false }),
       this.quizController.getQuestionsAndAnswers
     );
 

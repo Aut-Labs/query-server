@@ -17,7 +17,7 @@ export class TaskVerifierController {
       const pluginAddress: string = req.body.onboardingPluginAddress;
       const taskAddress: string = req.body.taskAddress;
       const taskId: number = req.body.taskId;
-      const submitter: string = req.user.address;
+      const submitter: string = req.body.address;
       console.log('submitter', submitter);
       const finalizedResult = await verifyTransaction(
         pluginAddress,
@@ -38,7 +38,7 @@ export class TaskVerifierController {
 
   public verifyQuizTask = async (req: any, res: Response) => {
     try {
-      const submitter: string = req.user.address;
+      const submitter: string = req.body.address;
 
       const onboardingPluginAddress: string = req.body.onboardingPluginAddress;
       if (!onboardingPluginAddress) {
@@ -84,7 +84,7 @@ export class TaskVerifierController {
 
   public verifyDiscordJoinTask = async (req: any, res: Response) => {
     try {
-      const submitter: string = req.user.address;
+      const submitter: string = req.body.address;
       console.log('submitter', submitter);
 
       const onboardingPluginAddress: string = req.body.onboardingPluginAddress;

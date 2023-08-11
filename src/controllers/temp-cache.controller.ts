@@ -81,12 +81,14 @@ export class TempCacheController {
           cacheKey: "UserPhases",
         });
 
-        parsedResult = found.map((obj) => {
-          let updated_object = parseToResponseModel(obj?.toObject());
-          updated_object['createdAt'] = obj.createdAt;
-          updated_object['updatedAt'] = obj.updatedAt;
-          return updated_object
-        }).filter((obj) => obj['daoAddress'] === daoAddress);
+        parsedResult = found
+          .map((obj) => {
+            let updated_object = parseToResponseModel(obj?.toObject());
+            updated_object["createdAt"] = obj.createdAt;
+            updated_object["updatedAt"] = obj.updatedAt;
+            return updated_object;
+          })
+          .filter((obj) => obj["daoAddress"] === daoAddress);
       } catch (error) {}
       return res.status(200).send(parsedResult);
     } catch (err) {
@@ -99,8 +101,8 @@ export class TempCacheController {
 
   public getCache = async (req: any, res: Response) => {
     try {
-      const { address } = req.user;
       const { cacheKey } = req.params;
+      const { address } = req.query;
       let parsedResult = null;
       try {
         const found = await TempCacheModel.findOne({
@@ -109,8 +111,8 @@ export class TempCacheController {
         });
 
         let updated_object = parseToResponseModel(found?.toObject());
-        updated_object['createdAt'] = found.createdAt;
-        updated_object['updatedAt'] = found.updatedAt;
+        updated_object["createdAt"] = found.createdAt;
+        updated_object["updatedAt"] = found.updatedAt;
         parsedResult = updated_object;
       } catch (error) {}
       return res.status(200).send(parsedResult);
@@ -124,8 +126,8 @@ export class TempCacheController {
 
   public deleteCache = async (req: any, res: Response) => {
     try {
-      const { address } = req.user;
       const { cacheKey } = req.params;
+      const { address } = req.query;
       const result = await TempCacheModel.deleteOne({
         address: address.toLowerCase(),
         cacheKey,
@@ -160,8 +162,8 @@ export class TempCacheController {
       });
 
       let updated_object = parseToResponseModel(found?.toObject());
-      updated_object['createdAt'] = found.createdAt;
-      updated_object['updatedAt'] = found.updatedAt;
+      updated_object["createdAt"] = found.createdAt;
+      updated_object["updatedAt"] = found.updatedAt;
       return res.status(200).send(updated_object);
     } catch (error) {
       this.loggerService.error(error);

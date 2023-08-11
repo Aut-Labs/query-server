@@ -16,6 +16,7 @@ import { PluginDefinitionType } from "@aut-labs/sdk/dist/models/plugin";
 import { AutIDBadgeGenerator } from "../tools/ImageGeneration/AutIDBadge/AutIDBadgeGenerator";
 import { SWIDParams } from "../tools/ImageGeneration/AutIDBadge/Badge.model";
 import NovaContract from "@aut-labs/sdk/dist/contracts/nova";
+import { AddressModel } from "../models/address";
 
 const getHiddenAdminAddressesArray = () => {
   if (!process.env.HIDDEN_ADMIN_ADDRESSES) return [];
@@ -78,20 +79,23 @@ const getDaoDetailsPromise = async (sdk: AutSDK, daoAddress: string) => {
           const quests = await onboardingQuest.getAllQuests();
           const { pastQuests, allQuests, activeQuests } = (
             quests?.data || []
-          ).reduce((prev, curr) => {
-            if (curr.active) {
-              prev.activeQuests += 1;
+          ).reduce(
+            (prev, curr) => {
+              if (curr.active) {
+                prev.activeQuests += 1;
+              }
+              if (curr.isExpired) {
+                prev.pastQuests += 1;
+              }
+              prev.allQuests.push(curr);
+              return prev;
+            },
+            {
+              activeQuests: 0,
+              pastQuests: 0,
+              allQuests: [],
             }
-            if (curr.isExpired) {
-              prev.pastQuests += 1;
-            }
-            prev.allQuests.push(curr);
-            return prev;
-          }, {
-            activeQuests: 0,
-            pastQuests: 0,
-            allQuests: [],
-          });
+          );
 
           const isThereAtLeastOneActive = activeQuests > 0;
           const isNovaExpired = pastQuests === allQuests.length;
@@ -354,6 +358,108 @@ export class UserController {
       } else {
         res.status(404).send("User does not exist");
       }
+    } catch (e) {
+      this.loggerService.error(e);
+      res.status(500).send("Something went wrong");
+    }
+  };
+
+  // Set note
+  public setAddressNote = async (req, res) => {
+    try {
+      const { address, note, daoAddress } = req.body;
+      let addressNote = await AddressModel.findOne({
+        address: address,
+        daoAddress: daoAddress,
+      });
+      if (addressNote) {
+        res.status(200).send();
+      } else {
+        addressNote = new AddressModel();
+        addressNote.address = address;
+        addressNote.note = note;
+        await addressNote.save();
+        res.status(200).send();
+      }
+    } catch (e) {
+      this.loggerService.error(e);
+      res.status(500).send("Something went wrong");
+    }
+  };
+
+  // Get address note
+  public getAddressNote = async (req, res) => {
+    try {
+      const { address, daoAddress } = req.params;
+      let addressNote = await AddressModel.findOne({
+        address: address,
+        daoAddress: daoAddress,
+      });
+      if (addressNote) {
+        res.status(200).send({ address, note: addressNote.note });
+      } else {
+        res.status(404).send("Address not found");
+      }
+    } catch (e) {
+      this.loggerService.error(e);
+      res.status(500).send("Something went wrong");
+    }
+  };
+
+  // Get many addresses notes
+  public getManyAddressNotes = async (req, res) => {
+    try {
+      const { admins, daoAddress } = req.body;
+      const foundAddresses = await AddressModel.find({
+        address: { $in: admins },
+        daoAddress: daoAddress,
+      });
+      res.status(200).send(foundAddresses);
+    } catch (e) {
+      this.loggerService.error(e);
+      res.status(500).send("Something went wrong");
+    }
+  };
+
+  // Set many addresses notes
+  public setManyAddresses = async (req, res) => {
+    try {
+      const { admins, daoAddress } = req.body;
+      // const foundAddresses = await AddressModel.find({
+      //   address: { $in: addresses },
+      // });
+      const updated = admins.map((data) => {
+        return {
+          updateOne: {
+            filter: { address: data.address, daoAddress: daoAddress },
+            update: { $set: data },
+            upsert: true,
+          },
+        };
+      });
+
+      const result = await AddressModel.bulkWrite(updated);
+
+      res.status(200).send(result);
+    } catch (e) {
+      this.loggerService.error(e);
+      res.status(500).send("Something went wrong");
+    }
+  };
+
+  public deleteManyAddresses = async (req, res) => {
+    try {
+      const { admins, daoAddress } = req.body;
+      // const foundAddresses = await AddressModel.find({
+      //   address: { $in: addresses },
+      // });
+      // const identifiersArray = admins.map((data) => data.address);
+
+      const filter = { address: { $in: admins }, daoAddress: daoAddress }; // Assuming 'address' is the identifier
+
+      const result = await AddressModel.deleteMany(filter);
+
+      res.status(200).send(result);
     } catch (e) {
       this.loggerService.error(e);
       res.status(500).send("Something went wrong");

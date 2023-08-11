@@ -149,7 +149,10 @@ export class AutIDRouter {
       this.tempCacheController.addOrUpdateCache
     );
 
-    this._router.get("/cache/getDAOData/:daoAddress", this.tempCacheController.getDAOBetaProgress);
+    this._router.get(
+      "/cache/getDAOData/:daoAddress",
+      this.tempCacheController.getDAOBetaProgress
+    );
 
     this._router.get(
       "/cache/getCache/:cacheKey",
@@ -161,6 +164,25 @@ export class AutIDRouter {
       "/cache/deleteCache/:cacheKey",
       passport.authenticate("jwt", { session: false }),
       this.tempCacheController.deleteCache
+    );
+
+    this._router.get("/user/note/:address", this.userController.getAddressNote);
+
+    this._router.post("/user/address", this.userController.setAddressNote);
+
+    this._router.post(
+      "/user/notes/addresses",
+      this.userController.getManyAddressNotes
+    );
+
+    this._router.delete(
+      "/user/notes/addresses",
+      this.userController.deleteManyAddresses
+    );
+
+    this._router.post(
+      "/user/notes/setmany",
+      this.userController.setManyAddresses
     );
 
     this._router.post(

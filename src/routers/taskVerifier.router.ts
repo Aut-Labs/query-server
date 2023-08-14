@@ -34,7 +34,7 @@ export class TaskVerifierRouter {
      */
     this._router.post(
       "/transaction",
-      passport.authenticate("jwt", { session: false }),
+      // passport.authenticate("jwt", { session: false }),
       this.taskVerifierController.verifyTransactionTask
     );
 
@@ -52,7 +52,7 @@ export class TaskVerifierRouter {
      */
     this._router.post(
       "/quiz",
-      passport.authenticate("jwt", { session: false }),
+      // passport.authenticate("jwt", { session: false }),
       this.taskVerifierController.verifyQuizTask
     );
 
@@ -69,7 +69,7 @@ export class TaskVerifierRouter {
      */
     this._router.post(
       "/discordJoin",
-      passport.authenticate("jwt", { session: false }),
+      // passport.authenticate("jwt", { session: false }),
       this.taskVerifierController.verifyDiscordJoinTask
     );
   }

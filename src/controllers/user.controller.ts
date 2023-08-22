@@ -10,6 +10,7 @@ import { AutIDBadgeGenerator } from "../tools/ImageGeneration/AutIDBadge/AutIDBa
 import { SWIDParams } from "../tools/ImageGeneration/AutIDBadge/Badge.model";
 import NovaContract from "@aut-labs/sdk/dist/contracts/nova";
 import { AddressModel } from "../models/address";
+import { MultiSigner } from "@aut-labs/sdk/dist/models/models";
 
 const getHiddenAdminAddressesArray = () => {
   if (!process.env.HIDDEN_ADMIN_ADDRESSES) return [];
@@ -183,8 +184,12 @@ export class UserController {
       const networkConfig = getNetworkConfig("mumbai", "testing" as any);
 
       const signer = getSigner(networkConfig);
+      const multiSigner: MultiSigner = {
+        readOnlySigner: signer,
+        signer
+      }
 
-      await sdk.init(signer as any, networkConfig.contracts);
+      await sdk.init(multiSigner, networkConfig.contracts);
       // const daosRes = await sdk.daoExpanderRegistry.contract.getDAOExpanders();
       const novaRes = await sdk.novaRegistry.contract.getNovas();
 
@@ -216,8 +221,12 @@ export class UserController {
       const networkConfig = getNetworkConfig("mumbai", "testing" as any);
 
       const signer = getSigner(networkConfig);
+      const multiSigner: MultiSigner = {
+        readOnlySigner: signer,
+        signer
+      }
 
-      await sdk.init(signer as any, networkConfig.contracts);
+      await sdk.init(multiSigner, networkConfig.contracts);
       // const daosRes = await sdk.daoExpanderRegistry.contract.getDAOExpanders();
       const novaRes = await sdk.novaRegistry.contract.getNovas();
 

@@ -6,6 +6,7 @@ import { LoggerService, getNetworkConfig } from "./services";
 import { connect } from "mongoose";
 import { getSigner } from "./tools/ethers";
 import AutSDK from "@aut-labs/sdk";
+import { MultiSigner } from "@aut-labs/sdk/dist/models/models";
 // initialize configuration
 dotenv.config();
 
@@ -26,9 +27,13 @@ application.app.listen(PORT, async () => {
       const networkConfig = getNetworkConfig("mumbai", undefined);
 
       const signer = getSigner(networkConfig);
+      const multiSigner: MultiSigner = {
+        readOnlySigner: signer,
+        signer
+      }
 
       const sdk = AutSDK.getInstance();
-      await sdk.init(signer as any, networkConfig.contracts);
+      await sdk.init(multiSigner, networkConfig.contracts);
     } catch (error) {
       console.log(error, "error");
       // handleError(error);

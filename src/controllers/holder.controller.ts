@@ -7,6 +7,7 @@ import AutSDK from "@aut-labs/sdk";
 import { Holder } from "../models/holder";
 import { ethers } from "ethers";
 import { AutIDQuery } from "@aut-labs/sdk/dist/services/autID.service";
+import { MultiSigner } from "@aut-labs/sdk/dist/models/models";
 
 @injectable()
 export class HoldersController {
@@ -32,9 +33,14 @@ export class HoldersController {
       }
 
       const signer = getSigner(networkConfig);
+      const multiSigner: MultiSigner = {
+        readOnlySigner: signer,
+        signer
+      }
 
       const sdk = AutSDK.getInstance();
-      await sdk.init(signer as any, networkConfig.contracts);
+
+      await sdk.init(multiSigner, networkConfig.contracts);
 
       const isAddress = ethers.utils.isAddress(username);
 
@@ -72,7 +78,11 @@ export class HoldersController {
       for (let i = 0; i < networkConfigs.length; i++) {
         const networkConfig = networkConfigs[i];
         const signer = getSigner(networkConfig);
-        await sdk.init(signer as any, networkConfig.contracts);
+        const multiSigner: MultiSigner = {
+          readOnlySigner: signer,
+          signer
+        }
+        await sdk.init(multiSigner, networkConfig.contracts);
         const response = await sdk.autID.findAutID(address);
 
         if (response.isSuccess) {

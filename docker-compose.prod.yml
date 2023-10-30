@@ -3,7 +3,7 @@ version: "3.9"
 services:
   aut-api-prod:
     container_name: aut-api-prod
-    image: node:16.19.1
+    image: node:19.0.0
     build:
       context: .
       dockerfile: Dockerfile

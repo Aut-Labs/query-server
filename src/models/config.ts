@@ -13,6 +13,7 @@ export interface NetworkContracts {
   allowListAddress: string;
   offchainVerifierAddress: string;
   daoTypesAddress: string;
+  localReputationAddress: string;
   pluginRegistryAddress: string;
   moduleRegistryAddress: string;
   questOpenTaskFactory: string;

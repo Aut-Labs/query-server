@@ -48,21 +48,21 @@ const ipfsCIDToHttpUrl = (url: string, isJson = false) => {
   return url;
 };
 
-const getDaoDetailsPromise = async (sdk: AutSDK, daoAddress: string) => {
+const getNovaDetailsPromise = async (sdk: AutSDK, novaAddress: string) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const nova = sdk.initService<NovaContract>(NovaContract, daoAddress);
+      const nova = sdk.initService<NovaContract>(NovaContract, novaAddress);
       const admins = await nova.contract.getAdmins();
       const hiddenAdmins = getHiddenAdminAddressesArray();
       if (hiddenAdmins.includes(admins[0])) {
         resolve(null);
       } else {
         const pluginDefinition =
-          await sdk.pluginRegistry.getPluginDefinitionByType(daoAddress, 1);
+          await sdk.pluginRegistry.getPluginDefinitionByType(novaAddress, 1);
         if (pluginDefinition.data) {
           const nova = sdk.initService<Nova>(
             Nova,
-            daoAddress
+            novaAddress
           );
           const daoAdminsResponse = await nova.contract.admins.getAdmins();
           const daoData = await nova.contract.metadata.getMetadataUri();
@@ -99,7 +99,7 @@ const getDaoDetailsPromise = async (sdk: AutSDK, daoAddress: string) => {
             resolve({
               isNovaExpired,
               onboardingQuestAddress: onboardingQuest.contract.contract.address,
-              daoAddress,
+              novaAddress,
               admin: daoAdminsResponse.data[0],
               daoMetadataUri: daoData.data,
               quests: quests.data,
@@ -115,24 +115,24 @@ const getDaoDetailsPromise = async (sdk: AutSDK, daoAddress: string) => {
   });
 };
 
-const getLeaderBoardDaoDetailsPromise = async (
+const getLeaderBoardNovaDetailsPromise = async (
   sdk: AutSDK,
-  daoAddress: string
+  novaAddress: string
 ) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const nova = sdk.initService<NovaContract>(NovaContract, daoAddress);
+      const nova = sdk.initService<NovaContract>(NovaContract, novaAddress);
       const admins = await nova.contract.getAdmins();
       const hiddenAdmins = getHiddenAdminAddressesArray();
       if (hiddenAdmins.includes(admins[0])) {
         resolve(null);
       } else {
         const pluginDefinition =
-          await sdk.pluginRegistry.getPluginDefinitionByType(daoAddress, 1);
+          await sdk.pluginRegistry.getPluginDefinitionByType(novaAddress, 1);
         if (pluginDefinition.data) {
           const nova = sdk.initService<Nova>(
             Nova,
-            daoAddress
+            novaAddress
           );
           const daoData = await nova.contract.metadata.getMetadataUri();
 
@@ -148,7 +148,7 @@ const getLeaderBoardDaoDetailsPromise = async (
             resolve(null);
           }
           resolve({
-            daoAddress,
+            novaAddress,
             daoMetadataUri: daoData.data,
             members,
             totalMembers,
@@ -177,7 +177,7 @@ export class UserController {
     }
   };
 
-  public getDaos = async (req, res) => {
+  public getNovas = async (req, res) => {
     const promises = [];
     try {
       const sdk = AutSDK.getInstance();
@@ -195,8 +195,8 @@ export class UserController {
       const allDaos = [...novaRes.data];
 
       for (let index = 0; index < allDaos.length; index++) {
-        const daoAddress = allDaos[index];
-        promises.push(getDaoDetailsPromise(sdk, daoAddress));
+        const novaAddress = allDaos[index];
+        promises.push(getNovaDetailsPromise(sdk, novaAddress));
       }
 
       await Promise.all(promises)
@@ -213,7 +213,7 @@ export class UserController {
     }
   };
 
-  public getLeaderDAOs = async (req, res) => {
+  public getLeaderNovas = async (req, res) => {
     const promises = [];
     try {
       const sdk = AutSDK.getInstance();
@@ -232,8 +232,8 @@ export class UserController {
       const allDaos = [...novaRes.data].splice(MAX_DAOS);
 
       for (let index = 0; index < allDaos.length; index++) {
-        const daoAddress = allDaos[index];
-        promises.push(getLeaderBoardDaoDetailsPromise(sdk, daoAddress));
+        const novaAddress = allDaos[index];
+        promises.push(getLeaderBoardNovaDetailsPromise(sdk, novaAddress));
       }
 
       function compare(a, b) {
@@ -367,10 +367,10 @@ export class UserController {
   // Set note
   public setAddressNote = async (req, res) => {
     try {
-      const { address, note, daoAddress } = req.body;
+      const { address, note, novaAddress } = req.body;
       let addressNote = await AddressModel.findOne({
         address: address,
-        daoAddress: daoAddress,
+        novaAddress: novaAddress,
       });
       if (addressNote) {
         res.status(200).send();
@@ -390,10 +390,10 @@ export class UserController {
   // Get address note
   public getAddressNote = async (req, res) => {
     try {
-      const { address, daoAddress } = req.params;
+      const { address, novaAddress } = req.params;
       let addressNote = await AddressModel.findOne({
         address: address,
-        daoAddress: daoAddress,
+        novaAddress: novaAddress,
       });
       if (addressNote) {
         res.status(200).send({ address, note: addressNote.note });
@@ -409,10 +409,10 @@ export class UserController {
   // Get many addresses notes
   public getManyAddressNotes = async (req, res) => {
     try {
-      const { admins, daoAddress } = req.body;
+      const { admins, novaAddress } = req.body;
       const foundAddresses = await AddressModel.find({
         address: { $in: admins },
-        daoAddress: daoAddress,
+        novaAddress: novaAddress,
       });
       res.status(200).send(foundAddresses);
     } catch (e) {
@@ -424,14 +424,14 @@ export class UserController {
   // Set many addresses notes
   public setManyAddresses = async (req, res) => {
     try {
-      const { admins, daoAddress } = req.body;
+      const { admins, novaAddress } = req.body;
       // const foundAddresses = await AddressModel.find({
       //   address: { $in: addresses },
       // });
       const updated = admins.map((data) => {
         return {
           updateOne: {
-            filter: { address: data.address, daoAddress: daoAddress },
+            filter: { address: data.address, novaAddress: novaAddress },
             update: { $set: data },
             upsert: true,
           },
@@ -449,13 +449,13 @@ export class UserController {
 
   public deleteManyAddresses = async (req, res) => {
     try {
-      const { admins, daoAddress } = req.body;
+      const { admins, novaAddress } = req.body;
       // const foundAddresses = await AddressModel.find({
       //   address: { $in: addresses },
       // });
       // const identifiersArray = admins.map((data) => data.address);
 
-      const filter = { address: { $in: admins }, daoAddress: daoAddress }; // Assuming 'address' is the identifier
+      const filter = { address: { $in: admins }, novaAddress: novaAddress }; // Assuming 'address' is the identifier
 
       const result = await AddressModel.deleteMany(filter);
 

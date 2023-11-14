@@ -150,7 +150,7 @@ export class AutIDRouter {
     );
 
     this._router.get(
-      "/cache/getDAOData/:daoAddress",
+      "/cache/getDAOData/:novaAddress",
       this.tempCacheController.getDAOBetaProgress
     );
 
@@ -193,8 +193,8 @@ export class AutIDRouter {
 
     this._router.get("/user/nonce/:address", this.userController.getUserNonce);
 
-    this._router.get("/user/daos", this.userController.getDaos);
-    this._router.get("/user/leaderDaos", this.userController.getLeaderDAOs);
+    this._router.get("/user/novas", this.userController.getNovas);
+    this._router.get("/user/leaderNovas", this.userController.getLeaderNovas);
 
     this._router.post("/user/getToken", this.userController.getToken);
 

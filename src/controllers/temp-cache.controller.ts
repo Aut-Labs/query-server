@@ -74,7 +74,7 @@ export class TempCacheController {
 
   public getDAOBetaProgress = async (req: any, res: Response) => {
     try {
-      const { daoAddress } = req.params;
+      const { novaAddress } = req.params;
       let parsedResult = null;
       try {
         const found = await TempCacheModel.find({
@@ -88,7 +88,7 @@ export class TempCacheController {
             updated_object["updatedAt"] = obj.updatedAt;
             return updated_object;
           })
-          .filter((obj) => obj["daoAddress"] === daoAddress);
+          .filter((obj) => obj["novaAddress"] === novaAddress);
       } catch (error) {}
       return res.status(200).send(parsedResult);
     } catch (err) {

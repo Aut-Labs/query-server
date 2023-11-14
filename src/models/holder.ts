@@ -14,6 +14,6 @@ export interface DAOMember {
 
 export interface DAOData {
   contractType: string;
-  daoAddress: string;
+  novaAddress: string;
   discordServer: string;
 }

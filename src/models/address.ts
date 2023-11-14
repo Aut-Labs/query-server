@@ -1,7 +1,7 @@
 import { Schema, model } from "mongoose";
 
 const AddressSchema = new Schema({
-  daoAddress: { type: String },
+  novaAddress: { type: String },
   address: { type: String },
   note: { type: String },
 });
@@ -9,7 +9,7 @@ const AddressSchema = new Schema({
 export const AddressModel = model("Address", AddressSchema);
 
 export interface Address {
-  daoAddress: string;
+  novaAddress: string;
   address: string;
   note: string;
 }

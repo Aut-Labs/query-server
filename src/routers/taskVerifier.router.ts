@@ -4,7 +4,6 @@ import {
   TaskVerifierController,
 } from "../controllers";
 import "../passport/passport.config";
-import passport from "passport";
 
 @injectable()
 export class TaskVerifierRouter {

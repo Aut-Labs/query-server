@@ -6,7 +6,7 @@ export interface Holder {
 }
 
 export interface DAOMember {
-  daoExpanderAddress: string;
+  daonovaAddress: string;
   role: string;
   commitment: string;
   isActive: boolean;

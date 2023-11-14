@@ -6,7 +6,7 @@ export interface SWIDParams {
   dao: string;
   timestamp: string;
   hash: string;
-  expanderAddress: string;
+  novaAddress: string;
   avatar?: Buffer;
   tokenId?: string;
   canvas?: HTMLCanvasElement;
@@ -36,7 +36,7 @@ export interface QRConfig {
 export interface ContentConfig {
   width: number;
   height: number;
-  expanderAddress: string;
+  novaAddress: string;
   canvasFont: {
     name: string;
     url: string;

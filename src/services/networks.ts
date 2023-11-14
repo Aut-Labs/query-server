@@ -41,7 +41,7 @@ export const MumbaiNetwork = (): NetworkConfig => ({
     autIDAddress: process.env.MUMBAI_AUT_ID_ADDRESS,
     daoExpanderRegistryAddress: process.env.MUMBAI_DAO_REGISTRY_ADDRESS,
     daoExpanderFactoryAddress: process.env.MUMBAI_DAO_FACTORY_ADDRESS,
-    novaRegistryAddress: process.env.MUMBAI_AUT_DAO_REGISTRY_ADDRESS,
+    novaRegistryAddress: process.env.MUMBAI_AUT_NOVA_REGISTRY_ADDRESS,
     novaFactoryAddress: process.env.MUMBAI_AUT_DAO_FACTORY_ADDRESS,
     hackerDaoAddress: process.env.MUMBAI_HACKERS_DAO_ADDRESS,
     daoTypesAddress: process.env.MUMBAI_DAO_TYPES_ADDRESS,

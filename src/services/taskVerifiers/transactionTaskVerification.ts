@@ -57,12 +57,14 @@ export async function verifyTransaction(
         console.log('taskId', taskID);
         console.log('submitter', address);
         console.log('taskAddress', taskAddress);
-        const responseFinalize = await questOnboarding.finalizeFor(
-          { taskId: taskID, submitter: address } as Task,
-          taskAddress,
-          PluginDefinitionType.OnboardingTransactionTaskPlugin
-        );
-        return { isFinalized: responseFinalize.isSuccess, txHash: responseFinalize.transactionHash, error: responseFinalize.errorMessage };
+
+        // @TODO: fix this once we support TransactionTask
+        // const responseFinalize = await questOnboarding.finalizeFor(
+        //   { taskId: taskID, submitter: address } as Task,
+        //   taskAddress,
+        //   PluginDefinitionType.OnboardingTransactionTaskPlugin
+        // );
+        // return { isFinalized: responseFinalize.isSuccess, txHash: responseFinalize.transactionHash, error: responseFinalize.errorMessage };
       }
       pageNumber++
     } else finished = true;

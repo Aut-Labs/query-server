@@ -3,7 +3,7 @@ import { injectable } from "inversify";
 import { UserModel } from "../models/user";
 import jwt from "jsonwebtoken";
 import { verifyMessage } from "@ethersproject/wallet";
-import AutSDK, { DAOExpander, QuestOnboarding } from "@aut-labs/sdk";
+import AutSDK, { Nova, QuestOnboarding } from "@aut-labs/sdk";
 import { getNetworkConfig } from "../services";
 import { getSigner } from "../tools/ethers";
 import { AutIDBadgeGenerator } from "../tools/ImageGeneration/AutIDBadge/AutIDBadgeGenerator";
@@ -60,12 +60,12 @@ const getDaoDetailsPromise = async (sdk: AutSDK, daoAddress: string) => {
         const pluginDefinition =
           await sdk.pluginRegistry.getPluginDefinitionByType(daoAddress, 1);
         if (pluginDefinition.data) {
-          const expander = sdk.initService<DAOExpander>(
-            DAOExpander,
+          const nova = sdk.initService<Nova>(
+            Nova,
             daoAddress
           );
-          const daoAdminsResponse = await expander.contract.admins.getAdmins();
-          const daoData = await expander.contract.metadata.getMetadataUri();
+          const daoAdminsResponse = await nova.contract.admins.getAdmins();
+          const daoData = await nova.contract.metadata.getMetadataUri();
           const onboardingQuest = sdk.initService<QuestOnboarding>(
             QuestOnboarding,
             pluginDefinition.data
@@ -130,18 +130,18 @@ const getLeaderBoardDaoDetailsPromise = async (
         const pluginDefinition =
           await sdk.pluginRegistry.getPluginDefinitionByType(daoAddress, 1);
         if (pluginDefinition.data) {
-          const expander = sdk.initService<DAOExpander>(
-            DAOExpander,
+          const nova = sdk.initService<Nova>(
+            Nova,
             daoAddress
           );
-          const daoData = await expander.contract.metadata.getMetadataUri();
+          const daoData = await nova.contract.metadata.getMetadataUri();
 
           let members = [];
           let totalMembers = 0;
 
           try {
             const membersResponse =
-              await expander.contract.members.getAllMembers();
+              await nova.contract.members.getAllMembers();
             members = membersResponse.data;
             totalMembers = membersResponse.data.length;
           } catch (error) {
@@ -190,7 +190,6 @@ export class UserController {
       }
 
       await sdk.init(multiSigner, networkConfig.contracts);
-      // const daosRes = await sdk.daoExpanderRegistry.contract.getDAOExpanders();
       const novaRes = await sdk.novaRegistry.contract.getNovas();
 
       const allDaos = [...novaRes.data];
@@ -227,7 +226,6 @@ export class UserController {
       }
 
       await sdk.init(multiSigner, networkConfig.contracts);
-      // const daosRes = await sdk.daoExpanderRegistry.contract.getDAOExpanders();
       const novaRes = await sdk.novaRegistry.contract.getNovas();
 
       const MAX_DAOS = -30;
@@ -283,8 +281,8 @@ export class UserController {
       if (!requestConfig.network) {
         return res.status(400).send(`"network" not provided.`);
       }
-      if (!requestConfig.expanderAddress) {
-        return res.status(400).send(`"expanderAddress" not provided.`);
+      if (!requestConfig.novaAddress) {
+        return res.status(400).send(`"novaAddress" not provided.`);
       }
       if (!requestConfig.timestamp) {
         return res.status(400).send(`"timestamp" not provided.`);

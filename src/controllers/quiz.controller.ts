@@ -1,7 +1,7 @@
 import { LoggerService } from "../services/logger.service";
 import { injectable } from "inversify";
 import { Response } from "express";
-import AutSDK, { DAOExpander } from "@aut-labs/sdk";
+import AutSDK, { Nova } from "@aut-labs/sdk";
 import { QuestionsModel } from "../models/question";
 
 const verifyIsAdmin = async (
@@ -11,16 +11,16 @@ const verifyIsAdmin = async (
   const sdk = AutSDK.getInstance();
 
   const holderDaos = await sdk.autID.contract.getHolderDAOs(userAddress);
-  let daoExpanderAddress = null;
+  let novaAddress = null;
   for (let i = 0; i < holderDaos.data.length; i++) {
-    if (daoExpanderAddress) {
+    if (novaAddress) {
       break;
     }
     const dao = holderDaos.data[i];
     const pluginIds =
-      await sdk.pluginRegistry.contract.functions.getPluginIdsByDAO(dao);
+      await sdk.pluginRegistry.contract.functions.getPluginIdsByNova(dao);
     for (let j = 0; j < pluginIds.length; j++) {
-      if (daoExpanderAddress) {
+      if (novaAddress) {
         break;
       }
       const pluginId = pluginIds[j];
@@ -29,16 +29,16 @@ const verifyIsAdmin = async (
           pluginId
         );
       if (pluginInstance.pluginAddress === taskAddress) {
-        daoExpanderAddress = dao;
+        novaAddress = dao;
         break;
       }
     }
   }
-  const expander = sdk.initService<DAOExpander>(
-    DAOExpander,
-    daoExpanderAddress
+  const nova = sdk.initService<Nova>(
+    Nova,
+    novaAddress
   );
-  const isAdmin = await expander.contract.admins.isAdmin(userAddress);
+  const isAdmin = await nova.contract.admins.isAdmin(userAddress);
   return isAdmin.data;
 };
 

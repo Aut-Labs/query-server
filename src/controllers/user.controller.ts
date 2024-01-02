@@ -29,25 +29,6 @@ function replaceAll(str, find, replace) {
   return str.replace(new RegExp(escapeRegExp(find), "g"), replace);
 }
 
-const ipfsCIDToHttpUrl = (url: string, isJson = false) => {
-  if (!url) {
-    return url;
-  }
-  if (!url.includes("https://"))
-    return isJson
-      ? `${"https://cloudflare-ipfs.com/ipfs"}/${replaceAll(
-          url,
-          "ipfs://",
-          ""
-        )}/metadata.json`
-      : `${"https://cloudflare-ipfs.com/ipfs"}/${replaceAll(
-          url,
-          "ipfs://",
-          ""
-        )}`;
-  return url;
-};
-
 const getNovaDetailsPromise = async (sdk: AutSDK, novaAddress: string) => {
   return new Promise(async (resolve, reject) => {
     try {

@@ -21,7 +21,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@aut-labs/sdk": "^0.0.102-dev",
+    "@aut-labs/sdk": "^0.0.124-dev",
     "@resvg/resvg-js": "^2.4.1",
     "@types/node": "latest",
     "axios": "^0.27.2",

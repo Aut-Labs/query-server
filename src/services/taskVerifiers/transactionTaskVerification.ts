@@ -4,7 +4,6 @@ import AutSDK, {
   QuestOnboarding, Task,
 } from "@aut-labs/sdk";
 import { getJSONFromURI, ipfsCIDToHttpUrl } from "../../tools/ethers";
-import { PluginDefinitionType } from "@aut-labs/sdk/dist/models/plugin";
 import { FinalizeTaskResult } from "../../models/finalizeTask";
 import { supportFunction } from "../../constants/supportedNetworks";
 

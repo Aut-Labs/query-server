@@ -18,6 +18,10 @@ export interface NetworkContracts {
   moduleRegistryAddress: string;
   questOpenTaskFactory: string;
   questOffchainTaskFactory: string;
+  basicOnboardingAddress: string;
+  onboardingRole1Address: string;
+  onboardingRole2Address: string;
+  onboardingRole3Address: string;
 }
 
 export interface NetworkConfig {

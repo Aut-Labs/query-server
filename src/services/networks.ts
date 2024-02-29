@@ -25,6 +25,10 @@ export const GoerliNetwork = (): NetworkConfig => ({
     questOffchainTaskFactory:
       process.env.GOERLI_QUEST_OFFCHAIN_TASK_FACTORY_ADDRESS,
     questOpenTaskFactory: process.env.GOERLI_QUEST_OPEN_TASK_FACTORY_ADDRESS,
+    basicOnboardingAddress: process.env.GOERLI_BASIC_ONBOARDING_ADDRESS,
+    onboardingRole1Address: process.env.GOERLI_ONBOARDING_ROLE1_ADDRESS,
+    onboardingRole2Address: process.env.GOERLI_ONBOARDING_ROLE2_ADDRESS,
+    onboardingRole3Address: process.env.GOERLI_ONBOARDING_ROLE3_ADDRESS
   },
 });
 
@@ -53,5 +57,9 @@ export const MumbaiNetwork = (): NetworkConfig => ({
     questOffchainTaskFactory:
       process.env.MUMBAI_QUEST_OFFCHAIN_TASK_FACTORY_ADDRESS,
     questOpenTaskFactory: process.env.MUMBAI_QUEST_OPEN_TASK_FACTORY_ADDRESS,
+    basicOnboardingAddress: process.env.MUMBAI_BASIC_ONBOARDING_ADDRESS,
+    onboardingRole1Address: process.env.MUMBAI_ONBOARDING_ROLE1_ADDRESS,
+    onboardingRole2Address: process.env.MUMBAI_ONBOARDING_ROLE2_ADDRESS,
+    onboardingRole3Address: process.env.MUMBAI_ONBOARDING_ROLE3_ADDRESS,
   },
 });

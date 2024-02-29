@@ -139,8 +139,18 @@ export class AutIDRouter {
      *         description: Something went wrong, please try again later.
      */
     this._router.post(
-      "/config/oauth2AccessToken",
-      this.autController.getOAuth2AccessToken
+      "/config/oauth2AccessTokenDiscord",
+      this.autController.getOAuth2AccessTokenDiscord
+    );
+
+    this._router.post(
+      "/config/oauth2AccessTokenX",
+      this.autController.getXOAuth2AccessToken
+    );
+
+    this._router.post(
+      "/config/oauth2AccessTokenGithub",
+      this.autController.getGithubOAuth2AccessToken
     );
 
     this._router.post(

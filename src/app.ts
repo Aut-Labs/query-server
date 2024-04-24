@@ -79,6 +79,7 @@ export class App {
 
   private _initRoutes() {
     this._app.use("/api/autID", this.autIDRouter.router);
+    this._app.use("/api/zeely", this.autIDRouter.router);
     this._app.use("/api/taskVerifier", this.taskVerifierRouter.router);
     this._app.use("/api/docs", swaggerUI.serve, swaggerUI.setup(swagger));
   }

@@ -3,7 +3,7 @@ import { LoggerService } from "../services/logger.service";
 import { gql, GraphQLClient } from "graphql-request";
 import { MultiSigner } from "@aut-labs/sdk/dist/models/models";
 import AutSDK, { Nova } from "@aut-labs/sdk";
-import { MumbaiNetwork } from "../services/networks";
+import { AmoyNetwork } from "../services/networks";
 import { getSigner } from "../tools/ethers";
 
 // TODO: extract in env
@@ -67,8 +67,8 @@ export class ZeelyController {
       if (!autID) {
         return res.status(400).send({ message: "AutId not found" });
       }
-      const networkConfig = MumbaiNetwork();
-      const signer = getSigner(MumbaiNetwork());
+      const networkConfig = AmoyNetwork();
+      const signer = getSigner(AmoyNetwork());
       const multiSigner: MultiSigner = {
         readOnlySigner: signer,
         signer,

@@ -10,20 +10,6 @@ import { getSigner } from "../tools/ethers";
 const graphqlEndpoint =
   "https://api.studio.thegraph.com/query/63763/aut-mumbai/version/latest";
 
-const fetchNovas = gql`
-  query GetNovas {
-    novaDAOs(skip: 0, first: 100) {
-      id
-      deployer
-      address
-      market
-      members
-      metadataUri
-      minCommitment
-    }
-  }
-`;
-
 @injectable()
 export class ZeelyController {
   private graphqlClient: GraphQLClient;

@@ -6,6 +6,7 @@ import AutSDK, { Nova } from "@aut-labs/sdk";
 import { MumbaiNetwork } from "../services/networks";
 import { getSigner } from "../tools/ethers";
 
+// TODO: extract in env
 const graphqlEndpoint =
   "https://api.studio.thegraph.com/query/63763/aut-mumbai/version/latest";
 
@@ -23,14 +24,6 @@ const fetchNovas = gql`
   }
 `;
 
-const fetchAutIds = gql`
-  query GetAutIds {
-    autIDs(skip: 0, first: 100) {
-      novaAddress
-    }
-  }
-`;
-
 @injectable()
 export class ZeelyController {
   private graphqlClient: GraphQLClient;
@@ -44,21 +37,27 @@ export class ZeelyController {
       const { accounts } = req.body;
       const { wallet } = accounts;
 
-      const novasResponse: { novaDAOs: any[] } =
-        await this.graphqlClient.request(fetchNovas);
+      const novasResponse: { novaDAOs: any[] } = await this.graphqlClient
+        .request(gql`
+        query GetNovas {
+          novaDAOs(where: {deployer: "${wallet.toLowerCase()}"}) {
+            id
+            deployer
+          }
+        }
+      `);
       const novas = novasResponse.novaDAOs;
 
-      for (let i = 0; i < novas.length; i++) {
-        const novaDAO = novas[i];
-        if (novaDAO.deployer === wallet) {
-          return res.status(200).send({ message: "User has deployed" });
-        }
+      if (novas.length > 0) {
+        return res.status(200).send({ message: "User has deployed" });
       }
-      res.status(400).send({ message: "User has not deployed" });
+      return res.status(400).send({ message: "User has not deployed" });
     } catch (e) {
       this.loggerService.error(e);
       // Return a 400 status with an error message if the action couldn't be verified
-      res.status(400).send({ message: "Error message describing the issue" });
+      return res
+        .status(400)
+        .send({ message: "Error message describing the issue" });
     }
   };
 
@@ -68,12 +67,20 @@ export class ZeelyController {
       const { wallet } = accounts;
 
       const response = await this.graphqlClient.request<any>(gql`
-      query GetAutID {
-        autID(id: "${wallet.toLowerCase()}") {
-          novaAddress
+        query GetAutID {
+          autIDs(
+            where: { owner: "${wallet.toLowerCase()}" }
+          ) {
+            novaAddress
+          }
         }
+      `);
+
+      const { autIDs } = response;
+      const autID = autIDs[0];
+      if (!autID) {
+        return res.status(400).send({ message: "AutId not found" });
       }
-    `);
       const networkConfig = MumbaiNetwork();
       const signer = getSigner(MumbaiNetwork());
       const multiSigner: MultiSigner = {
@@ -85,7 +92,7 @@ export class ZeelyController {
 
       await sdk.init(multiSigner, networkConfig.contracts);
 
-      const nova = sdk.initService<Nova>(Nova, response.autID.novaAddress);
+      const nova = sdk.initService<Nova>(Nova, autID.novaAddress);
       const isAdmin = await nova.contract.admins.isAdmin(wallet);
       if (isAdmin) {
         return res.status(200).send({ message: "User is an admin" });
@@ -93,8 +100,9 @@ export class ZeelyController {
       res.status(400).send({ message: "Not an admin" });
     } catch (e) {
       this.loggerService.error(e);
-      // Return a 400 status with an error message if the action couldn't be verified
-      res.status(400).send({ message: "Error message describing the issue" });
+      return res
+        .status(400)
+        .send({ message: "Error message describing the issue" });
     }
   };
 
@@ -108,24 +116,38 @@ export class ZeelyController {
         query GetNovas {
           novaDAOs(deployer: "${wallet.toLowerCase()}") {
             deployer
-            members
+            address
           }
         }
       `);
+
       const novas = novasResponse.novaDAOs;
-      for (let i = 0; i < novas.length; i++) {
-        const novaDAO = novas[i];
-        if (novaDAO.members > 20) {
-          return res.status(200).send({ message: "More than 20 members!" });
-        }
+
+      const nova = novas[0];
+
+      if (!nova) {
+        return res.status(400).send({ message: "Hasn't deployed nova" });
       }
-      // Implement the logic for has20Members using the provided request data
-      // Return a 200 status with a success message if the user has completed the action
+
+      const autIdsResponse = await this.graphqlClient.request<any>(gql`
+        query GetAutID {
+          autIDs(
+            where: { novaAddress: "${nova.address.toLowerCase()}" }
+          ) {
+            novaAddress
+          }
+        }
+      `);
+
+      if (autIdsResponse.autIDs.length > 20) {
+        res.status(200).send({ message: "Nova has more than 20 members" });
+      }
       res.status(400).send({ message: "Less than 20 members" });
     } catch (e) {
       this.loggerService.error(e);
-      // Return a 400 status with an error message if the action couldn't be verified
-      res.status(400).send({ message: "Error message describing the issue" });
+      return res
+        .status(400)
+        .send({ message: "Error message describing the issue" });
     }
   };
 
@@ -139,24 +161,38 @@ export class ZeelyController {
         query GetNovas {
           novaDAOs(deployer: "${wallet.toLowerCase()}") {
             deployer
-            members
+            address
           }
         }
       `);
+
       const novas = novasResponse.novaDAOs;
-      for (let i = 0; i < novas.length; i++) {
-        const novaDAO = novas[i];
-        if (novaDAO.members > 50) {
-          return res.status(200).send({ message: "More than 50 members!" });
-        }
+
+      const nova = novas[0];
+
+      if (!nova) {
+        return res.status(400).send({ message: "Hasn't deployed nova" });
       }
-      // Implement the logic for has20Members using the provided request data
-      // Return a 200 status with a success message if the user has completed the action
-      res.status(400).send({ message: "Less than 50 members" });
+
+      const autIdsResponse = await this.graphqlClient.request<any>(gql`
+        query GetAutID {
+          autIDs(
+            where: { novaAddress: "${nova.address.toLowerCase()}" }
+          ) {
+            novaAddress
+          }
+        }
+      `);
+
+      if (autIdsResponse.autIds.length > 0) {
+        res.status(200).send({ message: "Nova has more than 50 members" });
+      }
+      return res.status(400).send({ message: "Less than 50 members" });
     } catch (e) {
       this.loggerService.error(e);
-      // Return a 400 status with an error message if the action couldn't be verified
-      res.status(400).send({ message: "Error message describing the issue" });
+      return res
+        .status(400)
+        .send({ message: "Error message describing the issue" });
     }
   };
 
@@ -170,38 +206,38 @@ export class ZeelyController {
         query GetNovas {
           novaDAOs(deployer: "${wallet.toLowerCase()}") {
             deployer
-            members
+            address
           }
         }
       `);
+
       const novas = novasResponse.novaDAOs;
-      for (let i = 0; i < novas.length; i++) {
-        const novaDAO = novas[i];
-        if (novaDAO.members > 100) {
-          return res.status(200).send({ message: "More than 100 members!" });
-        }
+
+      const nova = novas[0];
+
+      if (!nova) {
+        return res.status(400).send({ message: "Hasn't deployed nova" });
       }
-      // Implement the logic for has20Members using the provided request data
-      // Return a 200 status with a success message if the user has completed the action
+
+      const autIdsResponse = await this.graphqlClient.request<any>(gql`
+        query GetAutID {
+          autIDs(
+            where: { novaAddress: "${nova.address.toLowerCase()}" }
+          ) {
+            novaAddress
+          }
+        }
+      `);
+
+      if (autIdsResponse.autIds.length > 0) {
+        res.status(200).send({ message: "Nova has more than 100 members" });
+      }
       res.status(400).send({ message: "Less than 100 members" });
     } catch (e) {
       this.loggerService.error(e);
-      // Return a 400 status with an error message if the action couldn't be verified
-      res.status(400).send({ message: "Error message describing the issue" });
-    }
-  };
-
-  public hasTweeted = async (req, res) => {
-    try {
-      const { userId, communityId, subdomain, questId, requestId, accounts } =
-        req.body;
-      // Implement the logic for hasTweeted using the provided request data
-      // Return a 200 status with a success message if the user has completed the action
-      res.status(200).send({ message: "User completed the action" });
-    } catch (e) {
-      this.loggerService.error(e);
-      // Return a 400 status with an error message if the action couldn't be verified
-      res.status(400).send({ message: "Error message describing the issue" });
+      return res
+        .status(400)
+        .send({ message: "Error message describing the issue" });
     }
   };
 }

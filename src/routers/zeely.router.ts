@@ -13,7 +13,7 @@ export class ZeelyRouter {
 
   private validateApiKey(req, res, next) {
     const apiKey = req.header("X-Api-Key");
-    if (!apiKey || apiKey !== process.env.API_KEY) {
+    if (!apiKey || apiKey !== process.env.ZEELY_API_KEY) {
       return res.status(401).send("Unauthorized");
     }
     next();
@@ -44,11 +44,6 @@ export class ZeelyRouter {
       "/100members",
       this.validateApiKey,
       this.zeelyController.has100Members
-    );
-    this._router.post(
-      "/tweet",
-      this.validateApiKey,
-      this.zeelyController.hasTweeted
     );
   }
 

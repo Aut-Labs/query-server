@@ -29,7 +29,7 @@ application.app.listen(PORT, async () => {
       const signer = getSigner(networkConfig);
       const multiSigner: MultiSigner = {
         readOnlySigner: signer,
-        signer
+        signer 
       }
 
       const sdk = AutSDK.getInstance();

@@ -2,7 +2,7 @@ import express from "express";
 var bodyParser = require("body-parser");
 import helmet from "helmet";
 import { injectable } from "inversify";
-import { AutIDRouter, TaskVerifierRouter } from "./routers";
+import { AutIDRouter, TaskVerifierRouter, ZeelyRouter } from "./routers";
 import AutSDK from "@aut-labs/sdk";
 // const rateLimit = require('express-rate-limit');
 // const slowDown = require("express-slow-down");
@@ -45,7 +45,8 @@ export class App {
 
   constructor(
     private autIDRouter: AutIDRouter,
-    private taskVerifierRouter: TaskVerifierRouter
+    private taskVerifierRouter: TaskVerifierRouter,
+    private zeelyRouter: ZeelyRouter
   ) {
     this._app = express();
     this.config();
@@ -79,7 +80,7 @@ export class App {
 
   private _initRoutes() {
     this._app.use("/api/autID", this.autIDRouter.router);
-    this._app.use("/api/zeely", this.autIDRouter.router);
+    this._app.use("/api/zeely", this.zeelyRouter.router);
     this._app.use("/api/taskVerifier", this.taskVerifierRouter.router);
     this._app.use("/api/docs", swaggerUI.serve, swaggerUI.setup(swagger));
   }

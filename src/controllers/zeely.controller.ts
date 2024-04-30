@@ -2,7 +2,7 @@ import { injectable } from "inversify";
 import { LoggerService } from "../services/logger.service";
 import { gql, GraphQLClient } from "graphql-request";
 import { MultiSigner } from "@aut-labs/sdk/dist/models/models";
-import AutSDK, { Nova } from "@aut-labs/sdk";
+import AutSDK, { fetchMetadata, Nova } from "@aut-labs/sdk";
 import { MumbaiNetwork } from "../services/networks";
 import { getSigner } from "../tools/ethers";
 
@@ -43,7 +43,7 @@ export class ZeelyController {
       // Return a 400 status with an error message if the action couldn't be verified
       return res
         .status(400)
-        .send({ message: "Error message describing the issue" });
+        .send({ message: "Something went wrong" });
     }
   };
 
@@ -88,7 +88,7 @@ export class ZeelyController {
       this.loggerService.error(e);
       return res
         .status(400)
-        .send({ message: "Error message describing the issue" });
+        .send({ message: "Something went wrong" });
     }
   };
 
@@ -133,7 +133,7 @@ export class ZeelyController {
       this.loggerService.error(e);
       return res
         .status(400)
-        .send({ message: "Error message describing the issue" });
+        .send({ message: "Something went wrong" });
     }
   };
 
@@ -178,7 +178,7 @@ export class ZeelyController {
       this.loggerService.error(e);
       return res
         .status(400)
-        .send({ message: "Error message describing the issue" });
+        .send({ message: "Something went wrong" });
     }
   };
 
@@ -223,7 +223,50 @@ export class ZeelyController {
       this.loggerService.error(e);
       return res
         .status(400)
-        .send({ message: "Error message describing the issue" });
+        .send({ message: e });
+    }
+  };
+
+  public hasAddedAnArchetype = async (req, res) => {
+    try {
+      const { accounts } = req.body;
+      const { wallet } = accounts;
+
+      const novasResponse: { novaDAOs: any[] } = await this.graphqlClient
+        .request(gql`
+        query GetNovas {
+          novaDAOs(deployer: "${wallet.toLowerCase()}") {
+            deployer
+            address
+            metadataUri
+          }
+        }
+      `);
+      const novas = novasResponse.novaDAOs;
+
+      const nova = novas[0];
+
+      if (!nova) {
+        return res.status(400).send({ message: "Hasn't deployed nova" });
+      }
+
+
+
+      const novaMetadata = await fetchMetadata<any>(
+        nova.metadataUri,
+        process.env.IPFS_GATEWAY_URL
+      );
+
+
+      if(novaMetadata?.properties?.archetype?.default){
+        return res.status(200).send({ message: "Has added an archetype" });
+      } else
+      res.status(400).send({ message: "Hasn't added an archetype" });
+    } catch (e) {
+      this.loggerService.error(e);
+      return res
+        .status(400)
+        .send({ message: "Something went wrong" });
     }
   };
 }

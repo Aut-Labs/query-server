@@ -1,7 +1,7 @@
 export * from "./logger.service";
 import axios from "axios";
 import { NetworkConfigEnv, NetworkConfig } from "../models/config";
-import { GoerliNetwork, MumbaiNetwork } from "./networks";
+import { GoerliNetwork, MumbaiNetwork, AmoyNetwork } from "./networks";
 // import { TwitterVerificationModel } from "../models/tweetVerif";
 
 export function getNetworkConfig(
@@ -13,6 +13,8 @@ export function getNetworkConfig(
   }
   if (networkConfigEnv === NetworkConfigEnv.Testnet) {
     switch (network) {
+      case "amoy":
+        return AmoyNetwork();
       case "mumbai":
         return MumbaiNetwork();
       case "goerli":
@@ -31,7 +33,7 @@ export function getNetworksConfig(
     networkConfigEnv = NetworkConfigEnv.Testnet;
   }
   if (networkConfigEnv === NetworkConfigEnv.Testnet) {
-    return [GoerliNetwork(), MumbaiNetwork()];
+    return [GoerliNetwork(), MumbaiNetwork(), AmoyNetwork()];
   }
   return [];
 }

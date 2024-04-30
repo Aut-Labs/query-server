@@ -3,19 +3,15 @@ import { LoggerService } from "../services/logger.service";
 import { gql, GraphQLClient } from "graphql-request";
 import { MultiSigner } from "@aut-labs/sdk/dist/models/models";
 import AutSDK, { fetchMetadata, Nova } from "@aut-labs/sdk";
-import { MumbaiNetwork } from "../services/networks";
+import { AmoyNetwork } from "../services/networks";
 import { getSigner } from "../tools/ethers";
-
-// TODO: extract in env
-const graphqlEndpoint =
-  "https://api.studio.thegraph.com/query/63763/aut-mumbai/version/latest";
 
 @injectable()
 export class ZeelyController {
   private graphqlClient: GraphQLClient;
 
   constructor(private loggerService: LoggerService) {
-    this.graphqlClient = new GraphQLClient(graphqlEndpoint);
+    this.graphqlClient = new GraphQLClient(process.env.GRAPH_API_URL);
   }
 
   public hasDeployed = async (req, res) => {
@@ -41,9 +37,7 @@ export class ZeelyController {
     } catch (e) {
       this.loggerService.error(e);
       // Return a 400 status with an error message if the action couldn't be verified
-      return res
-        .status(400)
-        .send({ message: "Something went wrong" });
+      return res.status(400).send({ message: "Something went wrong" });
     }
   };
 
@@ -67,8 +61,8 @@ export class ZeelyController {
       if (!autID) {
         return res.status(400).send({ message: "AutId not found" });
       }
-      const networkConfig = MumbaiNetwork();
-      const signer = getSigner(MumbaiNetwork());
+      const networkConfig = AmoyNetwork();
+      const signer = getSigner(AmoyNetwork());
       const multiSigner: MultiSigner = {
         readOnlySigner: signer,
         signer,
@@ -86,9 +80,7 @@ export class ZeelyController {
       res.status(400).send({ message: "Not an admin" });
     } catch (e) {
       this.loggerService.error(e);
-      return res
-        .status(400)
-        .send({ message: "Something went wrong" });
+      return res.status(400).send({ message: "Something went wrong" });
     }
   };
 
@@ -131,9 +123,7 @@ export class ZeelyController {
       res.status(400).send({ message: "Less than 20 members" });
     } catch (e) {
       this.loggerService.error(e);
-      return res
-        .status(400)
-        .send({ message: "Something went wrong" });
+      return res.status(400).send({ message: "Something went wrong" });
     }
   };
 
@@ -176,9 +166,7 @@ export class ZeelyController {
       return res.status(400).send({ message: "Less than 50 members" });
     } catch (e) {
       this.loggerService.error(e);
-      return res
-        .status(400)
-        .send({ message: "Something went wrong" });
+      return res.status(400).send({ message: "Something went wrong" });
     }
   };
 
@@ -221,9 +209,7 @@ export class ZeelyController {
       res.status(400).send({ message: "Less than 100 members" });
     } catch (e) {
       this.loggerService.error(e);
-      return res
-        .status(400)
-        .send({ message: e });
+      return res.status(400).send({ message: e });
     }
   };
 
@@ -250,23 +236,17 @@ export class ZeelyController {
         return res.status(400).send({ message: "Hasn't deployed nova" });
       }
 
-
-
       const novaMetadata = await fetchMetadata<any>(
         nova.metadataUri,
         process.env.IPFS_GATEWAY_URL
       );
 
-
-      if(novaMetadata?.properties?.archetype?.default){
+      if (novaMetadata?.properties?.archetype?.default) {
         return res.status(200).send({ message: "Has added an archetype" });
-      } else
-      res.status(400).send({ message: "Hasn't added an archetype" });
+      } else res.status(400).send({ message: "Hasn't added an archetype" });
     } catch (e) {
       this.loggerService.error(e);
-      return res
-        .status(400)
-        .send({ message: "Something went wrong" });
+      return res.status(400).send({ message: "Something went wrong" });
     }
   };
 }

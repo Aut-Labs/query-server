@@ -45,6 +45,11 @@ export class ZeelyRouter {
       this.validateApiKey,
       this.zeelyController.has100Members
     );
+    this._router.post(
+      "/archetype",
+      this.validateApiKey,
+      this.zeelyController.hasAddedAnArchetype
+    );
   }
 
   public get router(): Router {

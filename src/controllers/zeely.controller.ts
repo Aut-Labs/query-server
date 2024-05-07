@@ -5,6 +5,7 @@ import { MultiSigner } from "@aut-labs/sdk/dist/models/models";
 import AutSDK, { fetchMetadata, Nova } from "@aut-labs/sdk";
 import { AmoyNetwork } from "../services/networks";
 import { getSigner } from "../tools/ethers";
+import axios from "axios";
 
 @injectable()
 export class ZeelyController {
@@ -92,7 +93,9 @@ export class ZeelyController {
       const novasResponse: { novaDAOs: any[] } = await this.graphqlClient
         .request(gql`
         query GetNovas {
-          novaDAOs(deployer: "${wallet.toLowerCase()}") {
+          novaDAOs(
+            where: { deployer: "${wallet.toLowerCase()}" }
+          ) {
             deployer
             address
           }
@@ -135,7 +138,9 @@ export class ZeelyController {
       const novasResponse: { novaDAOs: any[] } = await this.graphqlClient
         .request(gql`
         query GetNovas {
-          novaDAOs(deployer: "${wallet.toLowerCase()}") {
+          novaDAOs(
+            where: { deployer: "${wallet.toLowerCase()}" }
+          ) {
             deployer
             address
           }
@@ -178,7 +183,9 @@ export class ZeelyController {
       const novasResponse: { novaDAOs: any[] } = await this.graphqlClient
         .request(gql`
         query GetNovas {
-          novaDAOs(deployer: "${wallet.toLowerCase()}") {
+          novaDAOs(d
+            where: { deployer: "${wallet.toLowerCase()}" }
+          ) {
             deployer
             address
           }
@@ -221,7 +228,9 @@ export class ZeelyController {
       const novasResponse: { novaDAOs: any[] } = await this.graphqlClient
         .request(gql`
         query GetNovas {
-          novaDAOs(deployer: "${wallet.toLowerCase()}") {
+          novaDAOs(
+            where: { deployer: "${wallet.toLowerCase()}" }
+          ) {
             deployer
             address
             metadataUri
@@ -235,13 +244,16 @@ export class ZeelyController {
       if (!nova) {
         return res.status(400).send({ message: "Hasn't deployed nova" });
       }
-
-      const novaMetadata = await fetchMetadata<any>(
-        nova.metadataUri,
-        process.env.IPFS_GATEWAY_URL
+      let ipfsHash = nova.metadataUri;
+      const prefix = "ipfs://";
+      if (ipfsHash.startsWith(prefix)) {
+        ipfsHash = ipfsHash.substring(prefix.length);
+      }
+      const novaMetadata = await axios.get(
+        `${process.env.IPFS_GATEWAY_URL}${ipfsHash}`
       );
 
-      if (novaMetadata?.properties?.archetype?.default) {
+      if (novaMetadata?.data?.properties?.archetype?.default) {
         return res.status(200).send({ message: "Has added an archetype" });
       } else res.status(400).send({ message: "Hasn't added an archetype" });
     } catch (e) {

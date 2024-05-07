@@ -36,15 +36,20 @@ export class LoggerService {
   private createLoggerConfiguration(): Logger {
     const logger = createLogger({
       level: "verbose",
-      format: format.json(),
+      format: format.combine(
+        format.timestamp({
+          format: "YYYY-MM-DD HH:mm:ss",
+        }),
+        format.json()
+      ),
       transports: [
         //
         // - Write to all logs with level `info` and below to `combined.log`
         // - Write all logs error (and below) to `error.log`.
         //
         new transports.File({ filename: "error.log" }),
-        new transports.File({ filename: "combined.log" })
-      ]
+        new transports.File({ filename: "combined.log" }),
+      ],
     });
 
     //
@@ -52,8 +57,16 @@ export class LoggerService {
     // `${info.level}: ${info.message} JSON.stringify({ ...rest }) `
     //
     if (process.env.NODE_ENV !== "production") {
-      const consoleLogger = logger.add(new transports.Console());
-      consoleLogger.format = format.simple();
+      const consoleLogger = logger.add(
+        new transports.Console({
+          format: format.combine(
+            format.timestamp({
+              format: "YYYY-MM-DD HH:mm:ss",
+            }),
+            format.simple()
+          ),
+        })
+      );
 
       return consoleLogger;
     }

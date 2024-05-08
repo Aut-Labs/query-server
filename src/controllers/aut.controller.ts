@@ -161,7 +161,7 @@ export class AutController {
         client_secret: process.env.GITHUB_CLIENT_SECRET,
         grant_type: "authorization_code",
         code: code,
-        redirect_uri: "http://localhost:3000/callback",
+        redirect_uri: callbackUrl,
       });
 
       let config = {
@@ -180,8 +180,6 @@ export class AutController {
       const match = response.data.match(regex);
       const access_token = match ? match[1] : null;
       return res.status(200).send({ access_token });
-
-      return res.status(200).send(response.data);
     } catch (err) {
       this.loggerService.error(err);
       return res
@@ -210,7 +208,7 @@ export class AutController {
         client_secret: process.env.X_CLIENT_SECRET,
         grant_type: "authorization_code",
         code: code,
-        redirect_uri: "http://localhost:3000/callback",
+        redirect_uri: callbackUrl,
         code_verifier: "challenge",
       });
 

@@ -256,7 +256,7 @@ export class ZeelyController {
         ipfsHash = ipfsHash.substring(prefix.length);
       }
       const novaMetadata = await axios.get(
-        `${process.env.IPFS_GATEWAY_URL}${ipfsHash}`
+        `${process.env.IPFS_GATEWAY}${ipfsHash}`
       );
 
       if (novaMetadata?.data?.properties?.archetype?.default) {

@@ -111,19 +111,21 @@ export class ZeelyController {
       }
 
       const autIdsResponse = await this.graphqlClient.request<any>(gql`
-        query GetAutID {
-          autIDs(
-            where: { novaAddress: "${nova.address.toLowerCase()}" }
-          ) {
+        query GetAutIds {
+          autIDs(where: { novaAddress: "${nova.address.toLowerCase()}" }){
             novaAddress
           }
         }
       `);
 
-      if (autIdsResponse.autIDs.length > 20) {
-        res.status(200).send({ message: "Nova has more than 20 members" });
+      const numberOfMembers = autIdsResponse.autIDs.length;
+
+      if (numberOfMembers > 20) {
+        return res
+          .status(200)
+          .send({ message: "Nova has more than 20 members" });
       }
-      res.status(400).send({ message: "Less than 20 members" });
+      return res.status(400).send({ message: "Less than 20 members" });
     } catch (e) {
       this.loggerService.error(e);
       return res.status(400).send({ message: "Something went wrong" });
@@ -156,17 +158,19 @@ export class ZeelyController {
       }
 
       const autIdsResponse = await this.graphqlClient.request<any>(gql`
-        query GetAutID {
-          autIDs(
-            where: { novaAddress: "${nova.address.toLowerCase()}" }
-          ) {
-            novaAddress
-          }
+      query GetAutIds {
+        autIDs(where: { novaAddress: "${nova.address.toLowerCase()}" }){
+          novaAddress
         }
-      `);
+      }
+    `);
 
-      if (autIdsResponse.autIds.length > 0) {
-        res.status(200).send({ message: "Nova has more than 50 members" });
+      const numberOfMembers = autIdsResponse.autIDs.length;
+
+      if (numberOfMembers > 50) {
+        return res
+          .status(200)
+          .send({ message: "Nova has more than 50 members" });
       }
       return res.status(400).send({ message: "Less than 50 members" });
     } catch (e) {
@@ -201,19 +205,21 @@ export class ZeelyController {
       }
 
       const autIdsResponse = await this.graphqlClient.request<any>(gql`
-        query GetAutID {
-          autIDs(
-            where: { novaAddress: "${nova.address.toLowerCase()}" }
-          ) {
-            novaAddress
-          }
+      query GetAutIds {
+        autIDs(where: { novaAddress: "${nova.address.toLowerCase()}" }){
+          novaAddress
         }
-      `);
-
-      if (autIdsResponse.autIds.length > 0) {
-        res.status(200).send({ message: "Nova has more than 100 members" });
       }
-      res.status(400).send({ message: "Less than 100 members" });
+    `);
+
+      const numberOfMembers = autIdsResponse.autIDs.length;
+
+      if (numberOfMembers > 100) {
+        return res
+          .status(200)
+          .send({ message: "Nova has more than 100 members" });
+      }
+      return res.status(400).send({ message: "Less than 100 members" });
     } catch (e) {
       this.loggerService.error(e);
       return res.status(400).send({ message: e });
@@ -255,7 +261,8 @@ export class ZeelyController {
 
       if (novaMetadata?.data?.properties?.archetype?.default) {
         return res.status(200).send({ message: "Has added an archetype" });
-      } else res.status(400).send({ message: "Hasn't added an archetype" });
+      }
+      return res.status(400).send({ message: "Hasn't added an archetype" });
     } catch (e) {
       this.loggerService.error(e);
       return res.status(400).send({ message: "Something went wrong" });

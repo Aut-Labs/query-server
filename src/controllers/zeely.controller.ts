@@ -187,7 +187,7 @@ export class ZeelyController {
       const novasResponse: { novaDAOs: any[] } = await this.graphqlClient
         .request(gql`
         query GetNovas {
-          novaDAOs(d
+          novaDAOs(
             where: { deployer: "${wallet.toLowerCase()}" }
           ) {
             deployer

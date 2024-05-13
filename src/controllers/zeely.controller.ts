@@ -128,7 +128,7 @@ export class ZeelyController {
       return res.status(400).send({ message: "Less than 20 members" });
     } catch (e) {
       this.loggerService.error(e);
-      return res.status(400).send({ message: "Something went wrong" });
+      return res.status(500).send({ message: "Something went wrong" });
     }
   };
 
@@ -175,7 +175,7 @@ export class ZeelyController {
       return res.status(400).send({ message: "Less than 50 members" });
     } catch (e) {
       this.loggerService.error(e);
-      return res.status(400).send({ message: "Something went wrong" });
+      return res.status(500).send({ message: "Something went wrong" });
     }
   };
 
@@ -222,7 +222,7 @@ export class ZeelyController {
       return res.status(400).send({ message: "Less than 100 members" });
     } catch (e) {
       this.loggerService.error(e);
-      return res.status(400).send({ message: e });
+      return res.status(500).send({ message: "Something went wrong" });
     }
   };
 

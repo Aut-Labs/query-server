@@ -111,12 +111,12 @@ export class ZeelyController {
       }
 
       const autIdsResponse = await this.graphqlClient.request<any>(gql`
-        query GetAutIds {
-          autIDs(where: { novaAddress: "${nova.address.toLowerCase()}" }){
-            novaAddress
-          }
+      query GetAutIds {
+        autIDs(where: { novaAddress: "${nova.address.toLowerCase()}" }, first: 10000){
+          novaAddress
         }
-      `);
+      }
+    `);
 
       const numberOfMembers = autIdsResponse.autIDs.length;
 
@@ -159,7 +159,7 @@ export class ZeelyController {
 
       const autIdsResponse = await this.graphqlClient.request<any>(gql`
       query GetAutIds {
-        autIDs(where: { novaAddress: "${nova.address.toLowerCase()}" }){
+        autIDs(where: { novaAddress: "${nova.address.toLowerCase()}" }, first: 10000){
           novaAddress
         }
       }
@@ -206,7 +206,7 @@ export class ZeelyController {
 
       const autIdsResponse = await this.graphqlClient.request<any>(gql`
       query GetAutIds {
-        autIDs(where: { novaAddress: "${nova.address.toLowerCase()}" }){
+        autIDs(where: { novaAddress: "${nova.address.toLowerCase()}" }, first: 10000){
           novaAddress
         }
       }

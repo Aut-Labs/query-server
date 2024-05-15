@@ -11,6 +11,7 @@ import { SWIDParams } from "../tools/ImageGeneration/AutIDBadge/Badge.model";
 import NovaContract from "@aut-labs/sdk/dist/contracts/nova";
 import { AddressModel } from "../models/address";
 import { MultiSigner } from "@aut-labs/sdk/dist/models/models";
+import { NetworkConfigEnv } from "../models/config";
 
 const getHiddenAdminAddressesArray = () => {
   if (!process.env.HIDDEN_ADMIN_ADDRESSES) return [];
@@ -162,7 +163,8 @@ export class UserController {
     const promises = [];
     try {
       const sdk = AutSDK.getInstance();
-      const networkConfig = getNetworkConfig("mumbai", "testing" as any);
+      const networkEnv: NetworkConfigEnv = process.env.NETWORK_ENV as NetworkConfigEnv;
+      const networkConfig = getNetworkConfig(networkEnv);
 
       const signer = getSigner(networkConfig);
       const multiSigner: MultiSigner = {
@@ -198,7 +200,8 @@ export class UserController {
     const promises = [];
     try {
       const sdk = AutSDK.getInstance();
-      const networkConfig = getNetworkConfig("mumbai", "testing" as any);
+      const networkEnv: NetworkConfigEnv = process.env.NETWORK_ENV as NetworkConfigEnv;
+      const networkConfig = getNetworkConfig(networkEnv);
 
       const signer = getSigner(networkConfig);
       const multiSigner: MultiSigner = {

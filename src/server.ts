@@ -7,6 +7,7 @@ import { connect } from "mongoose";
 import { getSigner } from "./tools/ethers";
 import AutSDK from "@aut-labs/sdk";
 import { MultiSigner } from "@aut-labs/sdk/dist/models/models";
+import { NetworkConfigEnv } from "./models/config";
 // initialize configuration
 dotenv.config();
 
@@ -23,8 +24,8 @@ application.app.listen(PORT, async () => {
       });
 
       // await db.connection.db.dropDatabase();
-
-      const networkConfig = getNetworkConfig("mumbai", undefined);
+      const networkEnv: NetworkConfigEnv = process.env.NETWORK_ENV as NetworkConfigEnv;
+      const networkConfig = getNetworkConfig(networkEnv);
 
       const signer = getSigner(networkConfig);
       const multiSigner: MultiSigner = {

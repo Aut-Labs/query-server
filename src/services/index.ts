@@ -1,41 +1,29 @@
 export * from "./logger.service";
 import axios from "axios";
 import { NetworkConfigEnv, NetworkConfig } from "../models/config";
-import { GoerliNetwork, MumbaiNetwork, AmoyNetwork } from "./networks";
+import { AmoyNetwork, PolygonNetwork } from "./networks";
 // import { TwitterVerificationModel } from "../models/tweetVerif";
 
-export function getNetworkConfig(
-  network: string,
-  networkConfigEnv: NetworkConfigEnv.Testnet
-): NetworkConfig {
-  if (!networkConfigEnv) {
+export function getNetworkConfig(networkConfigEnv: NetworkConfigEnv): NetworkConfig {
+  if (!networkConfigEnv || (networkConfigEnv !== NetworkConfigEnv.Testnet && networkConfigEnv !== NetworkConfigEnv.Mainnet)) {
     networkConfigEnv = NetworkConfigEnv.Testnet;
   }
   if (networkConfigEnv === NetworkConfigEnv.Testnet) {
-    switch (network) {
-      case "amoy":
-        return AmoyNetwork();
-      case "mumbai":
-        return MumbaiNetwork();
-      case "goerli":
-        return GoerliNetwork();
-      default:
-        return undefined;
-    }
+    return AmoyNetwork();
   }
-  return undefined;
+  return PolygonNetwork();
 }
 
 export function getNetworksConfig(
   networkConfigEnv: NetworkConfigEnv
 ): NetworkConfig[] {
-  if (!networkConfigEnv) {
+  if (!networkConfigEnv || (networkConfigEnv !== NetworkConfigEnv.Testnet && networkConfigEnv !== NetworkConfigEnv.Mainnet)) {
     networkConfigEnv = NetworkConfigEnv.Testnet;
   }
   if (networkConfigEnv === NetworkConfigEnv.Testnet) {
-    return [GoerliNetwork(), MumbaiNetwork(), AmoyNetwork()];
+    return [AmoyNetwork()];
   }
-  return [];
+  return [PolygonNetwork()];
 }
 
 

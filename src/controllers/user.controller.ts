@@ -41,10 +41,7 @@ const getNovaDetailsPromise = async (sdk: AutSDK, novaAddress: string) => {
         const pluginDefinition =
           await sdk.pluginRegistry.getPluginDefinitionByType(novaAddress, 1);
         if (pluginDefinition.data) {
-          const nova = sdk.initService<Nova>(
-            Nova,
-            novaAddress
-          );
+          const nova = sdk.initService<Nova>(Nova, novaAddress);
           const daoAdminsResponse = await nova.contract.admins.getAdmins();
           const daoData = await nova.contract.metadata.getMetadataUri();
           const onboardingQuest = sdk.initService<QuestOnboarding>(
@@ -111,18 +108,14 @@ const getLeaderBoardNovaDetailsPromise = async (
         const pluginDefinition =
           await sdk.pluginRegistry.getPluginDefinitionByType(novaAddress, 1);
         if (pluginDefinition.data) {
-          const nova = sdk.initService<Nova>(
-            Nova,
-            novaAddress
-          );
+          const nova = sdk.initService<Nova>(Nova, novaAddress);
           const daoData = await nova.contract.metadata.getMetadataUri();
 
           let members = [];
           let totalMembers = 0;
 
           try {
-            const membersResponse =
-              await nova.contract.members.getAllMembers();
+            const membersResponse = await nova.contract.members.getAllMembers();
             members = membersResponse.data;
             totalMembers = membersResponse.data.length;
           } catch (error) {
@@ -167,8 +160,8 @@ export class UserController {
       const signer = getSigner(networkConfig);
       const multiSigner: MultiSigner = {
         readOnlySigner: signer,
-        signer
-      }
+        signer,
+      };
 
       await sdk.init(multiSigner, networkConfig.contracts);
       const novaRes = await sdk.novaRegistry.contract.getNovas();
@@ -203,8 +196,8 @@ export class UserController {
       const signer = getSigner(networkConfig);
       const multiSigner: MultiSigner = {
         readOnlySigner: signer,
-        signer
-      }
+        signer,
+      };
 
       await sdk.init(multiSigner, networkConfig.contracts);
       const novaRes = await sdk.novaRegistry.contract.getNovas();

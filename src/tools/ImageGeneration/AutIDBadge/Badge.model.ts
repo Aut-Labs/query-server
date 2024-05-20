@@ -11,7 +11,7 @@ export interface SWIDParams {
   tokenId?: string;
   canvas?: HTMLCanvasElement;
   config?: ContentConfig;
-  network: "mumbai" | "goerli";
+  network: "mumbai" | "goerli" | "amoy" | "polygon";
 }
 
 export interface SWIDOutput {
@@ -37,6 +37,7 @@ export interface ContentConfig {
   width: number;
   height: number;
   novaAddress: string;
+  network: string;
   canvasFont: {
     name: string;
     url: string;

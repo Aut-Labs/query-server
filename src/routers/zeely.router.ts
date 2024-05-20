@@ -1,13 +1,25 @@
 import { injectable } from "inversify";
 import { Router } from "express";
 import { ZeelyController } from "../controllers/zeely.controller";
+import { container } from "../inversify.config";
+import { LoggerService } from "../services";
 
 @injectable()
 export class ZeelyRouter {
   private readonly _router: Router;
+  private readonly _zeelyProdController: ZeelyController;
+  private readonly _zeelyDevController: ZeelyController;
 
-  constructor(private zeelyController: ZeelyController) {
+  constructor() {
     this._router = Router({ strict: true });
+    this._zeelyDevController = new ZeelyController(
+      process.env.GRAPH_API_DEV_URL,
+      container.get<LoggerService>(LoggerService)
+    );
+    this._zeelyProdController = new ZeelyController(
+      process.env.GRAPH_API_PROD_URL,
+      container.get<LoggerService>(LoggerService)
+    );
     this.init();
   }
 
@@ -23,32 +35,65 @@ export class ZeelyRouter {
     this._router.post(
       "/hasDeployed",
       this.validateApiKey,
-      this.zeelyController.hasDeployed
+      this._zeelyProdController.hasDeployed
     );
     this._router.post(
       "/isAdmin",
       this.validateApiKey,
-      this.zeelyController.isAdmin
+      this._zeelyProdController.isAdmin
     );
     this._router.post(
       "/20members",
       this.validateApiKey,
-      this.zeelyController.has20Members
+      this._zeelyProdController.has20Members
     );
     this._router.post(
       "/50members",
       this.validateApiKey,
-      this.zeelyController.has50Members
+      this._zeelyProdController.has50Members
     );
     this._router.post(
       "/100members",
       this.validateApiKey,
-      this.zeelyController.has100Members
+      this._zeelyProdController.has100Members
     );
     this._router.post(
       "/archetype",
       this.validateApiKey,
-      this.zeelyController.hasAddedAnArchetype
+      this._zeelyProdController.hasAddedAnArchetype
+    );
+
+    //DEV controller
+
+    this._router.post(
+      "/dev/hasDeployed",
+      this.validateApiKey,
+      this._zeelyDevController.hasDeployed
+    );
+    this._router.post(
+      "/dev/isAdmin",
+      this.validateApiKey,
+      this._zeelyDevController.isAdmin
+    );
+    this._router.post(
+      "/dev/20members",
+      this.validateApiKey,
+      this._zeelyDevController.has20Members
+    );
+    this._router.post(
+      "/dev/50members",
+      this.validateApiKey,
+      this._zeelyDevController.has50Members
+    );
+    this._router.post(
+      "/dev/100members",
+      this.validateApiKey,
+      this._zeelyDevController.has100Members
+    );
+    this._router.post(
+      "/dev/archetype",
+      this.validateApiKey,
+      this._zeelyDevController.hasAddedAnArchetype
     );
   }
 

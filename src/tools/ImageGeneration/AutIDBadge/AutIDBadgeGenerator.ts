@@ -50,9 +50,9 @@ const drawCanvasElements = (
     ctx.drawImage(gradient, 87, 112);
   };
 
-  const drawLabel = async () => {
+  const drawLabel = async (network: string) => {
     let label = null;
-    label = await AutMumbaiLabel();
+    label = await AutMumbaiLabel(network);
     ctx.drawImage(label, 0, 114);
   };
 
@@ -80,7 +80,8 @@ const defaulConfig = (
   role: string,
   timestamp: string,
   hash: string,
-  novaAddress: string
+  novaAddress: string,
+  network: string
 ): ContentConfig => {
   const WIDTH = config?.width || 530;
   const HEIGHT = config?.height || 737;
@@ -88,6 +89,7 @@ const defaulConfig = (
     width: WIDTH,
     height: HEIGHT,
     novaAddress,
+    network,
     canvasFont: {
       name: "custom",
       fontFamily: "Helvetica",
@@ -148,7 +150,8 @@ export const AutIDBadgeGenerator = async ({
     role,
     timestamp,
     hash,
-    novaAddress
+    novaAddress,
+    network
   );
   const canvas = createCanvas(config.width, config.height);
   const ctx = canvas.getContext("2d");
@@ -162,7 +165,9 @@ export const AutIDBadgeGenerator = async ({
   await ctxContents.drawAvatar(avatar);
   await ctxContents.drawAvatarGradient();
   await ctxContents.drawSigil(novaAddress);
-  await ctxContents.drawLabel();
+  if (network.toLowerCase() !== "mainnet") {
+    await ctxContents.drawLabel(network);
+  }
 
   return {
     previewElement: canvas,

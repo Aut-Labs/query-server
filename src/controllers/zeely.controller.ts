@@ -11,8 +11,8 @@ import axios from "axios";
 export class ZeelyController {
   private graphqlClient: GraphQLClient;
 
-  constructor(private loggerService: LoggerService) {
-    this.graphqlClient = new GraphQLClient(process.env.GRAPH_API_URL);
+  constructor(graphApiUrl: string, private loggerService: LoggerService) {
+    this.graphqlClient = new GraphQLClient(graphApiUrl);
   }
 
   public hasDeployed = async (req, res) => {
@@ -256,7 +256,7 @@ export class ZeelyController {
         ipfsHash = ipfsHash.substring(prefix.length);
       }
       const novaMetadata = await axios.get(
-        `${process.env.IPFS_GATEWAY}${ipfsHash}`
+        `${process.env.IPFS_GATEWAY}/${ipfsHash}`
       );
 
       if (novaMetadata?.data?.properties?.archetype?.default) {

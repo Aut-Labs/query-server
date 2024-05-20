@@ -26,7 +26,7 @@ export class HoldersController {
         return res.status(400).send({ error: "Network not provided." });
       }
 
-      const networkConfig = getNetworkConfig(network, networkEnv);
+      const networkConfig = getNetworkConfig(networkEnv);
 
       if (!networkConfig) {
         return res.status(400).send({ error: "Network not supported." });

@@ -1,6 +1,7 @@
 export enum NetworkConfigEnv {
-  Testnet = "testing", // rename in the future to testnet
+  Testnet = "testnet",
   Mainnet = "mainnet",
+  Testing = "testing" // temporary, remove later
 }
 
 export interface NetworkContracts {

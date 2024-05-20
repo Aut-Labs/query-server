@@ -35,7 +35,7 @@ export const AmoyNetwork = (): NetworkConfig => ({
 
 export const PolygonNetwork = (): NetworkConfig => ({
   name: "Polygon",
-  chainId: 1337,
+  chainId: 137,
   network: "Polygon",
   disabled: process.env.POLYGON_DISABLED == "true",
   explorerUrls: process.env.POLYGON_BLOCK_EXPLORER_URLS.split("|"),

@@ -201,6 +201,8 @@ export class AutIDRouter {
       this.userController.generate
     );
 
+    this._router.get("/user/generateSigil/:novaAddress", this.userController.generateSigil);
+
     this._router.get("/user/nonce/:address", this.userController.getUserNonce);
 
     this._router.get("/user/novas", this.userController.getNovas);

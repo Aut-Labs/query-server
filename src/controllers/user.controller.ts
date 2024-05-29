@@ -5,13 +5,14 @@ import jwt from "jsonwebtoken";
 import { verifyMessage } from "@ethersproject/wallet";
 import AutSDK, { Nova, QuestOnboarding } from "@aut-labs/sdk";
 import { getNetworkConfig } from "../services";
-import { getSigner } from "../tools/ethers";
+import { ethers, getSigner } from "../tools/ethers";
 import { AutIDBadgeGenerator } from "../tools/ImageGeneration/AutIDBadge/AutIDBadgeGenerator";
 import { SWIDParams } from "../tools/ImageGeneration/AutIDBadge/Badge.model";
 import NovaContract from "@aut-labs/sdk/dist/contracts/nova";
 import { AddressModel } from "../models/address";
 import { MultiSigner } from "@aut-labs/sdk/dist/models/models";
 import { NetworkConfigEnv } from "../models/config";
+import { generateAutIdDAOSigil } from "../tools/ImageGeneration/AutSIgilGenerator/SigilGenerator";
 
 const getHiddenAdminAddressesArray = () => {
   if (!process.env.HIDDEN_ADMIN_ADDRESSES) return [];
@@ -156,7 +157,8 @@ export class UserController {
     const promises = [];
     try {
       const sdk = AutSDK.getInstance();
-      const networkEnv: NetworkConfigEnv = process.env.NETWORK_ENV as NetworkConfigEnv;
+      const networkEnv: NetworkConfigEnv = process.env
+        .NETWORK_ENV as NetworkConfigEnv;
       const networkConfig = getNetworkConfig(networkEnv);
 
       const signer = getSigner(networkConfig);
@@ -193,7 +195,8 @@ export class UserController {
     const promises = [];
     try {
       const sdk = AutSDK.getInstance();
-      const networkEnv: NetworkConfigEnv = process.env.NETWORK_ENV as NetworkConfigEnv;
+      const networkEnv: NetworkConfigEnv = process.env
+        .NETWORK_ENV as NetworkConfigEnv;
       const networkConfig = getNetworkConfig(networkEnv);
 
       const signer = getSigner(networkConfig);
@@ -237,6 +240,25 @@ export class UserController {
     }
   };
 
+  public generateSigil = async (req, res) => {
+    try {
+      if (!req.params.novaAddress) {
+        return res.status(400).send(`"novaAddress" not provided.`);
+      }
+      if (!ethers.utils.isAddress(req.params.novaAddress)) {
+        return res.status(400).send(`Invalid "novaAddress" provided.`);
+      }
+      const { toBase64: toBase64Sigil } = await generateAutIdDAOSigil(
+        req.params.novaAddress
+      );
+      const sigil = await toBase64Sigil();
+      res.status(200).send({ sigil });
+    } catch (e) {
+      this.loggerService.error(e);
+      res.status(500).send("Something went wrong");
+    }
+  };
+
   public generate = async (req, res) => {
     try {
       if (!req.body.config) {
@@ -273,7 +295,11 @@ export class UserController {
       } as SWIDParams;
       const { toBase64 } = await AutIDBadgeGenerator(config);
       const badge = await toBase64();
-      res.status(200).send({ badge });
+      const { toBase64: toBase64Sigil } = await generateAutIdDAOSigil(
+        requestConfig.novaAddress
+      );
+      const sigil = await toBase64Sigil();
+      res.status(200).send({ badge, sigil });
     } catch (e) {
       this.loggerService.error(e);
       res.status(500).send("Something went wrong");

@@ -30,10 +30,10 @@ application.app.listen(PORT, async () => {
       const signer = getSigner(networkConfig);
       const multiSigner: MultiSigner = {
         readOnlySigner: signer,
-        signer 
+        signer
       }
 
-      const sdk = AutSDK.getInstance();
+      const sdk = await AutSDK.getInstance(false);
       await sdk.init(multiSigner, networkConfig.contracts);
     } catch (error) {
       console.log(error, "error");

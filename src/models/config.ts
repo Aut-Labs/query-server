@@ -6,6 +6,7 @@ export enum NetworkConfigEnv {
 
 export interface NetworkContracts {
   autIDAddress: string;
+  domainHubAddress: string;
   daoExpanderRegistryAddress: string;
   daoExpanderFactoryAddress: string;
   novaRegistryAddress: string;

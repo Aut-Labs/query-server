@@ -21,7 +21,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@aut-labs/sdk": "^0.0.124-dev",
+    "@aut-labs/sdk": "^0.0.161-dev",
     "@resvg/resvg-js": "^2.4.1",
     "@types/node": "latest",
     "axios": "^0.27.2",
@@ -30,7 +30,7 @@
     "cookie-parser": "1.4.5",
     "cors": "2.8.5",
     "dotenv": "^8.0.0",
-    "ethers": "^5.0.24",
+    "ethers": "^6.10.0",
     "express": "^4.17.1",
     "express-prom-bundle": "^5.1.5",
     "express-rate-limit": "^6.3.0",

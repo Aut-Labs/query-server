@@ -8,38 +8,39 @@ const verifyIsAdmin = async (
   userAddress: string,
   taskAddress: string
 ): Promise<boolean> => {
-  const sdk = AutSDK.getInstance();
+  return null
+  // const sdk = await AutSDK.getInstance(false);
 
-  const holderDaos = await sdk.autID.contract.getHolderDAOs(userAddress);
-  let novaAddress = null;
-  for (let i = 0; i < holderDaos.data.length; i++) {
-    if (novaAddress) {
-      break;
-    }
-    const dao = holderDaos.data[i];
-    const pluginIds =
-      await sdk.pluginRegistry.contract.functions.getPluginIdsByNova(dao);
-    for (let j = 0; j < pluginIds.length; j++) {
-      if (novaAddress) {
-        break;
-      }
-      const pluginId = pluginIds[j];
-      const pluginInstance =
-        await sdk.pluginRegistry.contract.functions.pluginInstanceByTokenId(
-          pluginId
-        );
-      if (pluginInstance.pluginAddress === taskAddress) {
-        novaAddress = dao;
-        break;
-      }
-    }
-  }
-  const nova = sdk.initService<Nova>(
-    Nova,
-    novaAddress
-  );
-  const isAdmin = await nova.contract.admins.isAdmin(userAddress);
-  return isAdmin.data;
+  // const holderDaos = await sdk.autID.contract.getHolderDAOs(userAddress);
+  // let novaAddress = null;
+  // for (let i = 0; i < holderDaos.data.length; i++) {
+  //   if (novaAddress) {
+  //     break;
+  //   }
+  //   const dao = holderDaos.data[i];
+  //   const pluginIds =
+  //     await sdk.pluginRegistry.contract.functions.getPluginIdsByNova(dao);
+  //   for (let j = 0; j < pluginIds.length; j++) {
+  //     if (novaAddress) {
+  //       break;
+  //     }
+  //     const pluginId = pluginIds[j];
+  //     const pluginInstance =
+  //       await sdk.pluginRegistry.contract.functions.pluginInstanceByTokenId(
+  //         pluginId
+  //       );
+  //     if (pluginInstance.pluginAddress === taskAddress) {
+  //       novaAddress = dao;
+  //       break;
+  //     }
+  //   }
+  // }
+  // const nova = sdk.initService<Nova>(
+  //   Nova,
+  //   novaAddress
+  // );
+  // const isAdmin = await nova.contract.admins.isAdmin(userAddress);
+  // return isAdmin.data;
 };
 
 @injectable()

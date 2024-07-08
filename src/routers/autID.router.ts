@@ -201,7 +201,10 @@ export class AutIDRouter {
       this.userController.generate
     );
 
-    this._router.get("/user/generateSigil/:novaAddress", this.userController.generateSigil);
+    this._router.get(
+      "/user/generateSigil/:novaAddress",
+      this.userController.generateSigil
+    );
 
     this._router.get("/user/nonce/:address", this.userController.getUserNonce);
 
@@ -214,6 +217,30 @@ export class AutIDRouter {
       "/user/me",
       passport.authenticate("jwt", { session: false }),
       this.userController.getUser
+    );
+
+    this._router.get(
+      "/user/getReferralCode",
+      passport.authenticate("jwt", { session: false }),
+      this.userController.generateReferralCode
+    );
+
+    this._router.get(
+      "/user/useReferralCode",
+      passport.authenticate("jwt", { session: false }),
+      this.userController.useReferralCode
+    );
+
+    this._router.post(
+      "/user/verifyTwitterFollow",
+      passport.authenticate("jwt", { session: false }),
+      this.userController.verifyTwitterFollow
+    );
+
+    this._router.get(
+      "/user/verifyHasAddedBio",
+      passport.authenticate("jwt", { session: false }),
+      this.userController.verifyHasAddedBio
     );
 
     this._router.post("/quiz", this.quizController.saveQestions);

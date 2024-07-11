@@ -69,7 +69,7 @@ export class ZeelyController {
         signer,
       };
 
-      const sdk = await AutSDK.getInstance(false);
+      const sdk = await AutSDK.getInstance();
 
       await sdk.init(multiSigner, networkConfig.contracts);
 
@@ -263,6 +263,40 @@ export class ZeelyController {
         return res.status(200).send({ message: "Has added an archetype" });
       }
       return res.status(400).send({ message: "Hasn't added an archetype" });
+    } catch (e) {
+      this.loggerService.error(e);
+      return res.status(400).send({ message: "Something went wrong" });
+    }
+  };
+
+  public hasRegisteredADomain = async (req, res) => {
+    try {
+      const { accounts } = req.body;
+      const { wallet } = accounts;
+
+      const hubsResponse: { hubs: any[] } = await this.graphqlClient
+        .request(gql`
+        query Gethubs {
+          hubs(
+            where: { deployer: "${wallet.toLowerCase()}" }
+          ) {
+            deployer
+            address
+            domain
+          }
+        }
+      `);
+      const hubs = hubsResponse.hubs;
+
+      const nova = hubs[0];
+
+      if (!nova) {
+        return res.status(400).send({ message: "Hasn't deployed nova" });
+      }
+      if (nova?.domain) {
+        return res.status(200).send({ message: "Has added a domain" });
+      }
+      return res.status(400).send({ message: "Hasn't added a domain" });
     } catch (e) {
       this.loggerService.error(e);
       return res.status(400).send({ message: "Something went wrong" });

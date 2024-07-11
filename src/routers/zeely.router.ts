@@ -100,6 +100,13 @@ export class ZeelyRouter {
       this.validateApiKey,
       this._zeelyDevController.hasAddedAnArchetype
     );
+
+    this._router.post(
+      "/dev/domain",
+      this.validateApiKey,
+      this._zeelyDevController.hasRegisteredADomain
+    );
+
   }
 
   public get router(): Router {

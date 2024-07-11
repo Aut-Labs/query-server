@@ -62,6 +62,11 @@ export class ZeelyRouter {
       this.validateApiKey,
       this._zeelyProdController.hasAddedAnArchetype
     );
+    this._router.post(
+      "/domain",
+      this.validateApiKey,
+      this._zeelyProdController.hasRegisteredADomain
+    );
 
     //DEV controller
 

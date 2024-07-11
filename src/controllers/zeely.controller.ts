@@ -294,9 +294,9 @@ export class ZeelyController {
         return res.status(400).send({ message: "Hasn't deployed nova" });
       }
       if (nova?.domain) {
-        return res.status(200).send({ message: "Has added an domain" });
+        return res.status(200).send({ message: "Has added a domain" });
       }
-      return res.status(400).send({ message: "Hasn't added an domain" });
+      return res.status(400).send({ message: "Hasn't added a domain" });
     } catch (e) {
       this.loggerService.error(e);
       return res.status(400).send({ message: "Something went wrong" });

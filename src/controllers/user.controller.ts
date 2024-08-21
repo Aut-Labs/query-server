@@ -11,6 +11,10 @@ import { AddressModel } from "../models/address";
 import { MultiSigner } from "@aut-labs/sdk/dist/models/models";
 import { NetworkConfigEnv } from "../models/config";
 import { generateAutIdDAOSigil } from "../tools/ImageGeneration/AutSIgilGenerator/SigilGenerator";
+import axios from "axios";
+import Twit from "twit";
+import { GraphQLClient, gql } from "graphql-request";
+import { add } from "winston";
 import { isAddress, verifyMessage } from "ethers";
 
 const getHiddenAdminAddressesArray = () => {
@@ -69,7 +73,6 @@ const getNovaDetailsPromise = async (sdk: AutSDK, novaAddress: string) => {
     //           allQuests: [],
     //         }
     //       );
-
     //       const isThereAtLeastOneActive = activeQuests > 0;
     //       const isNovaExpired = pastQuests === allQuests.length;
     //       if (!isThereAtLeastOneActive) {
@@ -111,10 +114,8 @@ const getLeaderBoardNovaDetailsPromise = async (
       //   if (pluginDefinition.data) {
       //     const nova = sdk.initService<Nova>(Nova, novaAddress);
       //     const daoData = await nova.contract.metadata.getMetadataUri();
-
       //     let members = [];
       //     let totalMembers = 0;
-
       //     try {
       //       const membersResponse = await nova.contract.members.getAllMembers();
       //       members = membersResponse.data;
@@ -138,13 +139,27 @@ const getLeaderBoardNovaDetailsPromise = async (
   });
 };
 
+const generateReferralCode = () => {
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const length = 8;
+  let referralCode = "";
+
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    referralCode += characters.charAt(randomIndex);
+  }
+
+  return referralCode;
+};
+
 @injectable()
 export class UserController {
   constructor(private loggerService: LoggerService) {}
 
   public getUser = async (req, res) => {
     try {
-      const response = { address: req.user.address };
+      const response = { userData: req.user };
       res.status(200).send(response);
     } catch (e) {
       this.loggerService.error(e);
@@ -465,6 +480,163 @@ export class UserController {
     } catch (e) {
       this.loggerService.error(e);
       res.status(500).send("Something went wrong");
+    }
+  };
+
+  public generateReferralCode = async (req, res) => {
+    try {
+      const { address } = req.user;
+      const user = await UserModel.findOne({ address: address });
+      if (user) {
+        const referralCode = generateReferralCode(); // Implement your own logic to generate a unique referral code
+        user.referralCodes.push(referralCode);
+        await user.save();
+        res.status(200).send({ referralCode });
+      } else {
+        res.status(404).send("User not found");
+      }
+    } catch (e) {
+      this.loggerService.error(e);
+      res.status(500).send("Something went wrong");
+    }
+  };
+
+  public useReferralCode = async (req, res) => {
+    try {
+      const { address } = req.user;
+      const { referralCode } = req.body;
+      const referrer = await UserModel.findOne({ referralCodes: referralCode });
+      if (referrer) {
+        if (referrer.address === address) {
+          return res.status(400).send("Cannot use your own referral code");
+        }
+        const user = await UserModel.findOne({ address: address });
+        if (user) {
+          if (!user.referredBy) {
+            user.referredBy = referrer.address;
+            referrer.referredAddresses.push(user.address);
+            referrer.points += 1;
+            referrer.referralCodes = referrer.referralCodes.filter(
+              (code) => code !== referralCode
+            );
+            await user.save();
+            await referrer.save();
+            return res.status(200).send("Referral code applied successfully");
+          } else {
+            return res.status(400).send("User has already been referred");
+          }
+        } else {
+          return res.status(404).send("User not found");
+        }
+      } else {
+        return res.status(404).send("Invalid referral code");
+      }
+    } catch (e) {
+      this.loggerService.error(e);
+      return res.status(500).send("Something went wrong");
+    }
+  };
+
+  public verifyHasAddedBio = async (req, res) => {
+    const { address } = req.user;
+    try {
+      const graphqlClient = new GraphQLClient(process.env.GRAPH_API_DEV_URL);
+      const query = gql`
+    query GetAutID {
+      autID(id: "${address.toLowerCase()}") {
+        id
+        username
+        tokenID
+        novaAddress
+        role
+        commitment
+        metadataUri
+      }
+    }
+  `;
+      const autIdResponse: any = await graphqlClient.request(query);
+      let { metadataUri } = autIdResponse.autID;
+      const prefix = "ipfs://";
+      if (metadataUri.startsWith(prefix)) {
+        metadataUri = metadataUri.substring(prefix.length);
+      }
+      const autId = await axios.get(
+        `${process.env.IPFS_GATEWAY}/${metadataUri}`
+      );
+      const { properties } = autId.data;
+      if (properties.bio) {
+        const user = await UserModel.findOne({ address: address });
+
+        if (user) {
+          if (!user.hasAddedBio) {
+            user.hasAddedBio = true;
+            user.points += 1;
+            await user.save();
+            return res.status(200).send({ message: "Bio verified." });
+          } else {
+            return res.status(200).send({ message: "Reward already claimed." });
+          }
+        } else {
+          return res.status(404).send({ error: "User not found." });
+        }
+      } else {
+        return res.status(200).send({ message: "Bio not set." });
+      }
+    } catch (e) {
+      this.loggerService.error(e);
+      return res.status(500).send("Something went wrong");
+    }
+  };
+
+  public verifyTwitterFollow = async (req: any, res: any) => {
+    try {
+      const { accessToken, userId } = req.body;
+      const twitterHandle = "opt_aut"; // Replace with the Twitter handle you want to check
+
+      if (!accessToken) {
+        return res.status(400).send({
+          error: "Access token not provided.",
+        });
+      }
+
+      if (!userId) {
+        return res.status(400).send({
+          error: "User ID not provided.",
+        });
+      }
+
+      const T = new Twit({
+        consumer_key: process.env.X_CONSUMER_API_KEY,
+        consumer_secret: process.env.X_CONSUMER_API_SECRET,
+        access_token: process.env.X_ACCESS_TOKEN,
+        access_token_secret: process.env.X_TOKEN_SECRET,
+      });
+      const response = await T.get("followers/ids", {
+        screen_name: twitterHandle,
+      });
+      const followerIds = response.data.ids;
+
+      if (followerIds.includes(userId)) {
+        // User follows the specified Twitter account
+        const user = await UserModel.findOne({ twitterId: userId });
+
+        if (user) {
+          user.hasFollowedOnTwitter = true;
+          await user.save();
+          return res.status(200).send({ message: "Twitter follow verified." });
+        } else {
+          return res.status(404).send({ error: "User not found." });
+        }
+      } else {
+        return res.status(400).send({
+          error: "User does not follow the specified Twitter account.",
+        });
+      }
+    } catch (err) {
+      this.loggerService.error(err);
+      return res
+        .status(500)
+        .send({ error: "Something went wrong, please try again later." });
     }
   };
 }

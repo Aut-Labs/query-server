@@ -39,7 +39,7 @@ export class AutController {
       if (!network) {
         return res.status(400).send({ error: "Network name not provided." });
       }
-      
+
       const configuration = getNetworkConfig(networkEnv);
       if (!configuration)
         return res.status(400).send({
@@ -227,6 +227,15 @@ export class AutController {
       };
 
       const response = await axios(config);
+
+      const userMeResponse = await axios.get("https://api.twitter.com/2/users/me", {
+        headers: {
+          Authorization: `Bearer ${response.data.access_token}`,
+        },
+      });
+
+      console.log(userMeResponse);
+      console.log(userMeResponse.data);
 
       return res.status(200).send(response.data);
     } catch (err) {

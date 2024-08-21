@@ -6,6 +6,7 @@ import AutSDK, { fetchMetadata, Nova } from "@aut-labs/sdk";
 import { AmoyNetwork } from "../services/networks";
 import { getSigner } from "../tools/ethers";
 import axios from "axios";
+import Twit from "twit";
 
 @injectable()
 export class ZeelyController {
@@ -300,6 +301,46 @@ export class ZeelyController {
     } catch (e) {
       this.loggerService.error(e);
       return res.status(400).send({ message: "Something went wrong" });
+    }
+  };
+
+  public verifyRetweet = async (req, res) => {
+    try {
+      const { userId, twitter } = req.body.accounts;
+      const tweetId = "1826048688239812671"; // The ID of the tweet to check
+
+      if (!twitter) {
+        return res
+          .status(400)
+          .send({ message: "Twitter account not provided." });
+      }
+
+      const T = new Twit({
+        consumer_key: process.env.X_CONSUMER_API_KEY,
+        consumer_secret: process.env.X_CONSUMER_API_SECRET,
+        access_token: process.env.X_ACCESS_TOKEN,
+        access_token_secret: process.env.X_TOKEN_SECRET,
+      });
+
+      const response = await T.get("statuses/retweets/:id", { id: tweetId });
+      const retweeters = response.data;
+
+      const hasRetweeted = retweeters.some(
+        (retweet) => retweet.user.id_str === twitter.id
+      );
+
+      if (hasRetweeted) {
+        return res
+          .status(200)
+          .send({ message: "User has retweeted the specified tweet." });
+      } else {
+        return res
+          .status(400)
+          .send({ message: "User has not retweeted the specified tweet." });
+      }
+    } catch (e) {
+      this.loggerService.error(e);
+      return res.status(500).send({ message: "Something went wrong" });
     }
   };
 }

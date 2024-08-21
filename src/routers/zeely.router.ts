@@ -67,6 +67,11 @@ export class ZeelyRouter {
       this.validateApiKey,
       this._zeelyProdController.hasRegisteredADomain
     );
+    this._router.post(
+      "/verifyRetweet",
+      this.validateApiKey,
+      this._zeelyDevController.verifyRetweet
+    );
 
     //DEV controller
 
@@ -105,6 +110,12 @@ export class ZeelyRouter {
       "/dev/domain",
       this.validateApiKey,
       this._zeelyDevController.hasRegisteredADomain
+    );
+    
+    this._router.post(
+      "/dev/verifyRetweet",
+      this.validateApiKey,
+      this._zeelyDevController.verifyRetweet
     );
 
   }

@@ -2,13 +2,11 @@ import { LoggerService } from "../services/logger.service";
 import { injectable } from "inversify";
 import { UserModel } from "../models/user";
 import jwt from "jsonwebtoken";
-import { verifyMessage } from "@ethersproject/wallet";
-import AutSDK, { Nova, QuestOnboarding } from "@aut-labs/sdk";
+import AutSDK from "@aut-labs/sdk";
 import { getNetworkConfig } from "../services";
-import { ethers, getSigner } from "../tools/ethers";
+import { getSigner } from "../tools/ethers";
 import { AutIDBadgeGenerator } from "../tools/ImageGeneration/AutIDBadge/AutIDBadgeGenerator";
 import { SWIDParams } from "../tools/ImageGeneration/AutIDBadge/Badge.model";
-import NovaContract from "@aut-labs/sdk/dist/contracts/nova";
 import { AddressModel } from "../models/address";
 import { MultiSigner } from "@aut-labs/sdk/dist/models/models";
 import { NetworkConfigEnv } from "../models/config";
@@ -17,6 +15,7 @@ import axios from "axios";
 import Twit from "twit";
 import { GraphQLClient, gql } from "graphql-request";
 import { add } from "winston";
+import { isAddress, verifyMessage } from "ethers";
 
 const getHiddenAdminAddressesArray = () => {
   if (!process.env.HIDDEN_ADMIN_ADDRESSES) return [];
@@ -37,65 +36,64 @@ function replaceAll(str, find, replace) {
 
 const getNovaDetailsPromise = async (sdk: AutSDK, novaAddress: string) => {
   return new Promise(async (resolve, reject) => {
-    try {
-      const nova = sdk.initService<NovaContract>(NovaContract, novaAddress);
-      const admins = await nova.contract.getAdmins();
-      const hiddenAdmins = getHiddenAdminAddressesArray();
-      if (hiddenAdmins.includes(admins[0])) {
-        resolve(null);
-      } else {
-        const pluginDefinition =
-          await sdk.pluginRegistry.getPluginDefinitionByType(novaAddress, 1);
-        if (pluginDefinition.data) {
-          const nova = sdk.initService<Nova>(Nova, novaAddress);
-          const daoAdminsResponse = await nova.contract.admins.getAdmins();
-          const daoData = await nova.contract.metadata.getMetadataUri();
-          const onboardingQuest = sdk.initService<QuestOnboarding>(
-            QuestOnboarding,
-            pluginDefinition.data
-          );
-          const quests = await onboardingQuest.getAllQuests();
-          const { pastQuests, allQuests, activeQuests } = (
-            quests?.data || []
-          ).reduce(
-            (prev, curr) => {
-              if (curr.active) {
-                prev.activeQuests += 1;
-              }
-              if (curr.isExpired) {
-                prev.pastQuests += 1;
-              }
-              prev.allQuests.push(curr);
-              return prev;
-            },
-            {
-              activeQuests: 0,
-              pastQuests: 0,
-              allQuests: [],
-            }
-          );
-
-          const isThereAtLeastOneActive = activeQuests > 0;
-          const isNovaExpired = pastQuests === allQuests.length;
-          if (!isThereAtLeastOneActive) {
-            resolve(null);
-          } else {
-            resolve({
-              isNovaExpired,
-              onboardingQuestAddress: onboardingQuest.contract.contract.address,
-              novaAddress,
-              admin: daoAdminsResponse.data[0],
-              daoMetadataUri: daoData.data,
-              quests: quests.data,
-            });
-          }
-        } else {
-          resolve(null);
-        }
-      }
-    } catch (e) {
-      return reject(e);
-    }
+    // try {
+    //   const nova = sdk.initService<NovaContract>(NovaContract, novaAddress);
+    //   const admins = await nova.contract.getAdmins();
+    //   const hiddenAdmins = getHiddenAdminAddressesArray();
+    //   if (hiddenAdmins.includes(admins[0])) {
+    //     resolve(null);
+    //   } else {
+    //     const pluginDefinition =
+    //       await sdk.pluginRegistry.getPluginDefinitionByType(novaAddress, 1);
+    //     if (pluginDefinition.data) {
+    //       const nova = sdk.initService<Nova>(Nova, novaAddress);
+    //       const daoAdminsResponse = await nova.contract.admins.getAdmins();
+    //       const daoData = await nova.contract.metadata.getMetadataUri();
+    //       const onboardingQuest = sdk.initService<QuestOnboarding>(
+    //         QuestOnboarding,
+    //         pluginDefinition.data
+    //       );
+    //       const quests = await onboardingQuest.getAllQuests();
+    //       const { pastQuests, allQuests, activeQuests } = (
+    //         quests?.data || []
+    //       ).reduce(
+    //         (prev, curr) => {
+    //           if (curr.active) {
+    //             prev.activeQuests += 1;
+    //           }
+    //           if (curr.isExpired) {
+    //             prev.pastQuests += 1;
+    //           }
+    //           prev.allQuests.push(curr);
+    //           return prev;
+    //         },
+    //         {
+    //           activeQuests: 0,
+    //           pastQuests: 0,
+    //           allQuests: [],
+    //         }
+    //       );
+    //       const isThereAtLeastOneActive = activeQuests > 0;
+    //       const isNovaExpired = pastQuests === allQuests.length;
+    //       if (!isThereAtLeastOneActive) {
+    //         resolve(null);
+    //       } else {
+    //         resolve({
+    //           isNovaExpired,
+    //           onboardingQuestAddress: onboardingQuest.contract.contract.address,
+    //           novaAddress,
+    //           admin: daoAdminsResponse.data[0],
+    //           daoMetadataUri: daoData.data,
+    //           quests: quests.data,
+    //         });
+    //       }
+    //     } else {
+    //       resolve(null);
+    //     }
+    //   }
+    // } catch (e) {
+    //   return reject(e);
+    // }
   });
 };
 
@@ -105,38 +103,36 @@ const getLeaderBoardNovaDetailsPromise = async (
 ) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const nova = sdk.initService<NovaContract>(NovaContract, novaAddress);
-      const admins = await nova.contract.getAdmins();
-      const hiddenAdmins = getHiddenAdminAddressesArray();
-      if (hiddenAdmins.includes(admins[0])) {
-        resolve(null);
-      } else {
-        const pluginDefinition =
-          await sdk.pluginRegistry.getPluginDefinitionByType(novaAddress, 1);
-        if (pluginDefinition.data) {
-          const nova = sdk.initService<Nova>(Nova, novaAddress);
-          const daoData = await nova.contract.metadata.getMetadataUri();
-
-          let members = [];
-          let totalMembers = 0;
-
-          try {
-            const membersResponse = await nova.contract.members.getAllMembers();
-            members = membersResponse.data;
-            totalMembers = membersResponse.data.length;
-          } catch (error) {
-            resolve(null);
-          }
-          resolve({
-            novaAddress,
-            daoMetadataUri: daoData.data,
-            members,
-            totalMembers,
-          });
-        } else {
-          resolve(null);
-        }
-      }
+      // const nova = sdk.initService<NovaContract>(NovaContract, novaAddress);
+      // const admins = await nova.contract.getAdmins();
+      // const hiddenAdmins = getHiddenAdminAddressesArray();
+      // if (hiddenAdmins.includes(admins[0])) {
+      //   resolve(null);
+      // } else {
+      //   const pluginDefinition =
+      //     await sdk.pluginRegistry.getPluginDefinitionByType(novaAddress, 1);
+      //   if (pluginDefinition.data) {
+      //     const nova = sdk.initService<Nova>(Nova, novaAddress);
+      //     const daoData = await nova.contract.metadata.getMetadataUri();
+      //     let members = [];
+      //     let totalMembers = 0;
+      //     try {
+      //       const membersResponse = await nova.contract.members.getAllMembers();
+      //       members = membersResponse.data;
+      //       totalMembers = membersResponse.data.length;
+      //     } catch (error) {
+      //       resolve(null);
+      //     }
+      //     resolve({
+      //       novaAddress,
+      //       daoMetadataUri: daoData.data,
+      //       members,
+      //       totalMembers,
+      //     });
+      //   } else {
+      //     resolve(null);
+      //   }
+      // }
     } catch (e) {
       reject(e);
     }
@@ -174,7 +170,7 @@ export class UserController {
   public getNovas = async (req, res) => {
     const promises = [];
     try {
-      const sdk = AutSDK.getInstance();
+      const sdk = await AutSDK.getInstance(false);
       const networkEnv: NetworkConfigEnv = process.env
         .NETWORK_ENV as NetworkConfigEnv;
       const networkConfig = getNetworkConfig(networkEnv);
@@ -212,7 +208,7 @@ export class UserController {
   public getLeaderNovas = async (req, res) => {
     const promises = [];
     try {
-      const sdk = AutSDK.getInstance();
+      const sdk = await AutSDK.getInstance(false);
       const networkEnv: NetworkConfigEnv = process.env
         .NETWORK_ENV as NetworkConfigEnv;
       const networkConfig = getNetworkConfig(networkEnv);
@@ -263,7 +259,7 @@ export class UserController {
       if (!req.params.novaAddress) {
         return res.status(400).send(`"novaAddress" not provided.`);
       }
-      if (!ethers.utils.isAddress(req.params.novaAddress)) {
+      if (!isAddress(req.params.novaAddress)) {
         return res.status(400).send(`Invalid "novaAddress" provided.`);
       }
       const { toBase64: toBase64Sigil } = await generateAutIdDAOSigil(
@@ -577,13 +573,13 @@ export class UserController {
             user.points += 1;
             await user.save();
             return res.status(200).send({ message: "Bio verified." });
-          }else{
+          } else {
             return res.status(200).send({ message: "Reward already claimed." });
           }
         } else {
           return res.status(404).send({ error: "User not found." });
         }
-      }else{
+      } else {
         return res.status(200).send({ message: "Bio not set." });
       }
     } catch (e) {

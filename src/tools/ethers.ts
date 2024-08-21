@@ -2,20 +2,20 @@
 // import '@ethersproject/shims';
 
 // Import the ethers library
-import { ethers } from "ethers";
+import { ethers, HDNodeWallet, JsonRpcProvider, Wallet } from "ethers";
 import { NetworkConfig } from "../models/config";
 import axios from "axios";
 
 require("dotenv").config();
 
 function getSigner(networkConfig: NetworkConfig): ethers.Signer {
-  const provider = new ethers.providers.JsonRpcProvider(
+  const provider = new JsonRpcProvider(
     networkConfig.rpcUrls[0]
   );
 
   // Wallet connected to a provider
-  const senderWalletMnemonic = ethers.Wallet.fromMnemonic(
-    process.env.MNEMONIC,
+  const senderWalletMnemonic = HDNodeWallet.fromMnemonic(
+    process.env.MNEMONIC as any,
     "m/44'/60'/0'/0/0"
   );
 

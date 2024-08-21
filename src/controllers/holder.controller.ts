@@ -5,9 +5,9 @@ import { getNetworkConfig, getNetworksConfig } from "../services";
 import { getSigner } from "../tools/ethers";
 import AutSDK from "@aut-labs/sdk";
 import { Holder } from "../models/holder";
-import { ethers } from "ethers";
 import { AutIDQuery } from "@aut-labs/sdk/dist/services/autID.service";
 import { MultiSigner } from "@aut-labs/sdk/dist/models/models";
+import { isAddress } from "ethers";
 
 @injectable()
 export class HoldersController {
@@ -38,13 +38,11 @@ export class HoldersController {
         signer
       }
 
-      const sdk = AutSDK.getInstance();
+      const sdk = await AutSDK.getInstance(false);
 
       await sdk.init(multiSigner, networkConfig.contracts);
 
-      const isAddress = ethers.utils.isAddress(username);
-
-      const query: AutIDQuery = isAddress
+      const query: AutIDQuery = isAddress(username)
         ? { holderAddress: username }
         : { username };
 
@@ -73,7 +71,7 @@ export class HoldersController {
 
       const autIds: Holder[] = [];
       const networkConfigs = getNetworksConfig(networkEnv);
-      const sdk = AutSDK.getInstance();
+      const sdk = await AutSDK.getInstance(false);
 
       for (let i = 0; i < networkConfigs.length; i++) {
         const networkConfig = networkConfigs[i];

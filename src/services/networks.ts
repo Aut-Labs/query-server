@@ -11,6 +11,7 @@ export const AmoyNetwork = (): NetworkConfig => ({
   ipfsGatewayUrl: process.env.IPFS_GATEWAY,
   contracts: {
     autIDAddress: process.env.AMOY_AUT_ID_ADDRESS,
+    domainHubAddress: process.env.AMOY_DOMAIN_HUB_ADDRESS,
     daoExpanderRegistryAddress: process.env.AMOY_DAO_REGISTRY_ADDRESS,
     daoExpanderFactoryAddress: process.env.AMOY_DAO_FACTORY_ADDRESS,
     novaRegistryAddress: process.env.AMOY_AUT_NOVA_REGISTRY_ADDRESS,
@@ -44,6 +45,7 @@ export const PolygonNetwork = (): NetworkConfig => ({
   ipfsGatewayUrl: process.env.IPFS_GATEWAY,
   contracts: {
     autIDAddress: process.env.POLYGON_AUT_ID_ADDRESS,
+    domainHubAddress: process.env.POLYGON_DOMAIN_HUB_ADDRESS,
     daoExpanderRegistryAddress: process.env.POLYGON_DAO_REGISTRY_ADDRESS,
     daoExpanderFactoryAddress: process.env.POLYGON_DAO_FACTORY_ADDRESS,
     novaRegistryAddress: process.env.POLYGON_AUT_NOVA_REGISTRY_ADDRESS,

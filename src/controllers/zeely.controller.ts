@@ -20,18 +20,18 @@ export class ZeelyController {
       const { accounts } = req.body;
       const { wallet } = accounts;
 
-      const novasResponse: { novaDAOs: any[] } = await this.graphqlClient
+      const hubsResponse: { hubs: any[] } = await this.graphqlClient
         .request(gql`
-        query GetNovas {
-          novaDAOs(where: {deployer: "${wallet.toLowerCase()}"}) {
+        query GetHubs {
+          hubs(where: {deployer: "${wallet.toLowerCase()}"}) {
             id
             deployer
           }
         }
       `);
-      const novas = novasResponse.novaDAOs;
+      const hubs = hubsResponse.hubs;
 
-      if (novas.length > 0) {
+      if (hubs.length > 0) {
         return res.status(200).send({ message: "User has deployed" });
       }
       return res.status(400).send({ message: "User has not deployed" });
@@ -69,7 +69,7 @@ export class ZeelyController {
         signer,
       };
 
-      const sdk = AutSDK.getInstance();
+      const sdk = await AutSDK.getInstance();
 
       await sdk.init(multiSigner, networkConfig.contracts);
 
@@ -90,10 +90,10 @@ export class ZeelyController {
       const { accounts } = req.body;
       const { wallet } = accounts;
 
-      const novasResponse: { novaDAOs: any[] } = await this.graphqlClient
+      const hubsResponse: { hubs: any[] } = await this.graphqlClient
         .request(gql`
-        query GetNovas {
-          novaDAOs(
+        query Gethubs {
+          hubs(
             where: { deployer: "${wallet.toLowerCase()}" }
           ) {
             deployer
@@ -102,9 +102,9 @@ export class ZeelyController {
         }
       `);
 
-      const novas = novasResponse.novaDAOs;
+      const hubs = hubsResponse.hubs;
 
-      const nova = novas[0];
+      const nova = hubs[0];
 
       if (!nova) {
         return res.status(400).send({ message: "Hasn't deployed nova" });
@@ -137,10 +137,10 @@ export class ZeelyController {
       const { accounts } = req.body;
       const { wallet } = accounts;
 
-      const novasResponse: { novaDAOs: any[] } = await this.graphqlClient
+      const hubsResponse: { hubs: any[] } = await this.graphqlClient
         .request(gql`
-        query GetNovas {
-          novaDAOs(
+        query Gethubs {
+          hubs(
             where: { deployer: "${wallet.toLowerCase()}" }
           ) {
             deployer
@@ -149,9 +149,9 @@ export class ZeelyController {
         }
       `);
 
-      const novas = novasResponse.novaDAOs;
+      const hubs = hubsResponse.hubs;
 
-      const nova = novas[0];
+      const nova = hubs[0];
 
       if (!nova) {
         return res.status(400).send({ message: "Hasn't deployed nova" });
@@ -184,10 +184,10 @@ export class ZeelyController {
       const { accounts } = req.body;
       const { wallet } = accounts;
 
-      const novasResponse: { novaDAOs: any[] } = await this.graphqlClient
+      const hubsResponse: { hubs: any[] } = await this.graphqlClient
         .request(gql`
-        query GetNovas {
-          novaDAOs(
+        query Gethubs {
+          hubs(
             where: { deployer: "${wallet.toLowerCase()}" }
           ) {
             deployer
@@ -196,9 +196,9 @@ export class ZeelyController {
         }
       `);
 
-      const novas = novasResponse.novaDAOs;
+      const hubs = hubsResponse.hubs;
 
-      const nova = novas[0];
+      const nova = hubs[0];
 
       if (!nova) {
         return res.status(400).send({ message: "Hasn't deployed nova" });
@@ -231,10 +231,10 @@ export class ZeelyController {
       const { accounts } = req.body;
       const { wallet } = accounts;
 
-      const novasResponse: { novaDAOs: any[] } = await this.graphqlClient
+      const hubsResponse: { hubs: any[] } = await this.graphqlClient
         .request(gql`
-        query GetNovas {
-          novaDAOs(
+        query Gethubs {
+          hubs(
             where: { deployer: "${wallet.toLowerCase()}" }
           ) {
             deployer
@@ -243,9 +243,9 @@ export class ZeelyController {
           }
         }
       `);
-      const novas = novasResponse.novaDAOs;
+      const hubs = hubsResponse.hubs;
 
-      const nova = novas[0];
+      const nova = hubs[0];
 
       if (!nova) {
         return res.status(400).send({ message: "Hasn't deployed nova" });
@@ -263,6 +263,40 @@ export class ZeelyController {
         return res.status(200).send({ message: "Has added an archetype" });
       }
       return res.status(400).send({ message: "Hasn't added an archetype" });
+    } catch (e) {
+      this.loggerService.error(e);
+      return res.status(400).send({ message: "Something went wrong" });
+    }
+  };
+
+  public hasRegisteredADomain = async (req, res) => {
+    try {
+      const { accounts } = req.body;
+      const { wallet } = accounts;
+
+      const hubsResponse: { hubs: any[] } = await this.graphqlClient
+        .request(gql`
+        query Gethubs {
+          hubs(
+            where: { deployer: "${wallet.toLowerCase()}" }
+          ) {
+            deployer
+            address
+            domain
+          }
+        }
+      `);
+      const hubs = hubsResponse.hubs;
+
+      const nova = hubs[0];
+
+      if (!nova) {
+        return res.status(400).send({ message: "Hasn't deployed nova" });
+      }
+      if (nova?.domain) {
+        return res.status(200).send({ message: "Has added a domain" });
+      }
+      return res.status(400).send({ message: "Hasn't added a domain" });
     } catch (e) {
       this.loggerService.error(e);
       return res.status(400).send({ message: "Something went wrong" });

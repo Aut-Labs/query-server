@@ -9,12 +9,10 @@ import axios from "axios";
 require("dotenv").config();
 
 function getSigner(networkConfig: NetworkConfig): ethers.Signer {
-  const provider = new JsonRpcProvider(
-    networkConfig.rpcUrls[0]
-  );
+  const provider = new JsonRpcProvider(networkConfig.rpcUrls[0]);
 
   // Wallet connected to a provider
-  const senderWalletMnemonic = HDNodeWallet.fromMnemonic(
+  const senderWalletMnemonic = HDNodeWallet.fromPhrase(
     process.env.MNEMONIC as any,
     "m/44'/60'/0'/0/0"
   );
@@ -25,7 +23,7 @@ function getSigner(networkConfig: NetworkConfig): ethers.Signer {
 
 function ipfsCIDToHttpUrl(url: string, isJson: boolean) {
   if (!url.includes("https://"))
-  return `${process.env.IPFS_GATEWAY}/${url.replace("ipfs://", "")}`;
+    return `${process.env.IPFS_GATEWAY}/${url.replace("ipfs://", "")}`;
   else return url;
 }
 

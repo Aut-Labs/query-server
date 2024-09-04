@@ -2,7 +2,8 @@ import { injectable } from "inversify";
 import { Router } from "express";
 import { ZeelyController } from "../controllers/zeely.controller";
 import { container } from "../inversify.config";
-import { LoggerService } from "../services";
+import { getNetworkConfig, LoggerService } from "../services";
+import { NetworkConfigEnv } from "../models/config";
 
 @injectable()
 export class ZeelyRouter {
@@ -14,10 +15,12 @@ export class ZeelyRouter {
     this._router = Router({ strict: true });
     this._zeelyDevController = new ZeelyController(
       process.env.GRAPH_API_DEV_URL,
+      getNetworkConfig(NetworkConfigEnv.Testnet),
       container.get<LoggerService>(LoggerService)
     );
     this._zeelyProdController = new ZeelyController(
       process.env.GRAPH_API_PROD_URL,
+      getNetworkConfig(NetworkConfigEnv.Mainnet),
       container.get<LoggerService>(LoggerService)
     );
     this.init();
@@ -106,7 +109,6 @@ export class ZeelyRouter {
       this.validateApiKey,
       this._zeelyDevController.hasRegisteredADomain
     );
-
   }
 
   public get router(): Router {

@@ -6,13 +6,20 @@ import AutSDK, { fetchMetadata, Nova } from "@aut-labs/sdk";
 import { AmoyNetwork } from "../services/networks";
 import { getSigner } from "../tools/ethers";
 import axios from "axios";
+import { NetworkConfig } from "../models/config";
 
 @injectable()
 export class ZeelyController {
   private graphqlClient: GraphQLClient;
+  private networkConfig: NetworkConfig;
 
-  constructor(graphApiUrl: string, private loggerService: LoggerService) {
+  constructor(
+    graphApiUrl: string,
+    networkConfig: NetworkConfig,
+    private loggerService: LoggerService
+  ) {
     this.graphqlClient = new GraphQLClient(graphApiUrl);
+    this.networkConfig = networkConfig;
   }
 
   public hasDeployed = async (req, res) => {
@@ -62,8 +69,8 @@ export class ZeelyController {
       if (!autID) {
         return res.status(400).send({ message: "AutId not found" });
       }
-      const networkConfig = AmoyNetwork();
-      const signer = getSigner(AmoyNetwork());
+
+      const signer = getSigner(this.networkConfig);
       const multiSigner: MultiSigner = {
         readOnlySigner: signer,
         signer,
@@ -71,7 +78,7 @@ export class ZeelyController {
 
       const sdk = await AutSDK.getInstance();
 
-      await sdk.init(multiSigner, networkConfig.contracts);
+      await sdk.init(multiSigner, this.networkConfig.contracts);
 
       const nova = sdk.initService<Nova>(Nova, autID.novaAddress);
       const isAdmin = await nova.contract.admins.isAdmin(wallet);

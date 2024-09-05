@@ -11,6 +11,7 @@ services:
     environment:
       - SERVER_PORT=4007
       - NODE_ENV=production
+      - MONGODB_CONNECTION_STRING=mongodb://aut-db-testnet:27017
     ports:
       - "4007:4007"
     depends_on:
@@ -25,7 +26,7 @@ services:
     volumes:
       - mongodata_testnet:/data/db
     ports:
-      - "27017:27017"
+      - "27018:27017"
     deploy:
       restart_policy:
         condition: on-failure

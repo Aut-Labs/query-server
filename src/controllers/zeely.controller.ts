@@ -57,7 +57,7 @@ export class ZeelyController {
         },
       });
       // Return a 400 status with an error message if the action couldn't be verified
-      return res.status(400).send({ message: "Something went wrong" });
+      return res.status(500).send({ message: "Something went wrong" });
     }
   };
 
@@ -345,7 +345,7 @@ export class ZeelyController {
           query: req.query,
         },
       });
-      return res.status(400).send({ message: "Something went wrong" });
+      return res.status(500).send({ message: "Something went wrong" });
     }
   };
 
@@ -391,7 +391,7 @@ export class ZeelyController {
           query: req.query,
         },
       });
-      return res.status(400).send({ message: "Something went wrong" });
+      return res.status(500).send({ message: "Something went wrong" });
     }
   };
 }

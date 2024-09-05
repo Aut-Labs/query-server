@@ -4,10 +4,11 @@ services:
   aut-api-testnet:
     container_name: aut-api-testnet
     image: node:21.1.0
-    build:
-      context: .
-      dockerfile: Dockerfile.testnet
-    working_dir: /app
+    build: .
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    platform: linux/amd64
     environment:
       - SERVER_PORT=4007
       - NODE_ENV=production

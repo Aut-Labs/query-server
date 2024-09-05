@@ -21,6 +21,6 @@ RUN chown -R 1000:1000 "/root/.npm"
 COPY . .
 
 # Build dist folder
-EXPOSE 4005
+EXPOSE 4008
 CMD ["npm", "run", "start" ]
 

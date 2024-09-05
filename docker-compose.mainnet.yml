@@ -6,12 +6,12 @@ services:
     image: node:21.1.0
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.mainnet
     working_dir: /app
     environment:
       - SERVER_PORT=4008
       - NODE_ENV=production
-      - MONGODB_CONNECTION_STRING=mongodb://aut-db-testnet:27017
+      - MONGODB_CONNECTION_STRING=mongodb://aut-db-mainnet:27017
     ports:
       - "4008:4008"
     depends_on:

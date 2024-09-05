@@ -1,37 +1,34 @@
 version: "3.9"
 
 services:
-  aut-api-prod:
-    container_name: aut-api-prod
+  aut-api-testnet:
+    container_name: aut-api-testnet
     image: node:21.1.0
     build:
       context: .
       dockerfile: Dockerfile
-    volumes:
-      - .:/app
     working_dir: /app
     environment:
-      - ENVIRONMENT_IP=localhost
-      - SERVER_PORT=4005
-      - NODE_ENV=development
+      - SERVER_PORT=4007
+      - NODE_ENV=production
     ports:
-      - "4006:4005"
+      - "4007:4007"
     depends_on:
-      - aut-db-prod
+      - aut-db-testnet
     deploy:
       restart_policy:
         condition: on-failure
 
-  aut-db-prod:
-    container_name: aut-db-prod
+  aut-db-testnet:
+    container_name: aut-db-testnet
     image: mongo
     volumes:
-      - mongodataprod:/data/db
+      - mongodata_testnet:/data/db
     ports:
-      - "27018:27017"
+      - "27017:27017"
     deploy:
       restart_policy:
         condition: on-failure
 
 volumes:
-  mongodataprod:
+  mongodata_testnet:

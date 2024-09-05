@@ -1,4 +1,4 @@
-export * from "../logger.service";
+export * from "../../tools/logger.service";
 import { Question, QuestionsModel } from "../../models/question";
 import AutSDK, { QuestOnboarding, Task } from "@aut-labs/sdk";
 import { FinalizeTaskResult } from "../../models/finalizeTask";

@@ -1,4 +1,4 @@
-export * from "../logger.service";
+export * from "../../tools/logger.service";
 import axios from "axios";
 import AutSDK, {
   QuestOnboarding, Task,

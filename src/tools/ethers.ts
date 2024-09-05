@@ -6,17 +6,14 @@ import { ethers, HDNodeWallet, JsonRpcProvider, Wallet } from "ethers";
 import { NetworkConfig } from "../models/config";
 import axios from "axios";
 
-require("dotenv").config();
-
 function getSigner(networkConfig: NetworkConfig): ethers.Signer {
   const provider = new JsonRpcProvider(
     networkConfig.rpcUrls[0]
   );
 
   // Wallet connected to a provider
-  const senderWalletMnemonic = HDNodeWallet.fromMnemonic(
+  const senderWalletMnemonic = Wallet.fromPhrase(
     process.env.MNEMONIC as any,
-    "m/44'/60'/0'/0/0"
   );
 
   let signer = senderWalletMnemonic.connect(provider);

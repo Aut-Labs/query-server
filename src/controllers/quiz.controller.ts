@@ -1,46 +1,17 @@
-import { LoggerService } from "../services/logger.service";
+import { LoggerService } from "../tools/logger.service";
 import { injectable } from "inversify";
 import { Response } from "express";
-import AutSDK, { Nova } from "@aut-labs/sdk";
+import AutSDK, { Hub } from "@aut-labs/sdk";
 import { QuestionsModel } from "../models/question";
 
 const verifyIsAdmin = async (
   userAddress: string,
-  taskAddress: string
+  hubAddress: string
 ): Promise<boolean> => {
-  return null
-  // const sdk = await AutSDK.getInstance(false);
-
-  // const holderDaos = await sdk.autID.contract.getHolderDAOs(userAddress);
-  // let novaAddress = null;
-  // for (let i = 0; i < holderDaos.data.length; i++) {
-  //   if (novaAddress) {
-  //     break;
-  //   }
-  //   const dao = holderDaos.data[i];
-  //   const pluginIds =
-  //     await sdk.pluginRegistry.contract.functions.getPluginIdsByNova(dao);
-  //   for (let j = 0; j < pluginIds.length; j++) {
-  //     if (novaAddress) {
-  //       break;
-  //     }
-  //     const pluginId = pluginIds[j];
-  //     const pluginInstance =
-  //       await sdk.pluginRegistry.contract.functions.pluginInstanceByTokenId(
-  //         pluginId
-  //       );
-  //     if (pluginInstance.pluginAddress === taskAddress) {
-  //       novaAddress = dao;
-  //       break;
-  //     }
-  //   }
-  // }
-  // const nova = sdk.initService<Nova>(
-  //   Nova,
-  //   novaAddress
-  // );
-  // const isAdmin = await nova.contract.admins.isAdmin(userAddress);
-  // return isAdmin.data;
+  const sdk = await AutSDK.getInstance();
+  const hub = sdk.initService<Hub>(Hub, hubAddress);
+  const isAdmin = await hub.contract.admins.isAdmin(userAddress);
+  return isAdmin.data;
 };
 
 @injectable()
@@ -71,7 +42,7 @@ export class QuizController {
       await answers.save();
       return res.status(200).send({
         code: 200,
-        message: "Success"
+        message: "Success",
       });
     } catch (err) {
       this.loggerService.error(err);
@@ -99,11 +70,11 @@ export class QuizController {
       }
       const result = await QuestionsModel.deleteOne({
         taskAddress: req.body.taskAddress,
-        uuid: req.body.uuid
+        uuid: req.body.uuid,
       });
       return res.status(200).send({
         code: 200,
-        message: "Success"
+        message: "Success",
       });
     } catch (err) {
       this.loggerService.error(err);

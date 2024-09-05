@@ -1,4 +1,4 @@
-export * from "../logger.service";
+export * from "../../tools/logger.service";
 import axios from "axios";
 import { getJSONFromURI, ipfsCIDToHttpUrl } from "../../tools/ethers";
 
@@ -10,7 +10,7 @@ export async function verifyTwitterFollowTask(taskAddress: string, userID: strin
   console.log(address);
   return false;
   // const task = await getTask(taskAddress, taskID) as any;
-  // if(!task) return false; 
+  // if(!task) return false;
   // const metadataUri = ipfsCIDToHttpUrl(task.metadata, true);
   // const metadata = await getJSONFromURI(metadataUri);
   // const handle = metadata.handle;

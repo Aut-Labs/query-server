@@ -1,7 +1,7 @@
 import { Schema, model } from "mongoose";
 
 const AddressSchema = new Schema({
-  novaAddress: { type: String },
+  hubAddress: { type: String },
   address: { type: String },
   note: { type: String },
 });
@@ -9,7 +9,7 @@ const AddressSchema = new Schema({
 export const AddressModel = model("Address", AddressSchema);
 
 export interface Address {
-  novaAddress: string;
+  hubAddress: string;
   address: string;
   note: string;
 }

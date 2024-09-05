@@ -1,9 +1,5 @@
-import * as dotenv from "dotenv";
 import { injectable } from "inversify";
-
 import { createLogger, transports, Logger, format } from "winston";
-
-dotenv.config({ path: "../.env" });
 
 @injectable()
 export class LoggerService {

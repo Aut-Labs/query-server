@@ -6,7 +6,7 @@ export interface Holder {
 }
 
 export interface DAOMember {
-  daonovaAddress: string;
+  hubAddress: string;
   role: string;
   commitment: string;
   isActive: boolean;
@@ -14,6 +14,6 @@ export interface DAOMember {
 
 export interface DAOData {
   contractType: string;
-  novaAddress: string;
+  hubAddress: string;
   discordServer: string;
 }

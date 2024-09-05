@@ -56,8 +56,8 @@ const drawCanvasElements = (
     ctx.drawImage(label, 0, 114);
   };
 
-  const drawSigil = async (novaAddress: string) => {
-    const { toBase64 } = await generateAutIdDAOSigil(novaAddress);
+  const drawSigil = async (hubAddress: string) => {
+    const { toBase64 } = await generateAutIdDAOSigil(hubAddress);
     const sigilImage = await LoadImage(toBase64());
     const { iwScaled, ihScaled } = ScaleImage(245, 245, sigilImage);
     ctx.drawImage(sigilImage, 253, 460, iwScaled, ihScaled);
@@ -80,7 +80,7 @@ const defaulConfig = (
   role: string,
   timestamp: string,
   hash: string,
-  novaAddress: string,
+  hubAddress: string,
   network: string
 ): ContentConfig => {
   const WIDTH = config?.width || 530;
@@ -88,7 +88,7 @@ const defaulConfig = (
   return {
     width: WIDTH,
     height: HEIGHT,
-    novaAddress,
+    hubAddress,
     network,
     canvasFont: {
       name: "custom",
@@ -138,7 +138,7 @@ export const AutIDBadgeGenerator = async ({
   dao,
   timestamp,
   hash,
-  novaAddress,
+  hubAddress,
   config,
   network,
 }: SWIDParams): Promise<SWIDOutput> => {
@@ -150,7 +150,7 @@ export const AutIDBadgeGenerator = async ({
     role,
     timestamp,
     hash,
-    novaAddress,
+    hubAddress,
     network
   );
   const canvas = createCanvas(config.width, config.height);
@@ -164,7 +164,7 @@ export const AutIDBadgeGenerator = async ({
   await ctxContents.drawBackground();
   await ctxContents.drawAvatar(avatar);
   await ctxContents.drawAvatarGradient();
-  await ctxContents.drawSigil(novaAddress);
+  await ctxContents.drawSigil(hubAddress);
   if (network.toLowerCase() !== "mainnet") {
     await ctxContents.drawLabel(network);
   }

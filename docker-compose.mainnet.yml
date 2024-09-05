@@ -1,32 +1,29 @@
 version: "3.9"
 
 services:
-  aut-api:
-    container_name: aut-api
+  aut-api-mainnet:
+    container_name: aut-api-mainnet
     image: node:21.1.0
     build:
       context: .
       dockerfile: Dockerfile
-    # volumes:
-    #   - .:/app
     working_dir: /app
     environment:
-      - ENVIRONMENT_IP=localhost
-      - SERVER_PORT=4005
-      - NODE_ENV=development
+      - SERVER_PORT=4008
+      - NODE_ENV=production
     ports:
-      - "4005:4005"
+      - "4008:4008"
     depends_on:
-      - aut-db
+      - aut-db-mainnet
     deploy:
       restart_policy:
         condition: on-failure
 
-  aut-db:
-    container_name: aut-db
+  aut-db-mainnet:
+    container_name: aut-db-mainnet
     image: mongo
     volumes:
-      - mongodata:/data/db
+      - mongodata_mainnet:/data/db
     ports:
       - "27017:27017"
     deploy:
@@ -34,4 +31,4 @@ services:
         condition: on-failure
 
 volumes:
-  mongodata:
+  mongodata_mainnet:

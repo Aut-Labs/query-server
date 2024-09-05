@@ -1,40 +1,35 @@
 import express from "express";
-var bodyParser = require("body-parser");
+
 import helmet from "helmet";
 import { injectable } from "inversify";
-import { AutIDRouter, TaskVerifierRouter, ZeelyRouter } from "./routers";
+import { AutRouter, TaskRouter, UserRouter, ZeelyRouter } from "./routers";
 import AutSDK from "@aut-labs/sdk";
-// const rateLimit = require('express-rate-limit');
-// const slowDown = require("express-slow-down");
+import { MultiSigner } from "@aut-labs/sdk/dist/models/models";
+import { NetworkConfigEnv } from "./models/config";
+import { getNetworkConfig } from "./tools/helpers";
+import { getSigner } from "./tools/ethers";
+const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const swaggerJSDoc = require("swagger-jsdoc");
 const swaggerUI = require("swagger-ui-express");
-var cors = require("cors");
-require("dotenv").config();
-
-// const limiter = rateLimit({
-// 	windowMs: 15 * 60 * 1000,
-// 	max: 100,
-// 	standardHeaders: true,
-// 	legacyHeaders: false,
-// });
-// const speedLimiter = slowDown({
-//   windowMs: 15 * 60 * 1000,
-//   delayAfter: 100,
-//   delayMs: 500
-// });
-
+const cors = require("cors");
+const PORT = process.env.SERVER_PORT || 3000;
 const swaggerOptions = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "Aut AutID API",
+      title: "Aut API",
       version: "1.0.0",
-      description: "Aut AutID API Docs",
-      servers: ["http://localhost:4005"],
+      description: "Aut API Docs",
+      servers: [`http://localhost:${PORT}`],
     },
   },
-  apis: ["./src/routers/autID.router.ts"],
+  apis: [
+    "./src/routers/aut.routes.ts",
+    "./src/routers/task.routes.ts",
+    "./src/routers/user.routes.ts",
+    "./src/routers/zeely.routes.ts",
+  ],
 };
 
 const swagger = swaggerJSDoc(swaggerOptions);
@@ -44,8 +39,9 @@ export class App {
   private _app: express.Application;
 
   constructor(
-    private autIDRouter: AutIDRouter,
-    private taskVerifierRouter: TaskVerifierRouter,
+    private autRouter: AutRouter,
+    private taskRouter: TaskRouter,
+    private userRouter: UserRouter,
     private zeelyRouter: ZeelyRouter
   ) {
     this._app = express();
@@ -57,35 +53,33 @@ export class App {
   }
 
   private config(): void {
-    // parse application/x-www-form-urlencoded
     this._app.use(bodyParser.urlencoded({ extended: false }));
-
-    // parse application/json
     this._app.use(bodyParser.json());
-    // helmet security
     this._app.use(helmet());
-    //support application/x-www-form-urlencoded post data
     this._app.use(bodyParser.urlencoded({ extended: false }));
-
     this._app.use(cookieParser());
-
     this._app.use(cors());
-    // this._app.use(limiter);
-    // this._app.use(speedLimiter);
-
-    //Initialize app routes
     this._initRoutes();
     this._initSdk();
   }
 
   private _initRoutes() {
-    this._app.use("/api/autID", this.autIDRouter.router);
+    this._app.use("/api/aut", this.autRouter.router);
     this._app.use("/api/zeely", this.zeelyRouter.router);
-    this._app.use("/api/taskVerifier", this.taskVerifierRouter.router);
+    this._app.use("/api/task", this.taskRouter.router);
+    this._app.use("/api/user", this.userRouter.router);
     this._app.use("/api/docs", swaggerUI.serve, swaggerUI.setup(swagger));
   }
 
-  private _initSdk() {
+  private async _initSdk() {
     const sdk = new AutSDK({});
+    const networkEnv = process.env.NETWORK_ENV as NetworkConfigEnv;
+    const networkConfig = getNetworkConfig(networkEnv);
+    const signer = getSigner(networkConfig);
+    const multiSigner: MultiSigner = {
+      readOnlySigner: signer,
+      signer,
+    };
+    await sdk.init(multiSigner, networkConfig.contracts);
   }
 }

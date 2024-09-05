@@ -1,4 +1,4 @@
-import { LoggerService } from "../services/logger.service";
+import { LoggerService } from "../tools/logger.service";
 import { injectable } from "inversify";
 import { Response } from "express";
 import {
@@ -9,7 +9,7 @@ import {
 import { Question } from "../models/question";
 
 @injectable()
-export class TaskVerifierController {
+export class TaskController {
   constructor(private loggerService: LoggerService) { }
 
   public verifyTransactionTask = async (req: any, res: Response) => {
@@ -85,7 +85,6 @@ export class TaskVerifierController {
   public verifyDiscordJoinTask = async (req: any, res: Response) => {
     try {
       const submitter: string = req.body.address;
-      console.log('submitter', submitter);
 
       const onboardingPluginAddress: string = req.body.onboardingPluginAddress;
       if (!onboardingPluginAddress) {

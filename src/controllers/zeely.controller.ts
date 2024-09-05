@@ -43,9 +43,21 @@ export class ZeelyController {
       }
       return res.status(400).send({ message: "User has not deployed" });
     } catch (e) {
-      this.loggerService.error(e);
+      this.loggerService.error({
+        timestamp: new Date().toISOString(),
+        error: e,
+        stack: e.stack,
+        request: {
+          method: req.method,
+          url: req.url,
+          headers: req.headers,
+          body: req.body,
+          params: req.params,
+          query: req.query,
+        },
+      });
       // Return a 400 status with an error message if the action couldn't be verified
-      return res.status(400).send({ message: "Something went wrong" });
+      return res.status(500).send({ message: "Something went wrong" });
     }
   };
 
@@ -87,8 +99,20 @@ export class ZeelyController {
       }
       res.status(400).send({ message: "Not an admin" });
     } catch (e) {
-      this.loggerService.error(e);
-      return res.status(400).send({ message: "Something went wrong" });
+      this.loggerService.error({
+        timestamp: new Date().toISOString(),
+        error: e,
+        stack: e.stack,
+        request: {
+          method: req.method,
+          url: req.url,
+          headers: req.headers,
+          body: req.body,
+          params: req.params,
+          query: req.query,
+        },
+      });
+      return res.status(500).send({ message: "Something went wrong" });
     }
   };
 
@@ -134,7 +158,19 @@ export class ZeelyController {
       }
       return res.status(400).send({ message: "Less than 20 members" });
     } catch (e) {
-      this.loggerService.error(e);
+      this.loggerService.error({
+        timestamp: new Date().toISOString(),
+        error: e,
+        stack: e.stack,
+        request: {
+          method: req.method,
+          url: req.url,
+          headers: req.headers,
+          body: req.body,
+          params: req.params,
+          query: req.query,
+        },
+      });
       return res.status(500).send({ message: "Something went wrong" });
     }
   };
@@ -181,7 +217,19 @@ export class ZeelyController {
       }
       return res.status(400).send({ message: "Less than 50 members" });
     } catch (e) {
-      this.loggerService.error(e);
+      this.loggerService.error({
+        timestamp: new Date().toISOString(),
+        error: e,
+        stack: e.stack,
+        request: {
+          method: req.method,
+          url: req.url,
+          headers: req.headers,
+          body: req.body,
+          params: req.params,
+          query: req.query,
+        },
+      });
       return res.status(500).send({ message: "Something went wrong" });
     }
   };
@@ -228,7 +276,20 @@ export class ZeelyController {
       }
       return res.status(400).send({ message: "Less than 100 members" });
     } catch (e) {
-      this.loggerService.error(e);
+      this.loggerService.error({
+        timestamp: new Date().toISOString(),
+        error: e,
+        stack: e.stack,
+        request: {
+          method: req.method,
+          url: req.url,
+          headers: req.headers,
+          body: req.body,
+          params: req.params,
+          query: req.query,
+        },
+      });
+
       return res.status(500).send({ message: "Something went wrong" });
     }
   };
@@ -271,8 +332,20 @@ export class ZeelyController {
       }
       return res.status(400).send({ message: "Hasn't added an archetype" });
     } catch (e) {
-      this.loggerService.error(e);
-      return res.status(400).send({ message: "Something went wrong" });
+      this.loggerService.error({
+        timestamp: new Date().toISOString(),
+        error: e,
+        stack: e.stack,
+        request: {
+          method: req.method,
+          url: req.url,
+          headers: req.headers,
+          body: req.body,
+          params: req.params,
+          query: req.query,
+        },
+      });
+      return res.status(500).send({ message: "Something went wrong" });
     }
   };
 
@@ -305,8 +378,20 @@ export class ZeelyController {
       }
       return res.status(400).send({ message: "Hasn't added a domain" });
     } catch (e) {
-      this.loggerService.error(e);
-      return res.status(400).send({ message: "Something went wrong" });
+      this.loggerService.error({
+        timestamp: new Date().toISOString(),
+        error: e,
+        stack: e.stack,
+        request: {
+          method: req.method,
+          url: req.url,
+          headers: req.headers,
+          body: req.body,
+          params: req.params,
+          query: req.query,
+        },
+      });
+      return res.status(500).send({ message: "Something went wrong" });
     }
   };
 }

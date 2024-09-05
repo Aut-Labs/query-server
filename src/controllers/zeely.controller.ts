@@ -112,7 +112,7 @@ export class ZeelyController {
           query: req.query,
         },
       });
-      return res.status(400).send({ message: "Something went wrong" });
+      return res.status(500).send({ message: "Something went wrong" });
     }
   };
 

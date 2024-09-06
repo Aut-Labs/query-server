@@ -38,16 +38,58 @@ export class AutRouter {
       this.autController.getNetworks
     );
 
+    /**
+     * @swagger
+     * /api/aut/config/oauth2AccessTokenDiscord:
+     *   post:
+     *     summary: Get OAuth2 access token for Discord
+     *     description: Endpoint to retrieve OAuth2 access token for Discord.
+     *     tags:
+     *       - Config
+     *     responses:
+     *       200:
+     *         description: OAuth2 access token for Discord retrieved successfully
+     *       400:
+     *         description: Bad Request
+     */
     this._router.post(
       "/config/oauth2AccessTokenDiscord",
       this.autController.getOAuth2AccessTokenDiscord
     );
 
+    /**
+     * @swagger
+     * /api/aut/config/oauth2AccessTokenX:
+     *   post:
+     *     summary: Get OAuth2 access token for X
+     *     description: Endpoint to retrieve OAuth2 access token for X.
+     *     tags:
+     *       - Config
+     *     responses:
+     *       200:
+     *         description: OAuth2 access token for X retrieved successfully
+     *       400:
+     *         description: Bad Request
+     */
     this._router.post(
       "/config/oauth2AccessTokenX",
       this.autController.getXOAuth2AccessToken
     );
 
+    /**
+     * @swagger
+     * /api/aut/config/oauth2AccessTokenGithub:
+     *   post:
+     *     summary: Get OAuth2 access token for GitHub
+     *     description: Endpoint to retrieve OAuth2 access token for GitHub.
+     *     tags:
+     *       - Config
+     *     responses:
+     *       200:
+     *         description: OAuth2 access token for GitHub retrieved successfully
+     *       400:
+     *         description: Bad Request
+     */
     this._router.post(
       "/config/oauth2AccessTokenGithub",
       this.autController.getGithubOAuth2AccessToken

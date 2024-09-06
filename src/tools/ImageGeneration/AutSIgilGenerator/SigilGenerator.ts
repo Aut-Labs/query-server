@@ -86,7 +86,7 @@ const drawSigil = async (ctx: CanvasRenderingContext2D, address: string) => {
   // drawHole(lastHoleFromBase9, ctx, hole, zoneHeight);
 };
 
-export const generateAutIdDAOSigil = async (
+export const generateAutSigil = async (
   address: string
 ): Promise<SigilOutput> => {
   const canvasWidth = 600;

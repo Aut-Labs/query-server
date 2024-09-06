@@ -56,7 +56,6 @@ export class App {
     this._app.use(bodyParser.urlencoded({ extended: false }));
     this._app.use(bodyParser.json());
     this._app.use(helmet());
-    this._app.use(bodyParser.urlencoded({ extended: false }));
     this._app.use(cookieParser());
     this._app.use(cors());
     this._initRoutes();

@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 import { AutIDBadgeGenerator } from "../tools/ImageGeneration/AutIDBadge/AutIDBadgeGenerator";
 import { SWIDParams } from "../tools/ImageGeneration/AutIDBadge/Badge.model";
 import { AddressModel } from "../models/address";
-import { generateAutIdDAOSigil } from "../tools/ImageGeneration/AutSIgilGenerator/SigilGenerator";
+import { generateAutSigil } from "../tools/ImageGeneration/AutSIgilGenerator/SigilGenerator";
 import axios from "axios";
 import Twit from "twit";
 import { GraphQLClient, gql } from "graphql-request";
@@ -51,7 +51,7 @@ export class UserController {
       if (!isAddress(req.params.hubAddress)) {
         return res.status(400).send(`Invalid "hubAddress" provided.`);
       }
-      const { toBase64: toBase64Sigil } = await generateAutIdDAOSigil(
+      const { toBase64: toBase64Sigil } = await generateAutSigil(
         req.params.hubAddress
       );
       const sigil = await toBase64Sigil();
@@ -98,7 +98,7 @@ export class UserController {
       } as SWIDParams;
       const { toBase64 } = await AutIDBadgeGenerator(config);
       const badge = await toBase64();
-      const { toBase64: toBase64Sigil } = await generateAutIdDAOSigil(
+      const { toBase64: toBase64Sigil } = await generateAutSigil(
         requestConfig.hubAddress
       );
       const sigil = await toBase64Sigil();

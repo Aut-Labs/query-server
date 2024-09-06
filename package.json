@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "npm install && nodemon",
-    "start": "npm run build && node ./dist/server.js",
+    "start": "node ./dist/server.js",
     "testFlow": "npm run build && node ./dist/testFlow.js",
     "test": "mocha -r ts-node/register --timeout 40000 test/*.spec.ts"
   },
@@ -18,6 +18,9 @@
     "npm",
     "init"
   ],
+  "engines": {
+      "node": ">=21.1.0"
+  },
   "author": "",
   "license": "ISC",
   "dependencies": {

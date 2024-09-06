@@ -5,7 +5,7 @@ import {
   AutBackgroundSvg,
   AutAvatarGradient,
 } from "./SwBackgroundSvg";
-import { generateAutIdDAOSigil } from "../AutSIgilGenerator/SigilGenerator";
+import { generateAutSigil } from "../AutSIgilGenerator/SigilGenerator";
 import { Canvas, CanvasRenderingContext2D, createCanvas } from "canvas";
 
 const drawCanvasElements = (
@@ -57,7 +57,7 @@ const drawCanvasElements = (
   };
 
   const drawSigil = async (hubAddress: string) => {
-    const { toBase64 } = await generateAutIdDAOSigil(hubAddress);
+    const { toBase64 } = await generateAutSigil(hubAddress);
     const sigilImage = await LoadImage(toBase64());
     const { iwScaled, ihScaled } = ScaleImage(245, 245, sigilImage);
     ctx.drawImage(sigilImage, 253, 460, iwScaled, ihScaled);

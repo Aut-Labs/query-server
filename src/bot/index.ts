@@ -672,17 +672,6 @@ const {
 // const { joinVoiceChannel, VoiceConnectionStatus } = require("@discordjs/voice");
 // init
 
-const client = new Client({
-  // fetchAllMembers: true,
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildVoiceStates,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.GuildMessageReactions,
-  ],
-});
-
 // client.commands = new Collection();
 
 // const foldersPath = path.join(__dirname, "commands");

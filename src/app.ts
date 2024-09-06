@@ -1,28 +1,22 @@
 import express from "express";
-var bodyParser = require("body-parser");
+import bodyParser from "body-parser";
 import helmet from "helmet";
-import { injectable } from "inversify";
-import { AutIDRouter, TaskVerifierRouter, ZeelyRouter } from "./routers";
+import { injectable, Container } from "inversify";
+import {
+  AutIDRouter,
+  TaskVerifierRouter,
+  ZeelyRouter,
+  DiscordRouter,
+} from "./routers";
 import AutSDK from "@aut-labs/sdk";
-// const rateLimit = require('express-rate-limit');
-// const slowDown = require("express-slow-down");
+import { Client, GatewayIntentBits } from "discord.js";
+import { Agenda } from "@hokify/agenda";
+import { DiscordController } from "./controllers/discord.controller";
 const cookieParser = require("cookie-parser");
 const swaggerJSDoc = require("swagger-jsdoc");
 const swaggerUI = require("swagger-ui-express");
-var cors = require("cors");
+const cors = require("cors");
 require("dotenv").config();
-
-// const limiter = rateLimit({
-// 	windowMs: 15 * 60 * 1000,
-// 	max: 100,
-// 	standardHeaders: true,
-// 	legacyHeaders: false,
-// });
-// const speedLimiter = slowDown({
-//   windowMs: 15 * 60 * 1000,
-//   delayAfter: 100,
-//   delayMs: 500
-// });
 
 const swaggerOptions = {
   definition: {
@@ -42,6 +36,9 @@ const swagger = swaggerJSDoc(swaggerOptions);
 @injectable()
 export class App {
   private _app: express.Application;
+  private discordClient: Client;
+  private agenda: Agenda;
+  private container: Container;
 
   constructor(
     private autIDRouter: AutIDRouter,
@@ -49,7 +46,38 @@ export class App {
     private zeelyRouter: ZeelyRouter
   ) {
     this._app = express();
+    this.container = new Container();
+    this.initializeDiscordClient();
+    this.initializeAgenda();
+    this.initializeDependencies();
     this.config();
+  }
+
+  private initializeDiscordClient() {
+    this.discordClient = new Client({
+      intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildVoiceStates,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildMessageReactions,
+      ],
+    });
+    this.container
+      .bind<Client>("DiscordClient")
+      .toConstantValue(this.discordClient);
+  }
+
+  private initializeAgenda() {
+    this.agenda = new Agenda({
+      db: { address: process.env.MONGODB_CONNECTION_STRING },
+    });
+    this.container.bind<Agenda>("Agenda").toConstantValue(this.agenda);
+  }
+
+  private initializeDependencies() {
+    this.container.bind<DiscordController>(DiscordController).toSelf();
+    this.container.bind<DiscordRouter>(DiscordRouter).toSelf();
   }
 
   public get app(): express.Application {
@@ -57,23 +85,12 @@ export class App {
   }
 
   private config(): void {
-    // parse application/x-www-form-urlencoded
     this._app.use(bodyParser.urlencoded({ extended: false }));
-
-    // parse application/json
     this._app.use(bodyParser.json());
-    // helmet security
     this._app.use(helmet());
-    //support application/x-www-form-urlencoded post data
-    this._app.use(bodyParser.urlencoded({ extended: false }));
-
     this._app.use(cookieParser());
-
     this._app.use(cors());
-    // this._app.use(limiter);
-    // this._app.use(speedLimiter);
 
-    //Initialize app routes
     this._initRoutes();
     this._initSdk();
   }
@@ -82,10 +99,22 @@ export class App {
     this._app.use("/api/autID", this.autIDRouter.router);
     this._app.use("/api/zeely", this.zeelyRouter.router);
     this._app.use("/api/taskVerifier", this.taskVerifierRouter.router);
+    this._app.use(
+      "/api/discord",
+      this.container.get<DiscordRouter>(DiscordRouter).router
+    );
     this._app.use("/api/docs", swaggerUI.serve, swaggerUI.setup(swagger));
   }
 
   private _initSdk() {
     const sdk = new AutSDK({});
+  }
+
+  public async start(port: number) {
+    await this.agenda.start();
+    await this.discordClient.login(process.env.DISCORD_BOT_TOKEN);
+    this._app.listen(port, () => {
+      console.log(`Server is running on port ${port}`);
+    });
   }
 }

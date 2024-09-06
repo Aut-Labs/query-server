@@ -8,6 +8,7 @@ import { getSigner } from "./tools/ethers";
 import AutSDK from "@aut-labs/sdk";
 import { MultiSigner } from "@aut-labs/sdk/dist/models/models";
 import { NetworkConfigEnv } from "./models/config";
+import * as BOT from "./bot/index";
 // initialize configuration
 dotenv.config();
 
@@ -18,7 +19,7 @@ const logger = container.get<LoggerService>(LoggerService);
 application.app.listen(PORT, async () => {
   try {
     try {
-      const db = await connect('mongodb://127.0.0.1:27017/points');
+      const db = await connect("mongodb://127.0.0.1:27017/points");
       // await db.connection.db.dropDatabase();
       const networkEnv: NetworkConfigEnv = process.env
         .NETWORK_ENV as NetworkConfigEnv;

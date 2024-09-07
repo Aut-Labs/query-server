@@ -2,7 +2,13 @@ import express from "express";
 
 import helmet from "helmet";
 import { injectable } from "inversify";
-import { AutRouter, TaskRouter, UserRouter, ZeelyRouter } from "./routers";
+import {
+  AutRouter,
+  DiscordRouter,
+  TaskRouter,
+  UserRouter,
+  ZeelyRouter,
+} from "./routers";
 import AutSDK from "@aut-labs/sdk";
 import { MultiSigner } from "@aut-labs/sdk/dist/models/models";
 import { NetworkConfigEnv } from "./models/config";
@@ -42,7 +48,8 @@ export class App {
     private autRouter: AutRouter,
     private taskRouter: TaskRouter,
     private userRouter: UserRouter,
-    private zeelyRouter: ZeelyRouter
+    private zeelyRouter: ZeelyRouter,
+    private discordRouter: DiscordRouter
   ) {
     this._app = express();
     this.config();
@@ -67,6 +74,7 @@ export class App {
     this._app.use("/api/zeely", this.zeelyRouter.router);
     this._app.use("/api/task", this.taskRouter.router);
     this._app.use("/api/user", this.userRouter.router);
+    this._app.use("/api/discord", this.discordRouter.router);
     this._app.use("/api/docs", swaggerUI.serve, swaggerUI.setup(swagger));
   }
 

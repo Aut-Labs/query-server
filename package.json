@@ -19,12 +19,13 @@
     "init"
   ],
   "engines": {
-      "node": ">=21.1.0"
+    "node": ">=21.1.0"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@aut-labs/sdk": "^0.0.169-dev",
+    "@hokify/agenda": "^6.3.0",
     "@resvg/resvg-js": "^2.4.1",
     "@types/node": "latest",
     "axios": "^0.27.2",
@@ -32,6 +33,7 @@
     "canvas": "^2.11.2",
     "cookie-parser": "1.4.5",
     "cors": "2.8.5",
+    "discord.js": "^14.16.1",
     "dotenv": "^8.0.0",
     "ethers": "^6.10.0",
     "express": "^4.17.1",
@@ -67,6 +69,6 @@
     "nodemon": "^1.19.1",
     "ts-node": "^8.3.0",
     "typemoq": "2.1.0",
-    "typescript": "^4.6.2"
+    "typescript": "^5.5.4"
   }
 }

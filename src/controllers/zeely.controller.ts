@@ -84,15 +84,16 @@ export class ZeelyController {
         return res.status(400).send({ message: "AutId not found" });
       }
 
-      const signer = getSigner(this.networkConfig);
-      const multiSigner: MultiSigner = {
-        readOnlySigner: signer,
-        signer,
-      };
+      // const signer = await getSigner(this.networkConfig);
+      // const multiSigner: MultiSigner = {
+      //   readOnlySigner: signer,
+      //   signer,
+      // };
+      
 
       const sdk = await AutSDK.getInstance();
 
-      await sdk.init(multiSigner, this.networkConfig.contracts);
+      // await sdk.init(multiSigner, this.networkConfig.contracts);
 
       const nova = sdk.initService<Nova>(Nova, autID.novaAddress);
       const isAdmin = await nova.contract.admins.isAdmin(wallet);

@@ -18,13 +18,14 @@ const logger = container.get<LoggerService>(LoggerService);
 application.app.listen(PORT, async () => {
   try {
     try {
-      const db = await connect('mongodb://127.0.0.1:27017/points');
+      // const db = await connect('mongodb://127.0.0.1:27017/points');
       // await db.connection.db.dropDatabase();
       const networkEnv: NetworkConfigEnv = process.env
         .NETWORK_ENV as NetworkConfigEnv;
       const networkConfig = getNetworkConfig(networkEnv);
+      console.log("Network Environment:", networkEnv);
 
-      const signer = getSigner(networkConfig);
+      const signer = await getSigner(networkConfig);
       const multiSigner: MultiSigner = {
         readOnlySigner: signer,
         signer,

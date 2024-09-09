@@ -171,17 +171,6 @@ export class UserController {
     const promises = [];
     try {
       const sdk = await AutSDK.getInstance(false);
-      const networkEnv: NetworkConfigEnv = process.env
-        .NETWORK_ENV as NetworkConfigEnv;
-      const networkConfig = getNetworkConfig(networkEnv);
-
-      const signer = getSigner(networkConfig);
-      const multiSigner: MultiSigner = {
-        readOnlySigner: signer,
-        signer,
-      };
-
-      await sdk.init(multiSigner, networkConfig.contracts);
       const novaRes = await sdk.novaRegistry.contract.getNovas();
 
       const allDaos = [...novaRes.data];
@@ -209,17 +198,7 @@ export class UserController {
     const promises = [];
     try {
       const sdk = await AutSDK.getInstance(false);
-      const networkEnv: NetworkConfigEnv = process.env
-        .NETWORK_ENV as NetworkConfigEnv;
-      const networkConfig = getNetworkConfig(networkEnv);
 
-      const signer = getSigner(networkConfig);
-      const multiSigner: MultiSigner = {
-        readOnlySigner: signer,
-        signer,
-      };
-
-      await sdk.init(multiSigner, networkConfig.contracts);
       const novaRes = await sdk.novaRegistry.contract.getNovas();
 
       const MAX_DAOS = -30;

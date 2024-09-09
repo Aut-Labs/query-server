@@ -32,15 +32,15 @@ export class HoldersController {
         return res.status(400).send({ error: "Network not supported." });
       }
 
-      const signer = getSigner(networkConfig);
-      const multiSigner: MultiSigner = {
-        readOnlySigner: signer,
-        signer
-      }
+      // const signer = getSigner(networkConfig);
+      // const multiSigner: MultiSigner = {
+      //   readOnlySigner: signer,
+      //   signer
+      // }
 
       const sdk = await AutSDK.getInstance(false);
 
-      await sdk.init(multiSigner, networkConfig.contracts);
+      // await sdk.init(multiSigner, networkConfig.contracts);
 
       const query: AutIDQuery = isAddress(username)
         ? { holderAddress: username }
@@ -75,12 +75,7 @@ export class HoldersController {
 
       for (let i = 0; i < networkConfigs.length; i++) {
         const networkConfig = networkConfigs[i];
-        const signer = getSigner(networkConfig);
-        const multiSigner: MultiSigner = {
-          readOnlySigner: signer,
-          signer
-        }
-        await sdk.init(multiSigner, networkConfig.contracts);
+  
         const response = await sdk.autID.findAutID(address);
 
         if (response.isSuccess) {

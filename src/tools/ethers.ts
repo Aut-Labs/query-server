@@ -6,20 +6,26 @@ import { ethers, HDNodeWallet, JsonRpcProvider, Wallet } from "ethers";
 import { NetworkConfig } from "../models/config";
 import axios from "axios";
 
-require("dotenv").config();
+async function getSigner(networkConfig: NetworkConfig): Promise<ethers.Signer> {
+  try {
+    const provider = new JsonRpcProvider(networkConfig.rpcUrls[0]);
 
-function getSigner(networkConfig: NetworkConfig): ethers.Signer {
-  const provider = new ethers.JsonRpcProvider(networkConfig.rpcUrls[0]);
+    // Wait for the provider to connect and detect the network
+    await provider.ready;
 
-  // Create a wallet instance from the mnemonic
-  const wallet = ethers.Wallet.fromPhrase(process.env.MNEMONIC as string);
+    console.log("Connected to network:", (await provider.getNetwork())?.name);
 
-  // Connect the wallet to the provider
-  const signer = wallet.connect(provider);
+    const senderWalletMnemonic = Wallet.fromPhrase(
+      process.env.MNEMONIC as string
+    );
+    let signer = senderWalletMnemonic.connect(provider);
 
-  return signer;
+    return signer;
+  } catch (error) {
+    console.error("Failed to initialize signer:", error);
+    throw error;
+  }
 }
-
 function ipfsCIDToHttpUrl(url: string, isJson: boolean) {
   if (!url.includes("https://"))
     return `${process.env.IPFS_GATEWAY}/${url.replace("ipfs://", "")}`;

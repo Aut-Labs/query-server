@@ -48,7 +48,7 @@ export class AgendaManager {
   }
 
   // Method to schedule a job
-  async scheduleJob(jobName, data, when) {
+  async scheduleJob(when, jobName, data) {
     try {
       await this.agenda.schedule(when, jobName, data);
       console.log(`Job '${jobName}' scheduled successfully`);

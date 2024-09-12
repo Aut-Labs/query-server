@@ -143,7 +143,7 @@ export class ZeelyController {
       const nova = hubs[0];
 
       if (!nova) {
-        return res.status(400).send({ message: "Hasn't deployed nova" });
+        return res.status(400).send({ message: "Hasn't deployed hub" });
       }
 
       const autIdsResponse = await this.graphqlClient.request<any>(gql`
@@ -204,7 +204,7 @@ export class ZeelyController {
       const nova = hubs[0];
 
       if (!nova) {
-        return res.status(400).send({ message: "Hasn't deployed nova" });
+        return res.status(400).send({ message: "Hasn't deployed hub" });
       }
 
       const autIdsResponse = await this.graphqlClient.request<any>(gql`
@@ -265,7 +265,7 @@ export class ZeelyController {
       const nova = hubs[0];
 
       if (!nova) {
-        return res.status(400).send({ message: "Hasn't deployed nova" });
+        return res.status(400).send({ message: "Hasn't deployed hub" });
       }
 
       const autIdsResponse = await this.graphqlClient.request<any>(gql`
@@ -327,7 +327,7 @@ export class ZeelyController {
       const nova = hubs[0];
 
       if (!nova) {
-        return res.status(400).send({ message: "Hasn't deployed nova" });
+        return res.status(400).send({ message: "Hasn't deployed hub" });
       }
       let ipfsHash = nova.metadataUri;
       const prefix = "ipfs://";
@@ -384,7 +384,7 @@ export class ZeelyController {
       const nova = hubs[0];
 
       if (!nova) {
-        return res.status(400).send({ message: "Hasn't deployed nova" });
+        return res.status(400).send({ message: "Hasn't deployed hub" });
       }
       if (nova?.domain) {
         return res.status(200).send({ message: "Has added a domain" });

@@ -2,37 +2,34 @@
   "name": "aut-api",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
-  "scripts": {
-    "build": "tsc",
-    "dev": "npm install && nodemon",
-    "start": "node ./dist/server.js",
-    "testFlow": "npm run build && node ./dist/testFlow.js",
-    "test": "mocha -r ts-node/register --timeout 40000 test/*.spec.ts"
-  },
-  "repository": {
-    "type": "git"
-  },
   "keywords": [
     "$",
     "npm",
     "init"
   ],
-  "engines": {
-      "node": ">=21.1.0"
+  "repository": {
+    "type": "git"
   },
-  "author": "",
   "license": "ISC",
+  "author": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "npm install && nodemon",
+    "start": "node ./dist/server.js",
+    "test": "mocha -r ts-node/register --timeout 40000 test/*.spec.ts",
+    "testFlow": "npm run build && node ./dist/testFlow.js"
+  },
   "dependencies": {
-    "@aut-labs/sdk": "^0.0.169-dev",
+    "@aut-labs/sdk": "^0.0.207-dev",
     "@resvg/resvg-js": "^2.4.1",
-    "@types/node": "latest",
     "axios": "^0.27.2",
     "body-parser": "^1.19.0",
     "canvas": "^2.11.2",
     "cookie-parser": "1.4.5",
     "cors": "2.8.5",
     "dotenv": "^8.0.0",
+    "eth-crypto": "^2.6.0",
     "ethers": "^6.10.0",
     "express": "^4.17.1",
     "express-prom-bundle": "^5.1.5",
@@ -47,6 +44,7 @@
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.1.13",
+    "siwe": "^2.3.2",
     "swagger-jsdoc": "^6.2.0",
     "swagger-ui-express": "^4.3.0",
     "twit": "^2.2.11",
@@ -57,7 +55,7 @@
     "@types/express": "^4.17.1",
     "@types/express-serve-static-core": "4.16.2",
     "@types/mocha": "5.2.7",
-    "@types/node": "^12.6.8",
+    "@types/node": "latest",
     "@types/reflect-metadata": "^0.1.0",
     "@types/request": "2.47.0",
     "@types/request-promise": "4.1.41",
@@ -68,5 +66,8 @@
     "ts-node": "^8.3.0",
     "typemoq": "2.1.0",
     "typescript": "^4.6.2"
+  },
+  "engines": {
+    "node": ">=21.1.0"
   }
 }

@@ -1,8 +1,6 @@
 export * from "../../tools/logger.service";
-import { Question, QuestionsModel } from "../../models/question";
-import AutSDK, { QuestOnboarding, Task } from "@aut-labs/sdk";
+import { Question } from "../../models/question";
 import { FinalizeTaskResult } from "../../models/finalizeTask";
-import { PluginDefinitionType } from "@aut-labs/sdk/dist/models/plugin";
 
 export async function verifyQuizTask(
   onboardingPluginAddress: string,

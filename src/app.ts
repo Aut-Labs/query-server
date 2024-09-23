@@ -1,13 +1,9 @@
 import express from "express";
-
 import helmet from "helmet";
 import { injectable } from "inversify";
 import { AutRouter, TaskRouter, UserRouter, ZeelyRouter } from "./routers";
-import AutSDK from "@aut-labs/sdk";
-import { MultiSigner } from "@aut-labs/sdk/dist/models/models";
-import { NetworkConfigEnv } from "./models/config";
-import { getNetworkConfig } from "./tools/helpers";
-import { getSigner } from "./tools/ethers";
+import { SdkContainerService } from "./tools/sdk.container";
+
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const swaggerJSDoc = require("swagger-jsdoc");
@@ -42,7 +38,8 @@ export class App {
     private autRouter: AutRouter,
     private taskRouter: TaskRouter,
     private userRouter: UserRouter,
-    private zeelyRouter: ZeelyRouter
+    private zeelyRouter: ZeelyRouter,
+    private sdkContainerService: SdkContainerService
   ) {
     this._app = express();
     this.config();
@@ -59,7 +56,6 @@ export class App {
     this._app.use(cookieParser());
     this._app.use(cors());
     this._initRoutes();
-    this._initSdk();
   }
 
   private _initRoutes() {
@@ -68,17 +64,5 @@ export class App {
     this._app.use("/api/task", this.taskRouter.router);
     this._app.use("/api/user", this.userRouter.router);
     this._app.use("/api/docs", swaggerUI.serve, swaggerUI.setup(swagger));
-  }
-
-  private async _initSdk() {
-    const sdk = new AutSDK({});
-    const networkEnv = process.env.NETWORK_ENV as NetworkConfigEnv;
-    const networkConfig = getNetworkConfig(networkEnv);
-    const signer = getSigner(networkConfig);
-    const multiSigner: MultiSigner = {
-      readOnlySigner: signer,
-      signer,
-    };
-    await sdk.init(multiSigner, networkConfig.contracts);
   }
 }

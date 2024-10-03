@@ -1,6 +1,7 @@
+import { DiscordController } from "../controllers";
 import { Router } from "express";
+import { GraphQLClient, Variables } from "graphql-request";
 import { injectable } from "inversify";
-import { DiscordController } from "../controllers/discord.controller";
 
 @injectable()
 export class DiscordRouter {

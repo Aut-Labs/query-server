@@ -15,13 +15,57 @@ import { PollModel } from "../models/discord/poll.model";
 import { MemberModel } from "../models/discord/member.model";
 import { Agenda } from "@hokify/agenda";
 import { AgendaManager } from "../services/agenda";
+import { gql, GraphQLClient, Variables } from "graphql-request";
+import AutSDK, { fetchMetadata, HubNFT, Hub } from "@aut-labs/sdk";
+
+const fetchMetadatas = async (items: any[]) => {
+  return Promise.all(
+    items.map(async (item) => {
+      const metadata = await fetchMetadata<HubNFT>(
+        item.metadataUri,
+        process.env.IPFS_GATEWAY
+      );
+      return {
+        ...item,
+        metadata,
+      };
+    })
+  );
+};
 
 @injectable()
 export class DiscordController {
   private client: Client;
   private agenda: Agenda;
+  private graphqlClient: GraphQLClient;
+
+  private _getHubs = async (): Promise<any[]> => {
+    const query = gql`
+      query GetHubs {
+        hubs(first: 1000) {
+          id
+          address
+          domain
+          deployer
+          minCommitment
+          metadataUri
+        }
+      }
+    `;
+
+    return this.graphqlClient
+      .request<any>(query)
+      .then((data) => data.hubs)
+      .then((hubs) => fetchMetadatas(hubs))
+      .catch((e) => {
+        console.error("Error fetching hubs:", e);
+        return [];
+      });
+  };
 
   constructor() {
+    console.log("setting up client");
+    this.graphqlClient = new GraphQLClient(process.env.GRAPH_API_DEV_URL);
     this.client = new Client({
       intents: [
         GatewayIntentBits.Guilds,
@@ -30,6 +74,67 @@ export class DiscordController {
         GatewayIntentBits.GuildMembers,
         GatewayIntentBits.GuildMessageReactions,
       ],
+    });
+    this.client.on(Events.GuildCreate, async (guild) => {
+      console.log("Joined a new guild: " + guild.name);
+
+      const filters: Variables = {};
+      console.log("fetching all hubs");
+      const hubs = await this._getHubs(true);
+
+      console.log("fetched all hubs", hubs);
+      const hub = hubs.find((hub) => {
+        if (
+          hub.properties.address.toLowerCase() ===
+          "0x99f100a85c361ee7fea3965ffa080e1e1f13fcf2".toLowerCase()
+        ) {
+          console.log("found hub", hub);
+        }
+        const social = hub.metadata.properties.socials.find(
+          (s) => s.type === "discord"
+        );
+        return social && social.metadata.guildId === guild.id;
+      });
+      console.log(hub);
+      // const botRole = guild.roles.cache.find(
+      //   (r) => r.name === this.client.user.username
+      // );
+      // const guildData = await GuildModel.findOne({ guildId: guild.id });
+      // guildData.roles.forEach((role, i) => {
+      //   const randomColor = Math.floor(Math.random() * 16777215).toString(16);
+      //   guild.roles
+      //     .create({
+      //       name: role.name,
+      //       color: `#${randomColor}`,
+      //       reason: "Āut role from Āut Nova",
+      //     })
+      //     .then((i) => {
+      //       // console.log(i);
+      //     })
+      //     .catch((e) => {
+      //       console.error(e);
+      //     });
+      // });
+      // botRole.setPosition(1);
+      // if (!guildData.roleChannelId) {
+      //   guild.channels
+      //     .create({
+      //       name: "Āut-role-Channel",
+      //       type: ChannelType.GuildText,
+      //     })
+      //     .then(async (channel) => {
+      //       console.log(`Created new channel: ${channel.name}`);
+      //       await GuildModel.updateOne(
+      //         { guildId: guild.id },
+      //         { $set: { roleChannelId: channel.id } }
+      //       );
+      //     })
+      //     .catch((e) => {
+      //       console.error(e);
+      //     });
+      // }
+
+      //Your other stuff like adding to guildArray
     });
 
     this.client.once(Events.ClientReady, async (c) => {
@@ -184,6 +289,25 @@ export class DiscordController {
     try {
       const { guildId } = req.params;
       const guild = this.client.guilds.cache.find((g) => g.id === guildId);
+
+      const filters: Variables = {};
+      console.log("fetching all hubs");
+      const hubs = await this._getHubs(true);
+
+      console.log("fetched all hubs", hubs);
+      const hub = hubs.find((hub) => {
+        if (
+          hub.properties.address.toLowerCase() ===
+          "0x99f100a85c361ee7fea3965ffa080e1e1f13fcf2".toLowerCase()
+        ) {
+          console.log("found hub", hub);
+        }
+        const social = hub.metadata.properties.socials.find(
+          (s) => s.type === "discord"
+        );
+        return social && social.metadata.guildId === guildId;
+      });
+      console.log(hub);
       if (guild) {
         return res.json({ active: true });
       }

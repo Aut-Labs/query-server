@@ -1,11 +1,5 @@
 export * from "../../tools/logger.service";
-import axios from "axios";
-import AutSDK, {
-  QuestOnboarding, Task,
-} from "@aut-labs/sdk";
-import { getJSONFromURI, ipfsCIDToHttpUrl } from "../../tools/ethers";
 import { FinalizeTaskResult } from "../../models/finalizeTask";
-import { supportFunction } from "../../constants/supportedNetworks";
 
 
 export async function verifyTransaction(

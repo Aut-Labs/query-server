@@ -1,29 +1,42 @@
-// Import the the ethers shims (**BEFORE** ethers)
-// import '@ethersproject/shims';
-
-// Import the ethers library
-import { ethers, HDNodeWallet, JsonRpcProvider, Wallet } from "ethers";
+import { ethers, JsonRpcProvider, Wallet } from "ethers";
 import { NetworkConfig } from "../models/config";
 import axios from "axios";
 
-function getSigner(networkConfig: NetworkConfig): ethers.Signer {
-  const provider = new JsonRpcProvider(
-    networkConfig.rpcUrls[0]
-  );
+async function getSigner(networkConfig: NetworkConfig): Promise<ethers.Signer> {
+  try {
+    const [rpcUrl] = networkConfig.rpcUrls;
+    console.log("Connecting to network:", rpcUrl);
+    const provider = new JsonRpcProvider(rpcUrl);
+    const network = await provider.getNetwork();
+    console.log("Connected to network:", network?.name);
+    console.log("Connected to chainId:", Number(network?.chainId));
 
-  // Wallet connected to a provider
-  const senderWalletMnemonic = Wallet.fromPhrase(
-    process.env.MNEMONIC as any,
-  );
-
-  let signer = senderWalletMnemonic.connect(provider);
-  return signer;
+    const senderWalletMnemonic = Wallet.fromPhrase(
+      process.env.MNEMONIC as string
+    );
+    let signer = senderWalletMnemonic.connect(provider);
+    return signer;
+  } catch (error) {
+    console.error("Failed to initialize signer:", error);
+    throw error;
+  }
 }
 
-function ipfsCIDToHttpUrl(url: string, isJson: boolean) {
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
+}
+
+function replaceAll(str, find, replace) {
+  return str.replace(new RegExp(escapeRegExp(find), "g"), replace);
+}
+
+function ipfsCIDToHttpUrl(url: string, nftStorageUrl: string) {
+  if (!url) {
+    return url;
+  }
   if (!url.includes("https://"))
-  return `${process.env.IPFS_GATEWAY}/${url.replace("ipfs://", "")}`;
-  else return url;
+    return `${nftStorageUrl}/${replaceAll(url, "ipfs://", "")}`;
+  return url;
 }
 
 async function getJSONFromURI(uri: string) {

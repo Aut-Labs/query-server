@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { inject, injectable } from "inversify";
 import { QuizController, TaskController } from "../controllers";
+import { ContributionController } from "../controllers/contribution.controller";
 
 @injectable()
 export class TaskRouter {
@@ -8,13 +9,63 @@ export class TaskRouter {
 
   constructor(
     @inject(QuizController) private quizController: QuizController,
-    @inject(TaskController) private taskVerifierController: TaskController
+    @inject(TaskController) private taskVerifierController: TaskController,
+    @inject(ContributionController) private contributionController: ContributionController
   ) {
     this._router = Router({ strict: true });
     this.init();
   }
 
   private init(): void {
+
+    /**
+     * @swagger
+     * /api/task/contribution/commit:
+     *   post:
+     *     summary: Commit a contribution
+     *     description: Endpoint to commit a contribution.
+     *     tags:
+     *       - Contribution
+     *     responses:
+     *       200:
+     *         description: Contribution committed successfully
+     *       400:
+     *         description: Bad Request
+     */
+    this._router.post("/contribution/commit", this.contributionController.commitContribution);
+
+    /**
+     * @swagger
+     * /api/task/contribution/viewByHashes:
+     *   post:
+     *     summary: View contributions by hashes
+     *     description: Endpoint to view contributions by hashes.
+     *     tags:
+     *       - Contribution
+     *     responses:
+     *       200:
+     *         description: Contributions retrieved successfully
+     *       400:
+     *         description: Bad Request
+     */
+    this._router.post("/contribution/viewByHashes", this.contributionController.viewContributionsByHashes);
+
+    /**
+     * @swagger
+     * /api/task/contribution/viewByCids:
+     *   post:
+     *     summary: View contributions by cids
+     *     description: Endpoint to view contributions by cids.
+     *     tags:
+     *       - Contribution
+     *     responses:
+     *       200:
+     *         description: Contributions retrieved successfully
+     *       400:
+     *         description: Bad Request
+     */
+    this._router.post("/contribution/viewByCids", this.contributionController.viewContributionsByCids);
+
     /**
      * @swagger
      * /api/task/transaction:

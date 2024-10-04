@@ -1,9 +1,5 @@
 export * from "../../tools/logger.service";
-import axios from "axios";
-import { getJSONFromURI, ipfsCIDToHttpUrl } from "../../tools/ethers";
 import { FinalizeTaskResult } from "../../models/finalizeTask";
-import AutSDK, { QuestOnboarding, Task } from "@aut-labs/sdk";
-import { PluginDefinitionType } from "@aut-labs/sdk/dist/models/plugin";
 
 export async function verifyJoinDiscordTask(
   onboardingPluginAddress: string,

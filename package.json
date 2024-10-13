@@ -21,7 +21,7 @@
     "testFlow": "npm run build && node ./dist/testFlow.js"
   },
   "dependencies": {
-    "@aut-labs/sdk": "^0.0.207-dev",
+    "@aut-labs/sdk": "^0.0.213-dev",
     "@resvg/resvg-js": "^2.4.1",
     "axios": "^0.27.2",
     "body-parser": "^1.19.0",

@@ -14,6 +14,7 @@ export class DiscordRouter {
 
   private init(): void {
     this._router.post("/gathering", this.discordController.createGathering);
+    this._router.post("/get-role", this.discordController.getDiscordRole);
     this._router.post("/poll", this.discordController.createPoll);
     this._router.get("/check/:guildId", this.discordController.checkGuild);
     this._router.get("/address", this.discordController.getBotAddress);

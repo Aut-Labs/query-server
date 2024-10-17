@@ -24,6 +24,16 @@ import { Agenda } from "@hokify/agenda";
 import { AgendaManager } from "../services/agenda";
 import { gql, GraphQLClient, Variables } from "graphql-request";
 import AutSDK, { fetchMetadata, HubNFT } from "@aut-labs/sdk";
+import { AuthSig } from "../models/auth-sig";
+import { SdkContainerService } from "../tools/sdk.container";
+import { verifyMessage } from "ethers";
+
+interface ClaimRoleRequest {
+  authSig: AuthSig;
+  message: string;
+  hubAddress: string;
+  discordAccessToken: string;
+}
 
 interface Hub {
   id: string;
@@ -135,6 +145,7 @@ export class DiscordController {
   private agenda: Agenda;
   private graphqlClient: GraphQLClient;
   private commandsCollection: Collection<any, any>;
+  private _sdkService: SdkContainerService;
 
   private _getAutIdsByHub = async (hubAddress: string): Promise<any[]> => {
     const filters = {
@@ -201,13 +212,18 @@ export class DiscordController {
       const token = process.env.DISCORD_BOT_TOKEN as string;
       const rest = new REST().setToken(token);
       console.log(
-        `Started refreshing ${this.commandsCollection} application (/) commands.`
+        `Started refreshing ${this.commandsCollection.size} application (/) commands.`
+      );
+
+      // Extract the command data from the Collection
+      const commandData = Array.from(this.commandsCollection.values()).map(
+        (command) => command.data.toJSON()
       );
 
       // The put method is used to fully refresh all commands in the guild with the current set
       const data: any = await rest.put(
         Routes.applicationGuildCommands(clientId, guildId),
-        { body: this.commandsCollection }
+        { body: commandData }
       );
 
       console.log(
@@ -242,8 +258,55 @@ export class DiscordController {
         );
       },
     };
+    const claimRoleCommand = {
+      data: new SlashCommandBuilder()
+        .setName("claimrole")
+        .setDescription("Claim your Āut role from the hub within the server."),
+      execute: async function (interaction: CommandInteraction) {
+        const hub = await this.getHubFromGuildId(interaction.guild.id);
+        const autIds = await this._getAutIdsByHub(hub.address);
+        const discordUserId = interaction.user.id;
+        const autId = autIds.find((autId) => {
+          return autId.metadata.properties.socials.some(
+            (social) => social?.metadata?.userId === discordUserId
+          );
+        });
+
+        if (autId) {
+          const role = autId.joinedHubs.find(
+            (h) => h.hubAddress === hub.address
+          ).role;
+          const roleSet = hub.metadata.properties.rolesSets.find(
+            (rs) => rs.roleSetName === "Default"
+          );
+          const roleName = roleSet.roles.find((r) => r.id == role).roleName;
+          const discordGuild = this.client.guilds.cache.find(
+            (g) => g.id === interaction.guild.id
+          );
+
+          const discordRole = discordGuild.roles.cache.find(
+            (r) => r.name === roleName
+          );
+          const guildMember = await interaction.guild.members.fetch(
+            discordUserId
+          );
+
+          // Add the role to the guild member
+          await guildMember.roles.add(discordRole);
+
+          await interaction.reply(
+            `<@${discordUserId}> has claimed their role as <@&${discordRole.id}>.`
+          );
+        } else {
+          await interaction.reply(
+            "Looks like you haven't verified your discord profile.\nPlease follow this {link} and add your discord account to your ĀutID. Once done use /claimRole to get your role."
+          );
+        }
+      }.bind(this),
+    };
     this.commandsCollection = new Collection();
     this.commandsCollection.set(userMeCommand.data.name, userMeCommand);
+    this.commandsCollection.set(claimRoleCommand.data.name, claimRoleCommand);
 
     // const foldersPath = path.join(__dirname, "../tools/discord/commands");
     // const commandFolders = fs.readdirSync(foldersPath);
@@ -268,6 +331,8 @@ export class DiscordController {
 
     this.client.on(Events.GuildCreate, async (guild) => {
       console.log("Joined a new guild: " + guild.name);
+
+      await this._deployCommands(guild.id);
 
       const hub = await this.getHubFromGuildId(guild.id);
 
@@ -332,44 +397,53 @@ export class DiscordController {
 
     this.client.on(Events.GuildMemberAdd, async (guildMember) => {
       console.log(`member! ${guildMember}`);
+      // // const guildData = await GuildModel.findOne({ guildId: m.guild.id });
+      // const autIds = await this._getAutIdsByHub(hub.address);
+      // const autId = autIds.find((autId) => {
+      //   return autId.metadata.properties.socials.some(
+      //     (social) => social?.metadata?.userId === guildMember.id
+      //   );
+      // });
+      // const channel = guildMember.guild.channels.cache.find(
+      //   (c) => c.name === "āut-role-channel"
+      // );
+      // if (autId) {
+      //   const role = autId.joinedHubs.find(
+      //     (h) => h.hubAddress === hub.address
+      //   ).role;
+      //   const roleSet = hub.metadata.properties.rolesSets.find(
+      //     (rs) => rs.roleSetName === "Default"
+      //   );
+      //   const roleName = roleSet.roles.find((r) => r.id == role).roleName;
+      //   const discordGuild = this.client.guilds.cache.find(
+      //     (g) => g.id === guildMember.guild.id
+      //   );
+
+      //   const discordRole = discordGuild.roles.cache.find(
+      //     (r) => r.name === roleName
+      //   );
+
+      //   await guildMember.roles.add(discordRole);
+
+      //   (channel as TextChannel).send(
+      //     `Everyone welcome <@${guildMember.id}>. They have joined with the role <@&${discordRole.id}>! `
+      //   );
+      // } else {
+      //   (channel as TextChannel).send(
+      //     `Everyone welcome <@${guildMember.id}>. Looks like you haven't verified your discord profile.\nPlease follow this {link} and add your discord account to your ĀutID. Once done use /claimRole to get your role.`
+      //   );
+      // }
 
       const hub = await this.getHubFromGuildId(guildMember.guild.id);
-      // const guildData = await GuildModel.findOne({ guildId: m.guild.id });
-      const autIds = await this._getAutIdsByHub(hub.address);
-      const autId = autIds.find((autId) => {
-        return autId.metadata.properties.socials.some(
-          (social) => social?.metadata?.userId === guildMember.id
-        );
-      });
-      const channel = guildMember.guild.channels.cache.find(
-        (c) => c.name === "āut-role-channel"
+
+      const roleChannel = guildMember.guild.channels.cache.find(
+        (channel) => channel.name === "āut-role-channel"
+      ) as TextChannel;
+
+      if (!roleChannel) return;
+      roleChannel.send(
+        `Welcome <@${guildMember.id}>! Get your Āut role by following this link: http://localhost:3000/claim-discord-role?hub-address=${hub.address}`
       );
-      if (autId) {
-        const role = autId.joinedHubs.find(
-          (h) => h.hubAddress === hub.address
-        ).role;
-        const roleSet = hub.metadata.properties.rolesSets.find(
-          (rs) => rs.roleSetName === "Default"
-        );
-        const roleName = roleSet.roles.find((r) => r.id == role).roleName;
-        const discordGuild = this.client.guilds.cache.find(
-          (g) => g.id === guildMember.guild.id
-        );
-
-        const discordRole = discordGuild.roles.cache.find(
-          (r) => r.name === roleName
-        );
-
-        await guildMember.roles.add(discordRole);
-
-        (channel as TextChannel).send(
-          `Everyone welcome <@${guildMember.id}>. They have joined with the role <@&${discordRole.id}>! `
-        );
-      } else {
-        (channel as TextChannel).send(
-          `Everyone welcome <@${guildMember.id}>. Looks like you haven't verified your discord profile.\nPlease follow this {link} and add your discord account to your ĀutID. Once done use the command /claimRole in this channel to get your role.`
-        );
-      }
     });
 
     this.client.on(Events.InteractionCreate, async (interaction) => {
@@ -409,6 +483,121 @@ export class DiscordController {
 
     this.agenda = new AgendaManager(this.client).agenda;
   }
+
+  private getDiscordUserIdFromToken = async (
+    token: string
+  ): Promise<string | null> => {
+    try {
+      const response = await fetch("https://discord.com/api/users/@me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch Discord user data");
+      }
+
+      const userData = await response.json();
+      return userData.id;
+    } catch (error) {
+      console.error("Error fetching Discord user data:", error);
+      return null;
+    }
+  };
+
+  public getDiscordRole = async (req: Request, res: Response) => {
+    try {
+      const {
+        authSig,
+        message,
+        hubAddress,
+        discordAccessToken,
+      }: ClaimRoleRequest = req.body;
+
+      if (!authSig) {
+        return res.status(400).send({ error: "autSig not provided." });
+      }
+
+      if (!hubAddress) {
+        return res.status(400).send({ error: "hubAddress not provided." });
+      }
+
+      const lookupConfig = {
+        method: "get",
+        maxBodyLength: Infinity,
+        url: "https://discord.com/api/users/@me",
+        headers: {
+          Authorization: `Bearer ${discordAccessToken}`,
+        },
+      };
+
+      const discordUser = await axios(lookupConfig);
+
+      const discordUserId = discordUser.data.id;
+
+      if (!discordUserId) {
+        return res.status(400).send({ error: "Invalid Discord token." });
+      }
+
+      const { sig, signedMessage, address } = authSig;
+      const recoveredAddress = verifyMessage(signedMessage, sig).toLowerCase();
+
+      if (recoveredAddress.toLocaleLowerCase() !== address.toLowerCase()) {
+        return res.status(400).send({ error: "Invalid signature." });
+      }
+
+      const hub = await this.getHubFromAddress(hubAddress);
+
+      const social = hub.metadata.properties.socials.find(
+        (s) => s.type === "discord"
+      );
+
+      const guildId = social.metadata.guildId;
+
+      const autIds = await this._getAutIdsByHub(hub.address);
+      const autId = autIds.find((autId) => {
+        return autId.id.toLowerCase() === recoveredAddress.toLowerCase();
+      });
+
+      if (autId) {
+        const role = autId.joinedHubs.find(
+          (h) => h.hubAddress === hub.address
+        ).role;
+        const roleSet = hub.metadata.properties.rolesSets.find(
+          (rs) => rs.roleSetName === "Default"
+        );
+        const roleName = roleSet.roles.find((r) => r.id == role).roleName;
+        const discordGuild = this.client.guilds.cache.find(
+          (g) => g.id === guildId
+        );
+
+        const discordRole = discordGuild.roles.cache.find(
+          (r) => r.name === roleName
+        );
+        const guildMember = await discordGuild.members.fetch(discordUserId);
+        const newMember = new MemberModel({
+          discordId: discordUserId,
+          autIdAddress: recoveredAddress,
+        });
+        const savedMember = await newMember.save();
+
+        // Add the role to the guild member
+        await guildMember.roles.add(discordRole);
+
+        return res.status(200).send();
+        // await interaction.reply(
+        //   `<@${discordUserId}> has claimed their role as <@&${discordRole.id}>.`
+        // );
+      }
+      return res.status(400).send("Failed to claim role");
+    } catch (err) {
+      // this.loggerService.error(err);
+      return res.status(500).send({
+        error: err?.message ?? "Something went wrong, please try again later.",
+      });
+    }
+  };
 
   public createGathering = async (req: Request, res: Response) => {
     try {
@@ -549,6 +738,15 @@ export class DiscordController {
     }
   };
 
+  public getHubFromAddress = async (address: string): Promise<Hub> => {
+    const hubs = await this._getHubs();
+
+    const hub = hubs.find((hub) => {
+      return hub.address === address;
+    });
+    return hub;
+  };
+
   public getHubFromGuildId = async (guildId: string): Promise<Hub> => {
     const hubs = await this._getHubs();
 
@@ -564,7 +762,6 @@ export class DiscordController {
   public checkGuild = async (req: Request, res: Response) => {
     try {
       const { guildId } = req.params;
-      await this._deployCommands(guildId);
       const guild = this.client.guilds.cache.find((g) => g.id === guildId);
       if (guild) {
         return res.json({ active: true });

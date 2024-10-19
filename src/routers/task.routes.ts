@@ -2,6 +2,8 @@ import { Router } from "express";
 import { inject, injectable } from "inversify";
 import { QuizController, TaskController } from "../controllers";
 import { ContributionController } from "../controllers/contribution.controller";
+import { TwitterController } from "../controllers/twitter.controller";
+import { GithubController } from "../controllers/github.controller";
 
 @injectable()
 export class TaskRouter {
@@ -10,6 +12,8 @@ export class TaskRouter {
   constructor(
     @inject(QuizController) private quizController: QuizController,
     @inject(TaskController) private taskVerifierController: TaskController,
+    @inject(TwitterController) private twitterController: TwitterController,
+    @inject(GithubController) private githubController: GithubController,
     @inject(ContributionController) private contributionController: ContributionController
   ) {
     this._router = Router({ strict: true });
@@ -197,6 +201,22 @@ export class TaskRouter {
     this._router.get(
       "/quiz/all",
       this.quizController.getAllQuestionsAndAnswers
+    );
+
+
+    this._router.post(
+      "/twitter/follow",
+      this.twitterController.verifyTwitterFollow
+    );
+
+    this._router.post(
+      "/github/commit",
+      this.githubController.verifyCommit
+    );
+
+    this._router.post(
+      "/github/pr",
+      this.githubController.verifyPullRequest
     );
   }
 

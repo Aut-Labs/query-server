@@ -114,7 +114,7 @@ const fetchMetadatas = async (items: any[]) => {
 
 interface TwitterUser {
   id: string;
-  screen_name: string;
+  userName: string;
 }
 
 @injectable()
@@ -192,19 +192,21 @@ export class TwitterController {
       }
 
       try {
-        // First, get the authenticated user's info
-        const userResponse = await axios.get(
-          "https://api.twitter.com/2/users/me",
+        // Get the target user's info by screen name
+        const targetUserResponse = await axios.get(
+          `https://api.twitter.com/2/users/by/username/Antonio69459346`,
           {
             headers: {
-              Authorization: `Bearer ${oauth2Token}`,
+              Authorization: `Bearer ${process.env.X_CONSUMER_API_KEY}`,
             },
           }
         );
 
-        console.log(userResponse);
+        const targetUser: TwitterUser = targetUserResponse.data.data;
 
-        const authenticatedUser: TwitterUser = userResponse.data;
+        // console.log(userResponse);
+
+        // const authenticatedUser: TwitterUser = userResponse.data;
 
         // Now, check if the authenticated user is following the target account
         const followersResponse = await axios.get(
@@ -217,7 +219,7 @@ export class TwitterController {
               include_user_entities: false,
             },
             headers: {
-              Authorization: `Bearer AAAAAAAAAAAAAAAAAAAAACnClQEAAAAA4GJu82kH1rcvvaIme2vqz8aBxTU%3DYHzsfAlObP5At6usVFv5B8oTDM7gJH9L6CyKTiahz0FPtU9Uu1`,
+              Authorization: `Bearer ${process.env.X_CONSUMER_API_KEY}`,
             },
           }
         );
@@ -225,17 +227,71 @@ export class TwitterController {
         const followers: TwitterUser[] = followersResponse.data.users;
 
         const isFollowing = followers.some(
-          (follower) => follower.id === authenticatedUser.id
+          (follower) => follower.id === targetUser.id
         );
 
         return res.json({
           isFollowing,
-          authenticatedUser: authenticatedUser.screen_name,
+          authenticatedUser: targetUser.userName,
           targetUser: targetScreenName,
         });
       } catch (error) {
         console.error("Error verifying follow status:", error);
         return res.status(500).json({ error: "Error verifying follow status" });
+      }
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ error: "An error occurred" });
+    }
+  };
+
+  public verifyTwitterRetweet = async (req: Request, res: Response) => {
+    try {
+      const { accessToken, contributionId, tweetUrl } = req.body;
+
+      if (!accessToken || !contributionId || !tweetUrl) {
+        return res
+          .status(400)
+          .json({ error: "Missing oauth2Token or contributionId or tweetUrl" });
+      }
+      const tweetIdMatch = tweetUrl.match(/status\/(\d+)/);
+      if (!tweetIdMatch) {
+        return res.status(400).json({ error: "Invalid tweet URL" });
+      }
+      const tweetId = tweetIdMatch[1];
+
+      const userMeResponse = await axios.get(
+        "https://api.twitter.com/2/users/me",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      const userId = userMeResponse.data.data.id;
+      try {
+        // Get the target user's info by screen name
+        const retweetsResponse = await axios.get(
+          `https://api.twitter.com/2/tweets/${tweetId}/retweeted_by`,
+          {
+            headers: {
+              Authorization: `Bearer ${process.env.X_API_BEARER_TOKEN}`,
+            },
+          }
+        );
+
+        const retweets: TwitterUser[] = retweetsResponse.data.data;
+
+        const hasRetweeted = retweets.some((retweet) => retweet.id === userId);
+
+        return res.json({
+          hasRetweeted,
+          targetUser: userMeResponse.data.data.username,
+        });
+      } catch (error) {
+        console.error("Error verifying retweet status:", error);
+        return res.status(500).json({ error: "Error verifying retweet status" });
       }
     } catch (error) {
       console.log(error);

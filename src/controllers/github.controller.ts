@@ -1,15 +1,90 @@
 import { injectable } from "inversify";
 import { Request, Response } from "express";
-import axios from "axios";
-import { Octokit } from "octokit";
+import { Octokit } from "@octokit/rest";
 
 @injectable()
 export class GithubController {
   private octokit: Octokit;
 
   constructor() {
-    this.octokit = new Octokit({ auth: process.env.GITHUB_ACCESS_TOKEN });
+    this.octokit = new Octokit({
+      auth: process.env.GITHUB_ACCESS_TOKEN,
+    });
   }
+
+  public getUserOrganisations = async (req: Request, res: Response) => {
+    try {
+      const { accessToken } = req.body;
+
+      if (!accessToken) {
+        return res.status(400).json({ error: "Missing access token" });
+      }
+
+      const octokit = new Octokit({ auth: accessToken });
+
+      try {
+        // Get the authenticated user's info
+        const { data: user } = await octokit.users.getAuthenticated();
+
+        // Get the user's organizations (both public and private)
+        const { data: organizations } =
+          await octokit.orgs.listForAuthenticatedUser({
+            per_page: 100,
+            visibility: "all", // Changed to 'all' to check all organizations
+          });
+
+        // Filter organizations where user is an owner
+        const ownedOrgs = await Promise.all(
+          organizations.map(async (org) => {
+            try {
+              // Get user's membership status in the organization
+              const { data: membership } =
+                await octokit.orgs.getMembershipForAuthenticatedUser({
+                  org: org.login,
+                });
+
+              // Only include if user is an owner and org is public
+              if (membership.role === "admin") {
+                return {
+                  id: org.id,
+                  name: org.login,
+                  login: org.login,
+                  description: org.description,
+                  avatarUrl: org.avatar_url,
+                  url: org.url,
+                  role: membership.role,
+                };
+              }
+              return null;
+            } catch (error) {
+              console.error(
+                `Error checking membership for org ${org.login}:`,
+                error
+              );
+              return null;
+            }
+          })
+        );
+
+        // Filter out null values and only return public organizations
+        const filteredOrgs = ownedOrgs.filter(
+          (org): org is NonNullable<typeof org> => org !== null
+        );
+
+        return res.json({
+          authenticatedUser: user.login,
+          organizations: filteredOrgs,
+          totalCount: filteredOrgs.length,
+        });
+      } catch (error) {
+        console.error("Error fetching organizations:", error);
+        return res.status(500).json({ error: "Error fetching organizations" });
+      }
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: "An error occurred" });
+    }
+  };
 
   public verifyCommit = async (req: Request, res: Response) => {
     try {
@@ -30,7 +105,7 @@ export class GithubController {
           owner,
           repo,
           author: user.login,
-          per_page: 1, // We only need to check if there's at least one commit
+          per_page: 1,
         });
 
         const hasCommit = commits.length > 0;
@@ -45,7 +120,7 @@ export class GithubController {
         return res.status(500).json({ error: "Error verifying commit" });
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
       return res.status(500).json({ error: "An error occurred" });
     }
   };
@@ -71,7 +146,7 @@ export class GithubController {
           state: "all",
           sort: "created",
           direction: "desc",
-          per_page: 100, // Adjust as needed
+          per_page: 100,
         });
 
         const start = new Date(startDate);
@@ -100,7 +175,7 @@ export class GithubController {
         return res.status(500).json({ error: "Error verifying pull request" });
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
       return res.status(500).json({ error: "An error occurred" });
     }
   };

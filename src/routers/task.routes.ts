@@ -13,7 +13,7 @@ export class TaskRouter {
     @inject(QuizController) private quizController: QuizController,
     @inject(TaskController) private taskVerifierController: TaskController,
     @inject(TwitterController) private twitterController: TwitterController,
-    // @inject(GithubController) private githubController: GithubController,
+    @inject(GithubController) private githubController: GithubController,
     @inject(ContributionController) private contributionController: ContributionController
   ) {
     this._router = Router({ strict: true });
@@ -213,7 +213,11 @@ export class TaskRouter {
       "/twitter/retweet",
       this.twitterController.verifyTwitterRetweet
     );
-
+    
+    this._router.post(
+      "/github/getOrganistaions",
+      this.githubController.getUserOrganisations
+    );
     // this._router.post(
     //   "/github/commit",
     //   this.githubController.verifyCommit

@@ -11,10 +11,12 @@ async function getSigner(networkConfig: NetworkConfig): Promise<ethers.Signer> {
     console.log("Connected to network:", network?.name);
     console.log("Connected to chainId:", Number(network?.chainId));
 
-    const senderWalletMnemonic = Wallet.fromPhrase(
-      process.env.MNEMONIC as string
-    );
-    let signer = senderWalletMnemonic.connect(provider);
+    const privateKey = process.env.PRIVATE_KEY as string;
+    if (!privateKey) {
+      throw new Error("Private key not found in environment variables.");
+    }
+    const wallet = new Wallet(privateKey);
+    const signer = wallet.connect(provider);
     return signer;
   } catch (error) {
     console.error("Failed to initialize signer:", error);

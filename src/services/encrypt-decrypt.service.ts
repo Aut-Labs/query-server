@@ -4,6 +4,7 @@ import EthCrypto from "eth-crypto";
 import { SdkContainerService } from "../tools/sdk.container";
 import { AuthSig } from "../models/auth-sig";
 import { Hub, SDKContractGenericResponse, BaseNFTModel } from "@aut-labs/sdk";
+import { ethers } from "ethers";
 
 type Roles = "admin" | "member";
 type ContractType = "hub" | "autid";
@@ -172,7 +173,8 @@ export class EncryptDecryptService {
       }
 
       const address = await this._sdkService.veryifySignature(autSig);
-      const _message = await decryptMessage(this._sdkService.privateKey, hash);
+      const originalHash = ethers.toUtf8String(hash);
+      const _message = await decryptMessage(this._sdkService.privateKey, originalHash);
       const { accessControl, message } = JSON.parse(_message) as {
         accessControl: AccessControlWithAddress;
         message: string;

@@ -4,6 +4,7 @@ import { QuizController, TaskController } from "../controllers";
 import { ContributionController } from "../controllers/contribution.controller";
 import { TwitterController } from "../controllers/twitter.controller";
 import { GithubController } from "../controllers/github.controller";
+import { EncryptDecryptController } from "../controllers/encrypt-decrypt.controller";
 
 @injectable()
 export class TaskRouter {
@@ -14,14 +15,15 @@ export class TaskRouter {
     @inject(TaskController) private taskVerifierController: TaskController,
     @inject(TwitterController) private twitterController: TwitterController,
     @inject(GithubController) private githubController: GithubController,
-    @inject(ContributionController) private contributionController: ContributionController
+    @inject(ContributionController) private contributionController: ContributionController,
+    @inject(EncryptDecryptController)
+    private encryptDecryptController: EncryptDecryptController
   ) {
     this._router = Router({ strict: true });
     this.init();
   }
 
   private init(): void {
-
     /**
      * @swagger
      * /api/task/contribution/commit:
@@ -36,7 +38,10 @@ export class TaskRouter {
      *       400:
      *         description: Bad Request
      */
-    this._router.post("/contribution/commit", this.contributionController.commitContribution);
+    this._router.post(
+      "/contribution/commit",
+      this.contributionController.commitContribution
+    );
 
     /**
      * @swagger
@@ -52,7 +57,10 @@ export class TaskRouter {
      *       400:
      *         description: Bad Request
      */
-    this._router.post("/contribution/viewByHashes", this.contributionController.viewContributionsByHashes);
+    this._router.post(
+      "/contribution/viewByHashes",
+      this.contributionController.viewContributionsByHashes
+    );
 
     /**
      * @swagger
@@ -68,7 +76,10 @@ export class TaskRouter {
      *       400:
      *         description: Bad Request
      */
-    this._router.post("/contribution/viewByCids", this.contributionController.viewContributionsByCids);
+    this._router.post(
+      "/contribution/viewByCids",
+      this.contributionController.viewContributionsByCids
+    );
 
     /**
      * @swagger
@@ -203,7 +214,6 @@ export class TaskRouter {
       this.quizController.getAllQuestionsAndAnswers
     );
 
-
     this._router.post(
       "/twitter/follow",
       this.twitterController.verifyTwitterFollow
@@ -235,7 +245,15 @@ export class TaskRouter {
 
     this._router.post(
       "/github/pr",
-      this.githubController.verifyPullRequest
+      this.githubController.verifyPullRequest);
+    // this._router.post(
+    //   "/github/pr",
+    //   this.githubController.verifyPullRequest
+    // );
+
+    this._router.post(
+      "/encrypt",
+      this.encryptDecryptController.encrypt
     );
   }
 

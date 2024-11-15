@@ -8,7 +8,7 @@ import {
   EncryptDecryptModel,
   EncryptDecryptService,
 } from "../services/encrypt-decrypt.service";
-import { getJSONFromURI, ipfsCIDToHttpUrl } from "../tools/ethers";
+import { ethers, getJSONFromURI, ipfsCIDToHttpUrl } from "../tools/ethers";
 import { Hub } from "@aut-labs/sdk";
 
 interface ContributionRequest {
@@ -34,7 +34,7 @@ export class ContributionController {
   constructor(
     private loggerService: LoggerService,
     private _sdkContainerService: SdkContainerService,
-    private _encryptDecryptService: EncryptDecryptService
+    private _encryptDecryptService: EncryptDecryptService,
   ) {}
 
   public commitContribution = async (req: any, res: Response) => {
@@ -43,7 +43,6 @@ export class ContributionController {
         autSig,
         message,
         hubAddress,
-        contributionAddress,
         contributionId,
       }: ContributionRequest = req.body;
 
@@ -57,12 +56,6 @@ export class ContributionController {
 
       if (!contributionId) {
         return res.status(400).send({ error: "contributionId not provided." });
-      }
-
-      if (!contributionAddress) {
-        return res
-          .status(400)
-          .send({ error: "contributionAddress not provided." });
       }
 
       if (!message) {
@@ -84,26 +77,16 @@ export class ContributionController {
         return res.status(400).send({ error: encryptionResponse.error });
       }
 
-      // const model = new EncryptDecryptModel({
-      //   name: "CommitContribution",
-      //   description: "Commit Contribution",
-      //   properties: {
-      //     hash: encryptionResponse.hash,
-      //     accessControl,
-      //   },
-      // });
-      // const cid = await this._sdkContainerService.sdk.client.sendJSONToIPFS(
-      //   model as any
-      // );
-
       const hubService: Hub = this._sdkContainerService.sdk.initService(
         Hub,
         hubAddress
       );
+      const address = await this._sdkContainerService.veryifySignature(autSig);
       const taskManager = await hubService.getTaskManager();
       const response = await taskManager.commitContribution(
         contributionId,
-        encryptionResponse.hash
+        address,
+        ethers.toUtf8Bytes(encryptionResponse.hash) as any
       );
 
       if (!response.isSuccess) {

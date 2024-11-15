@@ -218,15 +218,25 @@ export class TaskRouter {
       "/github/getOrganistaions",
       this.githubController.getUserOrganisations
     );
-    // this._router.post(
-    //   "/github/commit",
-    //   this.githubController.verifyCommit
-    // );
 
-    // this._router.post(
-    //   "/github/pr",
-    //   this.githubController.verifyPullRequest
-    // );
+    this._router.post(
+      "/github/getRepositories",
+      this.githubController.listOrgRepositories
+    );
+
+    this._router.post(
+      "/github/getBranches",
+      this.githubController.listBranches
+    );
+    this._router.post(
+      "/github/commit",
+      this.githubController.verifyCommit
+    );
+
+    this._router.post(
+      "/github/pr",
+      this.githubController.verifyPullRequest
+    );
   }
 
   public get router(): Router {

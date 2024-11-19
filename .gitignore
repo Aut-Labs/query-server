@@ -57,6 +57,7 @@ npm-debug.log
 data/
 data-dev/
 
+
 .env
 combined.log
 .pinning.store/*

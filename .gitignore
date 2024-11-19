@@ -57,7 +57,6 @@ npm-debug.log
 data/
 data-dev/
 
-.aider*
 
 .env
 combined.log

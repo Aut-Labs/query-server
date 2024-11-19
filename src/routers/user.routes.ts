@@ -374,6 +374,8 @@ export class UserRouter {
       passport.authenticate("jwt", { session: false }),
       this.userController.verifyHasAddedBio
     );
+
+    this._router.post("/twitter/me", this.userController.getTwitterMe);
   }
 
   public get router(): Router {

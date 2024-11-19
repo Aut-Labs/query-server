@@ -421,4 +421,29 @@ export class UserController {
         .send({ error: "Something went wrong, please try again later." });
     }
   };
+
+  public getTwitterMe = async (req, res) => {
+    try {
+      const { accessToken } = req.body;
+
+      if (!accessToken) {
+        return res.status(400).send({
+          error: "Access token not provided.",
+        });
+      }
+
+      const userMeResponse = await axios.get("https://api.twitter.com/2/users/me", {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      console.log(userMeResponse.data);
+
+      res.status(200).send(userMeResponse.data.data);
+    } catch (err) {
+      this.loggerService.error(err);
+      return res.status(500).send({ error: "Something went wrong, please try again later." });
+    }
+  };
 }

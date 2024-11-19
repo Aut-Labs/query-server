@@ -142,17 +142,17 @@ export class AutController {
 
       const response = await axios(config);
 
-      const userMeResponse = await axios.get(
-        "https://api.twitter.com/2/users/me",
-        {
-          headers: {
-            Authorization: `Bearer ${response.data.access_token}`,
-          },
-        }
-      );
+      // const userMeResponse = await axios.get(
+      //   "https://api.twitter.com/2/users/me",
+      //   {
+      //     headers: {
+      //       Authorization: `Bearer ${response.data.access_token}`,
+      //     },
+      //   }
+      // );
 
-      console.log(userMeResponse);
-      console.log(userMeResponse.data);
+      // console.log(userMeResponse);
+      // console.log(userMeResponse.data);
 
       return res.status(200).send(response.data);
     } catch (err) {

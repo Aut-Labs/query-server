@@ -21,8 +21,8 @@
     "testFlow": "npm run build && node ./dist/testFlow.js"
   },
   "dependencies": {
-    "@aut-labs/sdk": "^0.0.210-dev",
     "@hokify/agenda": "^6.3.0",
+    "@aut-labs/sdk": "^0.0.213-dev",
     "@resvg/resvg-js": "^2.4.1",
     "axios": "^0.27.2",
     "body-parser": "^1.19.0",
@@ -43,6 +43,7 @@
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^7.0.0",
     "multer": "^1.4.5-lts.1",
+    "octokit": "^4.0.2",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.1.13",

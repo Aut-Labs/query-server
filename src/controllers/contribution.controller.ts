@@ -8,8 +8,12 @@ import {
   EncryptDecryptModel,
   EncryptDecryptService,
 } from "../services/encrypt-decrypt.service";
-import { ethers, getJSONFromURI, ipfsCIDToHttpUrl } from "../tools/ethers";
-import { Hub } from "@aut-labs/sdk";
+import { ethers, getJSONFromURI } from "../tools/ethers";
+import { BaseNFTModel, Hub } from "@aut-labs/sdk";
+import { gql, GraphQLClient } from "graphql-request";
+import { verifyPullRequest } from "../services/taskVerifiers/githubTaskVerification";
+import { verifyTwitterRetweet } from "../services/taskVerifiers/twitterVerification";
+import { verifyCommit } from "../services/taskVerifiers/githubTaskVerification";
 
 interface ContributionRequest {
   autSig: AuthSig;
@@ -29,22 +33,154 @@ interface ViewContributionsByCids {
   cids: string[];
 }
 
+const cache: any = {};
+
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
+}
+
+function replaceAll(str, find, replace) {
+  return str.replace(new RegExp(escapeRegExp(find), "g"), replace);
+}
+
+function ipfsCIDToHttpUrl(url: string, nftStorageUrl: string) {
+  if (!url) {
+    return url;
+  }
+  if (!url.includes("https://"))
+    return `${nftStorageUrl}/${replaceAll(url, "ipfs://", "")}`;
+  return url;
+}
+
+const getMetadataFromCache = (metadataUri: string) => {
+  return cache[metadataUri];
+};
+
+const addMetadataToCache = (metadataUri: string, metadata: any) => {
+  cache[metadataUri] = metadata;
+};
+
+const fetchMetadatas = async (items: any[]) => {
+  return Promise.all(
+    items.map(async (item) => {
+      const { metadataUri } = item;
+      if (!metadataUri) return item;
+
+      let result = getMetadataFromCache(metadataUri);
+      if (!result) {
+        try {
+          const url = ipfsCIDToHttpUrl(
+            metadataUri,
+            process.env.IPFS_GATEWAY_URL
+          );
+          const response = await fetch(
+            ipfsCIDToHttpUrl(metadataUri, process.env.IPFS_GATEWAY_URL),
+            { method: "GET" }
+          );
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          result = await response.json();
+          addMetadataToCache(metadataUri, result);
+        } catch (error) {
+          console.warn(error);
+        }
+      }
+      return {
+        ...item,
+        metadata: result,
+      };
+    })
+  );
+};
+
+interface TaskType {
+  id: string;
+  metadataUri: string;
+  taskId: string;
+  creator: string;
+  metadata: BaseNFTModel<any>;
+}
+
 @injectable()
 export class ContributionController {
+  private graphqlClient: GraphQLClient;
+  private taskTypesCache: { [key: string]: TaskType[] } = {};
   constructor(
     private loggerService: LoggerService,
     private _sdkContainerService: SdkContainerService,
-    private _encryptDecryptService: EncryptDecryptService,
-  ) {}
+    private _encryptDecryptService: EncryptDecryptService
+  ) {
+    this.graphqlClient = new GraphQLClient(process.env.GRAPH_API_DEV_URL);
+  }
+
+  private _getTaskTypes = async (hubAddress: string): Promise<TaskType[]> => {
+    if (this.taskTypesCache[hubAddress]) {
+      return this.taskTypesCache[hubAddress];
+    }
+
+    const query = gql`
+      query GetTaskTypes($where: HubAdmin_filter) {
+        tasks(first: 1000, where: $where) {
+          id
+          metadataUri
+          taskId
+          creator
+        }
+      }
+    `;
+
+    const tasks = await this.graphqlClient
+      .request<any>(query)
+      .then((data) => data.tasks)
+      .then((tasks) => fetchMetadatas(tasks))
+      .catch((e) => {
+        this.loggerService.error(JSON.stringify(e));
+        return [];
+      });
+
+    this.taskTypesCache[hubAddress] = tasks;
+    return tasks;
+  };
+
+  private _getHubContributionbyId = async (
+    contributionId: string
+  ): Promise<any> => {
+    const query = gql`
+      query GetContribution($id: ID!) {
+        contribution(id: $id) {
+          id
+          taskId
+          role
+          startDate
+          endDate
+          points
+          quantity
+          descriptionId
+        }
+      }
+    `;
+
+    const variables = {
+      id: contributionId,
+    };
+
+    return this.graphqlClient
+      .request<any>(query, variables)
+      .then((data) => data.contribution)
+      .catch((e) => {
+        this.loggerService.error(JSON.stringify(e));
+        return null;
+      });
+  };
 
   public commitContribution = async (req: any, res: Response) => {
     try {
-      const {
-        autSig,
-        message,
-        hubAddress,
-        contributionId,
-      }: ContributionRequest = req.body;
+      let { message } = req.body;
+      const { autSig, hubAddress, contributionId }: ContributionRequest =
+        req.body;
 
       if (!autSig) {
         return res.status(400).send({ error: "autSig not provided." });
@@ -60,6 +196,66 @@ export class ContributionController {
 
       if (!message) {
         return res.status(400).send({ error: "message not provided." });
+      }
+
+      const taskTypes = await this._getTaskTypes(hubAddress);
+
+      const contribution = await this._getHubContributionbyId(contributionId);
+
+      const correspondingTask = taskTypes.find(
+        (taskType) => taskType.id === contribution.taskId
+      );
+
+      const taskType = correspondingTask?.metadata?.properties?.type;
+
+      let canAutoGivePoints = false;
+
+      switch (taskType) {
+        case "GitHubCommit":
+          canAutoGivePoints = true;
+          const commitRes = await verifyCommit(JSON.parse(message));
+          if (commitRes && commitRes.hasCommit) {
+            message = JSON.stringify(commitRes);
+            break;
+          } else if(commitRes && !commitRes.hasCommit){
+            return res.status(400).send({
+              error: `User hasn't committed to the branch.`,
+            });
+          }
+          return res.status(500).send({
+            error: `Failed to verify commit.`,
+          });
+        case "GitHubOpenPR":
+          canAutoGivePoints = true;
+          const prRes = await verifyPullRequest(JSON.parse(message));
+          if (prRes && prRes.hasPR) {
+            message = JSON.stringify(prRes);
+            break;
+          } else if(prRes && !prRes.hasPR){
+            return res.status(400).send({
+              error: `User hasn't opened a PR to the branch.`,
+            });
+          }
+          return res.status(500).send({
+            error: `Failed to verify PR.`,
+          });
+        case "TwitterRetweet":
+          canAutoGivePoints = true;
+          const retweetRes = await verifyTwitterRetweet(JSON.parse(message));
+          if (retweetRes && retweetRes.hasRetweeted) {
+            message = JSON.stringify(retweetRes);
+            break;
+          } else if(retweetRes && !retweetRes.hasRetweeted){
+            return res.status(400).send({
+              error: `User hasn't retweeted.`,
+            });
+          }
+          return res.status(500).send({
+            error: `Failed to verify retweet.`,
+          });
+
+        default:
+          break;
       }
 
       const accessControl: AccessControl = {
@@ -83,26 +279,36 @@ export class ContributionController {
       );
       const address = await this._sdkContainerService.veryifySignature(autSig);
       const taskManager = await hubService.getTaskManager();
+
       const response = await taskManager.commitContribution(
         contributionId,
         address,
         ethers.toUtf8Bytes(encryptionResponse.hash) as any
       );
-
       if (!response.isSuccess) {
-        return res
-          .status(400)
-          .send({
-            error: response.errorMessage ?? "Error commiting contribution.",
+        return res.status(400).send({
+          error: response.errorMessage ?? "Error commiting contribution.",
+        });
+      }
+
+      if (canAutoGivePoints) {
+        const pointsResponse = await taskManager.giveContribution(
+          contributionId,
+          address
+        );
+        if (!pointsResponse.isSuccess) {
+          return res.status(500).send({
+            error: pointsResponse.errorMessage ?? "Error giving points.",
           });
+        }
       }
 
       return res.status(200).send({ hash: encryptionResponse.hash });
     } catch (err) {
       this.loggerService.error(err);
-      return res
-        .status(500)
-        .send({ error: err?.message ?? "Something went wrong, please try again later." });
+      return res.status(500).send({
+        error: err?.message ?? "Something went wrong, please try again later.",
+      });
     }
   };
 

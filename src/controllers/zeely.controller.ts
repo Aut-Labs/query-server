@@ -40,7 +40,7 @@ const fetchMetadatas = async (items: any[]) => {
     items.map(async (item) => {
       const metadata = await fetchMetadata<HubNFT>(
         item.metadataUri,
-        process.env.IPFS_GATEWAY
+        process.env.IPFS_GATEWAY_URL
       );
       return {
         ...item,

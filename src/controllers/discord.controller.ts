@@ -108,7 +108,7 @@ const fetchMetadatas = async (items: any[]) => {
       if (!result) {
         try {
           const response = await fetch(
-            ipfsCIDToHttpUrl(metadataUri, process.env.IPFS_GATEWAY),
+            ipfsCIDToHttpUrl(metadataUri, process.env.IPFS_GATEWAY_URL),
             {
               method: "GET",
               // headers: {

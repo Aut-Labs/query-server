@@ -343,7 +343,7 @@ export class UserController {
         metadataUri = metadataUri.substring(prefix.length);
       }
       const autId = await axios.get(
-        `${process.env.IPFS_GATEWAY}/${metadataUri}`
+        `${process.env.IPFS_GATEWAY_URL}/${metadataUri}`
       );
       const { properties } = autId.data;
       if (properties.bio) {

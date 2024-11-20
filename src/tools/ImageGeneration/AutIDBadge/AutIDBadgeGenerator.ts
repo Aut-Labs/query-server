@@ -165,10 +165,10 @@ export const AutIDBadgeGenerator = async ({
   await ctxContents.drawAvatar(avatar);
   await ctxContents.drawAvatarGradient();
   await ctxContents.drawSigil(hubAddress);
-  if (network.toLowerCase() !== "mainnet") {
-    await ctxContents.drawLabel(network);
-  }
-
+  // if (network.toLowerCase() !== "mainnet") {
+  //   await ctxContents.drawLabel(network);
+  // }
+  await ctxContents.drawLabel('pioneer');
   return {
     previewElement: canvas,
     toBase64: () => canvas.toDataURL("image/png"),

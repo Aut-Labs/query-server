@@ -8,7 +8,7 @@ export const AmoyNetwork = (): NetworkConfig => ({
   explorerUrls: process.env.AMOY_BLOCK_EXPLORER_URLS.split("|"),
   rpcUrls: process.env.AMOY_RPC_URLS.split("|"),
   biconomyApiKey: process.env.AMOY_BICONOMY_API_KEY,
-  ipfsGatewayUrl: process.env.IPFS_GATEWAY,
+  ipfsGatewayUrl: process.env.IPFS_GATEWAY_URL,
   contracts: {
     autIDAddress: process.env.AMOY_AUT_ID_ADDRESS,
     domainHubAddress: process.env.AMOY_DOMAIN_HUB_ADDRESS,
@@ -26,7 +26,7 @@ export const PolygonNetwork = (): NetworkConfig => ({
   explorerUrls: process.env.POLYGON_BLOCK_EXPLORER_URLS.split("|"),
   rpcUrls: process.env.POLYGON_RPC_URLS.split("|"),
   biconomyApiKey: process.env.POLYGON_BICONOMY_API_KEY,
-  ipfsGatewayUrl: process.env.IPFS_GATEWAY,
+  ipfsGatewayUrl: process.env.IPFS_GATEWAY_URL,
   contracts: {
     autIDAddress: process.env.POLYGON_AUT_ID_ADDRESS,
     domainHubAddress: process.env.POLYGON_DOMAIN_HUB_ADDRESS,

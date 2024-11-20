@@ -214,15 +214,15 @@ export class TaskRouter {
       this.quizController.getAllQuestionsAndAnswers
     );
 
-    this._router.post(
-      "/twitter/follow",
-      this.twitterController.verifyTwitterFollow
-    );
+    // this._router.post(
+    //   "/twitter/follow",
+    //   this.twitterController.verifyTwitterFollow
+    // );
 
-    this._router.post(
-      "/twitter/retweet",
-      this.twitterController.verifyTwitterRetweet
-    );
+    // this._router.post(
+    //   "/twitter/retweet",
+    //   this.twitterController.verifyTwitterRetweet
+    // );
     
     this._router.post(
       "/github/getOrganistaions",
@@ -238,14 +238,15 @@ export class TaskRouter {
       "/github/getBranches",
       this.githubController.listBranches
     );
-    this._router.post(
-      "/github/commit",
-      this.githubController.verifyCommit
-    );
+    // this._router.post(
+    //   "/github/commit",
+    //   this.githubController.verifyCommit
+    // );
 
-    this._router.post(
-      "/github/pr",
-      this.githubController.verifyPullRequest);
+    // this._router.post(
+    //   "/github/pr",
+    //   this.githubController.verifyPullRequest);
+    
     // this._router.post(
     //   "/github/pr",
     //   this.githubController.verifyPullRequest

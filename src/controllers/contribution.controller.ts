@@ -69,10 +69,6 @@ const fetchMetadatas = async (items: any[]) => {
       let result = getMetadataFromCache(metadataUri);
       if (!result) {
         try {
-          const url = ipfsCIDToHttpUrl(
-            metadataUri,
-            process.env.IPFS_GATEWAY_URL
-          );
           const response = await fetch(
             ipfsCIDToHttpUrl(metadataUri, process.env.IPFS_GATEWAY_URL),
             { method: "GET" }
@@ -217,7 +213,7 @@ export class ContributionController {
           if (commitRes && commitRes.hasCommit) {
             message = JSON.stringify(commitRes);
             break;
-          } else if(commitRes && !commitRes.hasCommit){
+          } else if (commitRes && !commitRes.hasCommit) {
             return res.status(400).send({
               error: `User hasn't committed to the branch.`,
             });
@@ -231,7 +227,7 @@ export class ContributionController {
           if (prRes && prRes.hasPR) {
             message = JSON.stringify(prRes);
             break;
-          } else if(prRes && !prRes.hasPR){
+          } else if (prRes && !prRes.hasPR) {
             return res.status(400).send({
               error: `User hasn't opened a PR to the branch.`,
             });
@@ -245,7 +241,7 @@ export class ContributionController {
           if (retweetRes && retweetRes.hasRetweeted) {
             message = JSON.stringify(retweetRes);
             break;
-          } else if(retweetRes && !retweetRes.hasRetweeted){
+          } else if (retweetRes && !retweetRes.hasRetweeted) {
             return res.status(400).send({
               error: `User hasn't retweeted.`,
             });
@@ -283,7 +279,7 @@ export class ContributionController {
       const response = await taskManager.commitContribution(
         contributionId,
         address,
-        ethers.toUtf8Bytes(encryptionResponse.hash) as any
+        `0x${encryptionResponse.hash}`
       );
       if (!response.isSuccess) {
         return res.status(400).send({

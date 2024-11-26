@@ -86,7 +86,7 @@ export class ContributionController {
       const response = await taskManager.commitContribution(
         contributionId,
         address,
-        ethers.toUtf8Bytes(encryptionResponse.hash) as any
+        encryptionResponse.hash
       );
 
       if (!response.isSuccess) {

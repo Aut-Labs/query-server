@@ -14,6 +14,7 @@ import { gql, GraphQLClient } from "graphql-request";
 import { verifyPullRequest } from "../services/taskVerifiers/githubTaskVerification";
 import { verifyTwitterRetweet } from "../services/taskVerifiers/twitterVerification";
 import { verifyCommit } from "../services/taskVerifiers/githubTaskVerification";
+import { verifyJoinDiscordTask } from "../services/taskVerifiers/joinDiscordVerification";
 
 interface ContributionRequest {
   autSig: AuthSig;
@@ -249,7 +250,22 @@ export class ContributionController {
           return res.status(500).send({
             error: `Failed to verify retweet.`,
           });
-
+        case "JoinDiscord":
+          canAutoGivePoints = true;
+          const joinDiscordRes = await verifyJoinDiscordTask(
+            JSON.parse(message)
+          );
+          if (joinDiscordRes && joinDiscordRes.hasJoined) {
+            message = JSON.stringify(joinDiscordRes);
+            break;
+          } else if (joinDiscordRes && !joinDiscordRes.hasJoined) {
+            return res.status(400).send({
+              error: `User hasn't joined the server.`,
+            });
+          }
+          return res.status(500).send({
+            error: `Failed to verify commit.`,
+          });
         default:
           break;
       }
@@ -279,7 +295,7 @@ export class ContributionController {
       const response = await taskManager.commitContribution(
         contributionId,
         address,
-        `0x${encryptionResponse.hash}`
+        encryptionResponse.hash
       );
       if (!response.isSuccess) {
         return res.status(400).send({

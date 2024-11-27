@@ -121,25 +121,6 @@ export class TaskRouter {
 
     /**
      * @swagger
-     * /api/task/discordJoin:
-     *   post:
-     *     summary: Verify a Discord join task
-     *     description: Endpoint to verify a Discord join task.
-     *     tags:
-     *       - Task Verifier
-     *     responses:
-     *       200:
-     *         description: Discord join task verified successfully
-     *       401:
-     *         description: Unauthorized
-     */
-    this._router.post(
-      "/discordJoin",
-      this.taskVerifierController.verifyDiscordJoinTask
-    );
-
-    /**
-     * @swagger
      * /api/task/quiz:
      *   post:
      *     summary: Save quiz questions

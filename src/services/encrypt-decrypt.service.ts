@@ -60,10 +60,17 @@ export interface DecryptResponseData {
 async function encryptMessage(publicKey: string, message: string) {
   const encrypted = await EthCrypto.encryptWithPublicKey(publicKey, message);
   const encryptedString = EthCrypto.cipher.stringify(encrypted);
-  return encryptedString;
+  return `0x${encryptedString}`;
 }
 
 async function decryptMessage(privateKey: string, encryptedMessage: string) {
+  try {
+    encryptedMessage = ethers.toUtf8String(encryptedMessage);
+  } catch (e) {
+    if (encryptedMessage.startsWith("0x")) {
+      encryptedMessage = encryptedMessage.slice(2);
+    }
+  }
   const encryptedObject = EthCrypto.cipher.parse(encryptedMessage);
   const decrypted = await EthCrypto.decryptWithPrivateKey(
     privateKey,
@@ -173,8 +180,7 @@ export class EncryptDecryptService {
       }
 
       const address = await this._sdkService.veryifySignature(autSig);
-      const originalHash = ethers.toUtf8String(hash);
-      const _message = await decryptMessage(this._sdkService.privateKey, originalHash);
+      const _message = await decryptMessage(this._sdkService.privateKey, hash);
       const { accessControl, message } = JSON.parse(_message) as {
         accessControl: AccessControlWithAddress;
         message: string;

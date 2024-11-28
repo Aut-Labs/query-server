@@ -15,7 +15,7 @@ interface IPoll extends Document {
   startDate: Date;
   endDate: Date;
   weight: number;
-  options: IOption[];
+  options: string[];
 }
 
 const optionSchema = new Schema<IOption>({
@@ -33,7 +33,7 @@ const PollSchema = new Schema<IPoll>({
   startDate: { type: Date },
   endDate: { type: Date },
   weight: { type: Number },
-  options: [optionSchema],
+  options: [{ type: String, required: true }],
 });
 
 export const PollModel = model<IPoll>("Poll", PollSchema);

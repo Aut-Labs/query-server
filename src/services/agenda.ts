@@ -59,11 +59,10 @@ export class AgendaManager {
 
   async finalizeGathering(id: string) {
     try {
-      const gathering = await GatheringModel.findOne({
-        id: id,
-      });
+      const gathering = await GatheringModel.findById(id);
       if (gathering) {
-        gathering.participants.forEach((participant) => {
+        for (let i = 0; i < gathering.participants.length; i++) {
+          const participant = gathering.participants[i];
           let secondsOpenMic = 0;
           let secondsStream = 0;
           let secondsVideo = 0;
@@ -113,42 +112,32 @@ export class AgendaManager {
           );
           // const member = await MemberModel.findOne({ discordId: participant.duration });
 
-          GatheringModel.updateOne(
+          await GatheringModel.updateOne(
             {
               id: id,
               "participants._id": participant._id,
             },
             {
               $set: {
-                "participants.$.secondsOpenMic": newSecondsOpenMic,
-                "participants.$.secondsStream": newSecondsStream,
-                "participants.$.secondsVideo": newSecondsVideo,
-                // "participants.$.serverMutedCount":
-                //   participant.serverMutedCount + (serverMuted ? 1 : 0),
-                // "participants.$.deafened": newState.deaf,
-                // "participants.$.muted": newState.mute,
-                // "participants.$.streaming": newState.streaming,
-                // "participants.$.selfVideo": newState.selfVideo,
-                // "participants.$.lastUpdatedMute": muteChanged
-                //   ? new Date()
-                //   : participant.lastUpdatedMute,
-                // "participants.$.lastUpdatedStream": selfStreamChanged
-                //   ? new Date()
-                //   : participant.lastUpdatedStream,
-                // "participants.$.lastUpdatedVideo": selfVideoChanged
-                //   ? new Date()
-                //   : participant.lastUpdatedVideo,
+          "participants.$.secondsOpenMic": newSecondsOpenMic,
+          "participants.$.secondsStream": newSecondsStream,
+          "participants.$.secondsVideo": newSecondsVideo,
+          // "participants.$.serverMutedCount":
+          //   participant.serverMutedCount + (serverMuted ? 1 : 0),
+          // "participants.$.deafened": newState.deaf,
+          // "participants.$.muted": newState.mute,
+          // "participants.$.streaming": newState.streaming,
+          // "participants.$.selfVideo": newState.selfVideo,
+          // "participants.$.lastUpdatedMute": muteChanged
+          //   ? new Date()
+          //   : participant.lastUpdatedMute,
+          // "participants.$.lastUpdatedStream": selfStreamChanged
+          //   ? new Date()
+          //   : participant.lastUpdatedStream,
               },
-            },
-            (err, result) => {
-              if (err) {
-                console.error("Error updating participant:", err);
-              } else {
-                console.log("Participant updated successfully:", result);
-              }
             }
           );
-        });
+        }
       }
     } catch (e) {
       console.log(e);
@@ -156,9 +145,7 @@ export class AgendaManager {
   }
 
   async initializeGathering(id: string) {
-    const gathering = await GatheringModel.findOne({
-      id: id,
-    });
+    const gathering = await GatheringModel.findById(id);
 
     const guild = await this.discordClient.guilds.cache.find(
       (g) => g.id === gathering.guildId
@@ -201,9 +188,7 @@ export class AgendaManager {
   }
 
   async finalizePoll(id: string) {
-    const poll = await PollModel.findOne({
-      id: id,
-    });
+    const poll = await PollModel.findById(id);
     const guild = await this.discordClient.guilds.cache.find(
       (g) => g.id === poll.guildId
     );
@@ -222,17 +207,17 @@ export class AgendaManager {
     const fetchMessage = await textChannel.messages.fetch(poll.messageId);
     let reactions = {};
     for (const o of poll.options) {
-      reactions[o.emoji] = [];
+      reactions[o] = [];
       const userReactions = await fetchMessage.reactions.cache
-        .get(o.emoji)
+        .get(o)
         .users.fetch();
-      fetchMessage.reactions.cache.get(o.emoji).users.cache.forEach((u) => {
+      fetchMessage.reactions.cache.get(o).users.cache.forEach((u) => {
         const roleMatched = members
           .find((m) => m.user.id === u.id)
           .roles.cache.find((r) => poll.roleIds.includes(r.id));
 
         if (roleMatched) {
-          reactions[o.emoji].push(u.id);
+          reactions[o].push(u.id);
         }
       });
     }

@@ -694,13 +694,13 @@ export class DiscordController {
       let options = "\n Options:";
       options += "\n";
       poll.options.forEach((o, i) => {
-        options += `${o.option}\n`;
+        options += `${o}\n`;
       });
       let description = "";
       description += poll.description;
       description += allowedRolesLine;
       description += options;
-      description += `\n Vote ends at ${poll.endTime}`;
+      description += `\n Vote ends at ${poll.endDate}`;
 
       // TODO: validate if poll exists
       // TODO: if not - don't publish and save info
@@ -715,23 +715,20 @@ export class DiscordController {
       const pollContent = new EmbedBuilder()
         .setTitle(poll.title)
         .setDescription(`${description}`);
-      channel
-        .send({ embeds: [pollContent] }) // Use a 2d array?
-        .then(async function (message) {
-          for (let i = 0; i < poll.options.length; i++) {
-            await message.react(poll.options[i].emoji);
-          }
-          poll.messageId = message.id;
-          const newPoll = new PollModel(poll);
-          const savedPoll = await newPoll.save();
 
-          await this.agenda.schedule("in 2 minutes", "finalizePoll", {
-            id: savedPoll.id,
-          });
+      const message = await channel.send({ embeds: [pollContent] }); // Use a 2d array?
 
-          res.json(savedPoll);
-        })
-        .catch(console.error);
+      for (let i = 0; i < poll.options.length; i++) {
+        await message.react(poll.options[i]);
+      }
+      poll.messageId = message.id;
+      const newPoll = new PollModel(poll);
+      const savedPoll = await newPoll.save();
+      await this.agenda.schedule("in 2 minutes", "finalizePoll", {
+        id: savedPoll.id,
+      });
+
+      res.json(savedPoll);
     } catch (error) {
       console.log(error);
       res.status(500).json({ error: "An error occurred" });
@@ -762,13 +759,17 @@ export class DiscordController {
   public checkGuild = async (req: Request, res: Response) => {
     try {
       const { guildId } = req.params;
-      const guild = this.client.guilds.cache.find((g) => g.id === guildId);
-      if (guild) {
+
+      // Attempt to fetch the guild directly instead of using cache
+      try {
+        const guild = await this.client.guilds.fetch(guildId);
         return res.json({ active: true });
+      } catch (error) {
+        // If fetch fails, bot is not in the guild
+        return res.json({ active: false });
       }
-      return res.json({ active: false });
     } catch (error) {
-      console.log(error);
+      console.error(error);
       return res.status(500).json({ error: "An error occurred" });
     }
   };

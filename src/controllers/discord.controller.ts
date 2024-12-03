@@ -17,7 +17,10 @@ import fs from "fs";
 import path from "path";
 import axios from "axios";
 import { GuildModel } from "../models/discord/guild.model";
-import { GatheringModel } from "../models/discord/gathering.model";
+import {
+  GatheringModel,
+  IParticipant,
+} from "../models/discord/gathering.model";
 import { PollModel } from "../models/discord/poll.model";
 import { MemberModel } from "../models/discord/member.model";
 import { Agenda } from "@hokify/agenda";
@@ -27,6 +30,7 @@ import AutSDK, { fetchMetadata, HubNFT } from "@aut-labs/sdk";
 import { AuthSig } from "../models/auth-sig";
 import { SdkContainerService } from "../tools/sdk.container";
 import { verifyMessage } from "ethers";
+import { Hub, SubgraphQueryService } from "../services/subgraph-query.service";
 
 interface ClaimRoleRequest {
   authSig: AuthSig;
@@ -34,106 +38,6 @@ interface ClaimRoleRequest {
   hubAddress: string;
   discordAccessToken: string;
 }
-
-interface Hub {
-  id: string;
-  address: string;
-  domain: string;
-  deployer: string;
-  minCommitment: string;
-  metadataUri: string;
-  metadata: {
-    name: string;
-    description: string;
-    image: string;
-    properties: {
-      market: number;
-      deployer: string;
-      minCommitment: string;
-      rolesSets: Array<{
-        roleSetName: string;
-        roles: Array<{
-          id: number;
-          roleName: string;
-        }>;
-      }>;
-      timestamp: number;
-      socials: Array<{
-        type: string;
-        link: string;
-        metadata: {
-          guildId?: string;
-          guildName?: string;
-        };
-      }>;
-    };
-  };
-}
-
-const cache: any = {};
-
-function escapeRegExp(string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
-}
-
-function replaceAll(str, find, replace) {
-  return str.replace(new RegExp(escapeRegExp(find), "g"), replace);
-}
-
-const getMetadataFromCache = (metadataUri: string) => {
-  return cache[metadataUri];
-};
-
-const addMetadataToCache = (metadataUri: string, metadata: any) => {
-  cache[metadataUri] = metadata;
-  console.log(cache);
-};
-
-function ipfsCIDToHttpUrl(url: string, nftStorageUrl: string) {
-  if (!url) {
-    return url;
-  }
-  if (!url.includes("https://"))
-    return `${nftStorageUrl}/${replaceAll(url, "ipfs://", "")}`;
-  return url;
-}
-
-const fetchMetadatas = async (items: any[]) => {
-  return Promise.all(
-    items.map(async (item) => {
-      const { metadataUri } = item;
-      if (!metadataUri) return;
-      let result = getMetadataFromCache(metadataUri);
-      console.log("cache used!", result);
-      if (!result) {
-        try {
-          const response = await fetch(
-            ipfsCIDToHttpUrl(metadataUri, process.env.IPFS_GATEWAY_URL),
-            {
-              method: "GET",
-              // headers: {
-              //   "Content-Type": "application/json"
-              // }
-            }
-          );
-
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-
-          result = await response.json();
-          addMetadataToCache(metadataUri, result);
-        } catch (error) {
-          console.warn(error);
-        }
-      }
-      return {
-        ...item,
-        metadata: result,
-      };
-    })
-  );
-};
 
 class AutDiscordClient extends Client {
   public commands: Collection<any, any>;
@@ -143,69 +47,7 @@ class AutDiscordClient extends Client {
 export class DiscordController {
   private client: AutDiscordClient;
   private agenda: Agenda;
-  private graphqlClient: GraphQLClient;
   private commandsCollection: Collection<any, any>;
-  private _sdkService: SdkContainerService;
-
-  private _getAutIdsByHub = async (hubAddress: string): Promise<any[]> => {
-    const filters = {
-      where: {
-        joinedHubs_: {
-          hubAddress: hubAddress,
-        },
-      },
-    };
-    const GET_AUTIDS = gql`
-      query GeAutIDs($where: AutID_filter) {
-        autIDs(skip: 0, first: 100, where: $where) {
-          id
-          owner
-          tokenID
-          username
-          metadataUri
-          joinedHubs {
-            id
-            role
-            commitment
-            hubAddress
-          }
-        }
-      }
-    `;
-    return this.graphqlClient
-      .request<any>(GET_AUTIDS, filters)
-      .then((data) => data.autIDs)
-      .then((autIDs) => fetchMetadatas(autIDs))
-      .catch((e) => {
-        console.error("Error fetching hubs:", e);
-        return [];
-      });
-  };
-
-  private _getHubs = async (): Promise<any[]> => {
-    const query = gql`
-      query GetHubs {
-        hubs(first: 1000) {
-          id
-          address
-          domain
-          deployer
-          minCommitment
-          metadataUri
-        }
-      }
-    `;
-
-    return this.graphqlClient
-      .request<any>(query)
-      .then((data) => data.hubs)
-      .then((hubs) => fetchMetadatas(hubs))
-      .catch((e) => {
-        console.error("Error fetching hubs:", e);
-        return [];
-      });
-  };
-
   private _deployCommands = async (guildId: string): Promise<void> => {
     try {
       const clientId = process.env.DISCORD_BOT_CLIENT_ID as string;
@@ -235,9 +77,11 @@ export class DiscordController {
     }
   };
 
-  constructor() {
+  constructor(
+    private _subgraphQueryService: SubgraphQueryService,
+    private _sdkContainerService: SdkContainerService
+  ) {
     console.log("setting up client");
-    this.graphqlClient = new GraphQLClient(process.env.GRAPH_API_DEV_URL);
     this.client = new AutDiscordClient({
       intents: [
         GatewayIntentBits.Guilds,
@@ -329,12 +173,82 @@ export class DiscordController {
     //   }
     // }
 
+    this.client.on(Events.VoiceStateUpdate, async (oldState, newState) => {
+      const { member, channelId } = newState;
+      const guildId = member.guild.id;
+
+      const currentDate = new Date();
+      const activeGatherings = await GatheringModel.find({
+        guildId: guildId,
+        startDate: { $lte: currentDate },
+        endDate: { $gt: currentDate },
+      });
+
+      for (const gathering of activeGatherings) {
+        const roleMatched = newState.member.roles.cache.find((r) =>
+          gathering.roleIds.includes(r.id)
+        );
+
+        if (!roleMatched) continue;
+
+        const participant = gathering.participants.find(
+          (p) => p.discordId === member.user.id
+        );
+
+        if (!participant) {
+          gathering.participants.push({
+            discordId: member.user.id,
+            secondsInChannel: 0,
+            timeJoined: new Date(),
+            lastUpdatedPresence: new Date(),
+          } as IParticipant);
+          gathering.save();
+        } else {
+          if (!channelId) {
+            // User left channel
+            let secondsInCall = participant.secondsInChannel || 0;
+
+            const newSeconds =
+              (new Date().getTime() -
+                participant.lastUpdatedPresence.getTime()) /
+              1000;
+            secondsInCall += newSeconds;
+
+            await GatheringModel.findOneAndUpdate(
+              {
+                _id: gathering.id,
+                "participants._id": participant.id,
+              },
+              {
+                $set: {
+                  "participants.$.secondsInChannel": secondsInCall,
+                  "participants.$.lastUpdatedPresence": new Date(),
+                },
+              }
+            );
+          } else {
+            await GatheringModel.findOneAndUpdate(
+              {
+                _id: gathering.id,
+                "participants._id": participant.id,
+              },
+              {
+                $set: {
+                  "participants.$.lastUpdatedPresence": new Date(),
+                },
+              }
+            );
+          }
+        }
+      }
+    });
+
     this.client.on(Events.GuildCreate, async (guild) => {
       console.log("Joined a new guild: " + guild.name);
 
       await this._deployCommands(guild.id);
 
-      const hub = await this.getHubFromGuildId(guild.id);
+      const hub = await this._subgraphQueryService.getHubFromGuildId(guild.id);
 
       if (
         hub &&
@@ -434,7 +348,9 @@ export class DiscordController {
       //   );
       // }
 
-      const hub = await this.getHubFromGuildId(guildMember.guild.id);
+      const hub = await this._subgraphQueryService.getHubFromGuildId(
+        guildMember.guild.id
+      );
 
       const roleChannel = guildMember.guild.channels.cache.find(
         (channel) => channel.name === "āut-role-channel"
@@ -481,7 +397,11 @@ export class DiscordController {
 
     this.client.login(process.env.DISCORD_BOT_TOKEN);
 
-    this.agenda = new AgendaManager(this.client).agenda;
+    this.agenda = new AgendaManager(
+      this.client,
+      this._subgraphQueryService,
+      this._sdkContainerService
+    ).agenda;
   }
 
   private getDiscordUserIdFromToken = async (
@@ -547,7 +467,9 @@ export class DiscordController {
         return res.status(400).send({ error: "Invalid signature." });
       }
 
-      const hub = await this.getHubFromAddress(hubAddress);
+      const hub = await this._subgraphQueryService.getHubFromAddress(
+        hubAddress
+      );
 
       const social = hub.metadata.properties.socials.find(
         (s) => s.type === "discord"
@@ -555,7 +477,9 @@ export class DiscordController {
 
       const guildId = social.metadata.guildId;
 
-      const autIds = await this._getAutIdsByHub(hub.address);
+      const autIds = await this._subgraphQueryService._getAutIdsByHub(
+        hub.address
+      );
       const autId = autIds.find((autId) => {
         return autId.id.toLowerCase() === recoveredAddress.toLowerCase();
       });
@@ -655,7 +579,6 @@ export class DiscordController {
       const pollRequest = req.body;
       const poll = { ...pollRequest };
       poll.roleIds = [];
-      const roles = req.body.roles;
       const guild = await this.client.guilds.cache.find(
         (g) => g.id === poll.guildId
       );
@@ -680,27 +603,27 @@ export class DiscordController {
 
       //Discord message
       let allowedRolesLine = "";
-      allowedRolesLine += "\n";
+      allowedRolesLine += "\n\n\n";
       if (poll.allCanAttend) {
         allowedRolesLine =
-          "\nAnyone with an Āut role from the community can attend.";
+          "Anyone with an Āut role from the community can attend.";
       } else {
-        allowedRolesLine =
-          "'\nAnyone with the following Āut roles can attend:\n";
+        allowedRolesLine = "\nPoll for: \n";
         poll.roles.forEach((role, i) => {
-          allowedRolesLine += `- ${role}\n`;
+          const discordRole = guild.roles.cache.find((r) => r.name === role);
+          allowedRolesLine += `<@&${discordRole.id}>\n`;
         });
       }
       let options = "\n Options:";
       options += "\n";
       poll.options.forEach((o, i) => {
-        options += `${o}\n`;
+        options += `${o.emoji}: ${o.option}\n\n`;
       });
       let description = "";
       description += poll.description;
       description += allowedRolesLine;
       description += options;
-      description += `\n Vote ends at ${poll.endDate}`;
+      description += `\n Vote ends at ${new Date(poll.endDate).toUTCString()}`;
 
       // TODO: validate if poll exists
       // TODO: if not - don't publish and save info
@@ -719,12 +642,12 @@ export class DiscordController {
       const message = await channel.send({ embeds: [pollContent] }); // Use a 2d array?
 
       for (let i = 0; i < poll.options.length; i++) {
-        await message.react(poll.options[i]);
+        await message.react(poll.options[i].emoji);
       }
       poll.messageId = message.id;
       const newPoll = new PollModel(poll);
       const savedPoll = await newPoll.save();
-      await this.agenda.schedule("in 2 minutes", "finalizePoll", {
+      await this.agenda.schedule("in 30 seconds", "finalizePoll", {
         id: savedPoll.id,
       });
 
@@ -733,27 +656,6 @@ export class DiscordController {
       console.log(error);
       res.status(500).json({ error: "An error occurred" });
     }
-  };
-
-  public getHubFromAddress = async (address: string): Promise<Hub> => {
-    const hubs = await this._getHubs();
-
-    const hub = hubs.find((hub) => {
-      return hub.address === address;
-    });
-    return hub;
-  };
-
-  public getHubFromGuildId = async (guildId: string): Promise<Hub> => {
-    const hubs = await this._getHubs();
-
-    const hub = hubs.find((hub) => {
-      const social = hub.metadata.properties.socials.find(
-        (s) => s.type === "discord"
-      );
-      return social && social.metadata.guildId === guildId;
-    });
-    return hub;
   };
 
   public checkGuild = async (req: Request, res: Response) => {

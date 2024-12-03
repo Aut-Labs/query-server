@@ -15,6 +15,7 @@ import { verifyPullRequest } from "../services/taskVerifiers/githubTaskVerificat
 import { verifyTwitterRetweet } from "../services/taskVerifiers/twitterVerification";
 import { verifyCommit } from "../services/taskVerifiers/githubTaskVerification";
 import { verifyJoinDiscordTask } from "../services/taskVerifiers/joinDiscordVerification";
+import { SubgraphQueryService, TaskType } from "../services/subgraph-query.service";
 
 interface ContributionRequest {
   autSig: AuthSig;
@@ -93,14 +94,6 @@ const fetchMetadatas = async (items: any[]) => {
   );
 };
 
-interface TaskType {
-  id: string;
-  metadataUri: string;
-  taskId: string;
-  creator: string;
-  metadata: BaseNFTModel<any>;
-}
-
 @injectable()
 export class ContributionController {
   private graphqlClient: GraphQLClient;
@@ -108,70 +101,11 @@ export class ContributionController {
   constructor(
     private loggerService: LoggerService,
     private _sdkContainerService: SdkContainerService,
-    private _encryptDecryptService: EncryptDecryptService
+    private _encryptDecryptService: EncryptDecryptService,
+    private _subgraphQueryService: SubgraphQueryService
   ) {
     this.graphqlClient = new GraphQLClient(process.env.GRAPH_API_DEV_URL);
   }
-
-  private _getTaskTypes = async (hubAddress: string): Promise<TaskType[]> => {
-    if (this.taskTypesCache[hubAddress]) {
-      return this.taskTypesCache[hubAddress];
-    }
-
-    const query = gql`
-      query GetTaskTypes($where: HubAdmin_filter) {
-        tasks(first: 1000, where: $where) {
-          id
-          metadataUri
-          taskId
-          creator
-        }
-      }
-    `;
-
-    const tasks = await this.graphqlClient
-      .request<any>(query)
-      .then((data) => data.tasks)
-      .then((tasks) => fetchMetadatas(tasks))
-      .catch((e) => {
-        this.loggerService.error(JSON.stringify(e));
-        return [];
-      });
-
-    this.taskTypesCache[hubAddress] = tasks;
-    return tasks;
-  };
-
-  private _getHubContributionbyId = async (
-    contributionId: string
-  ): Promise<any> => {
-    const query = gql`
-      query GetContribution($id: ID!) {
-        contribution(id: $id) {
-          id
-          taskId
-          role
-          startDate
-          endDate
-          points
-          quantity
-          descriptionId
-        }
-      }
-    `;
-
-    const variables = {
-      id: contributionId,
-    };
-
-    return this.graphqlClient
-      .request<any>(query, variables)
-      .then((data) => data.contribution)
-      .catch((e) => {
-        this.loggerService.error(JSON.stringify(e));
-        return null;
-      });
-  };
 
   public commitContribution = async (req: any, res: Response) => {
     try {
@@ -195,9 +129,9 @@ export class ContributionController {
         return res.status(400).send({ error: "message not provided." });
       }
 
-      const taskTypes = await this._getTaskTypes(hubAddress);
+      const taskTypes = await this._subgraphQueryService._getTaskTypes(hubAddress);
 
-      const contribution = await this._getHubContributionbyId(contributionId);
+      const contribution = await this._subgraphQueryService._getHubContributionbyId(contributionId);
 
       const correspondingTask = taskTypes.find(
         (taskType) => taskType.id === contribution.taskId

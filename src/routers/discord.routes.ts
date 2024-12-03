@@ -1,13 +1,15 @@
 import { DiscordController } from "../controllers";
 import { Router } from "express";
-import { GraphQLClient, Variables } from "graphql-request";
-import { injectable } from "inversify";
+import { inject, injectable } from "inversify";
 
 @injectable()
 export class DiscordRouter {
   private readonly _router: Router;
 
-  constructor(private discordController: DiscordController) {
+  constructor(
+    @inject(DiscordController)
+    private readonly discordController: DiscordController
+  ) {
     this._router = Router({ strict: true });
     this.init();
   }

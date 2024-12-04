@@ -4,3 +4,5 @@ Dockerfile
 Dockerfile.mainnet
 .git
 .gitignore
+docker-compose.mainnet.yml
+docker-compose.testnet.yml

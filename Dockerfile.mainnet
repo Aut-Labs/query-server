@@ -1,26 +1,17 @@
 FROM node:21.1.0
 
-# Create app directory
-RUN mkdir -p /app
-WORKDIR /app
+WORKDIR /usr/src/app
 
-# Install app dependencies
-COPY package.json ./
+COPY package*.json ./
 COPY .npmrc ./
 
-# Install libraries
-RUN npm install -g npm@latest
 RUN npm install
-RUN npm install -g typescript@4.6.2
-RUN npm install reflect-metadata
-RUN npm rebuild canvas --update-binary
-RUN npm install --save-dev @types/node
-RUN chown -R 1000:1000 "/root/.npm"
 
-# Bundle app source
 COPY . .
 
-# Build dist folder
+RUN npm run build
+
 EXPOSE 4008
-CMD ["npm", "run", "start" ]
+
+CMD ["npm", "start"]
 

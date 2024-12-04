@@ -5,7 +5,6 @@ services:
     container_name: aut-api-testnet
     image: node:21.1.0
     build: .
-    platform: linux/amd64
     environment:
       - SERVER_PORT=4007
       - NODE_ENV=production

@@ -1,14 +1,25 @@
 import { Agenda } from "@hokify/agenda";
 import { Client, Collection, GuildMember, TextChannel } from "discord.js";
-import { ParticipantModel } from "../models/discord/gathering.model";
+import {
+  IParticipant,
+  ParticipantModel,
+} from "../models/discord/gathering.model";
 import { GatheringModel } from "../models/discord/gathering.model";
 import { PollModel } from "../models/discord/poll.model";
+import { SubgraphQueryService } from "./subgraph-query.service";
+import { MemberModel } from "../models/discord/member.model";
+import { SdkContainerService } from "../tools/sdk.container";
+import { Hub } from "@aut-labs/sdk";
 
 export class AgendaManager {
   private discordClient: Client;
+  private subgrapghQueryService: SubgraphQueryService;
+  private sdkContainerService: SdkContainerService;
   agenda: Agenda;
-  constructor(discordClient) {
+  constructor(discordClient, subgrahpQueryServuce, sdkContainerService) {
     this.discordClient = discordClient;
+    this.subgrapghQueryService = subgrahpQueryServuce;
+    this.sdkContainerService = sdkContainerService;
     this.agenda = new Agenda({
       db: { address: `${process.env.MONGODB_CONNECTION_STRING}/agenda` },
     });
@@ -59,151 +70,141 @@ export class AgendaManager {
 
   async finalizeGathering(id: string) {
     try {
-      const gathering = await GatheringModel.findOne({
-        id: id,
-      });
-      if (gathering) {
-        gathering.participants.forEach((participant) => {
-          let secondsOpenMic = 0;
-          let secondsStream = 0;
-          let secondsVideo = 0;
-          if (!participant.muted) {
-            secondsOpenMic =
-              (new Date().getTime() - participant.lastUpdatedMute.getTime()) /
-              1000;
-          }
-          if (participant.streaming) {
-            secondsStream =
-              (new Date().getTime() - participant.lastUpdatedStream.getTime()) /
-              1000;
-          }
-          if (participant.selfVideo) {
-            secondsVideo =
-              (new Date().getTime() - participant.lastUpdatedVideo.getTime()) /
-              1000;
-          }
-          //1,2,3
-          let participantScore = 0;
-          const weight = 1;
-          const weightPoints = weight * 100;
-          const newSecondsOpenMic = participant.secondsOpenMic + secondsOpenMic;
-          const newSecondsStream = participant.secondsStream + secondsStream;
-          const newSecondsVideo = participant.secondsVideo + secondsVideo;
-          const gatheringDuration =
-            (gathering.endDate.getTime() - gathering.startDate.getTime()) /
+      const gathering = await GatheringModel.findById(id);
+      if (!gathering) return;
+
+      const guild = await this.discordClient.guilds.cache.find(
+        (g) => g.id === gathering.guildId
+      );
+      const channel = guild.channels.cache.find(
+        (c) => c.id === gathering.channelId
+      );
+      const memberCols = channel.members as Collection<string, GuildMember>;
+      const gatheringDuration =
+        (gathering.endDate.getTime() - gathering.startDate.getTime()) / 1000;
+
+      const hub = await this.subgrapghQueryService.getHubFromGuildId(
+        gathering.guildId
+      );
+
+      const hubService: Hub = this.sdkContainerService.sdk.initService(
+        Hub,
+        hub.address
+      );
+
+      for (const participant of gathering.participants) {
+        const member = memberCols.find(
+          (m) => m.user.id === participant.discordId
+        );
+        const isInCall = !!member;
+
+        let secondsInCall = participant.secondsInChannel || 0;
+
+        if (isInCall) {
+          const newSeconds =
+            (new Date().getTime() - participant.lastUpdatedPresence.getTime()) /
             1000;
-          const { serverMutedCount } = participant;
+          secondsInCall += newSeconds;
+        }
 
-          if (newSecondsOpenMic > gatheringDuration * 0.66) {
-            participantScore += weightPoints;
-          }
-          if (newSecondsStream > 60) {
-            participantScore = participantScore + 0.15 * weightPoints;
-          }
-          if (newSecondsVideo > 60) {
-            participantScore = participantScore + 0.15 * weightPoints;
-          }
-          if (serverMutedCount > 1) {
-            participantScore = participantScore - 0.15 * weightPoints;
-          }
-
-          console.log(
-            `Participant with ${participant.id} and score:`,
-            participantScore
-          );
-          // const member = await MemberModel.findOne({ discordId: participant.duration });
-
-          GatheringModel.updateOne(
-            {
-              id: id,
-              "participants._id": participant._id,
+        const meetsMinDuration = secondsInCall > gatheringDuration * 0.5;
+        console.log(
+          `Participant ${participant.discordId}: ${secondsInCall}s in call, ` +
+            `${
+              meetsMinDuration ? "meets" : "does not meet"
+            } 50% duration requirement`
+        );
+        await GatheringModel.updateOne(
+          {
+            id: gathering.id,
+            "participants._id": participant._id,
+          },
+          {
+            $set: {
+              "participants.$.secondsInChannel": secondsInCall,
+              "participants.$.lastUpdatedPresence": new Date(),
             },
-            {
-              $set: {
-                "participants.$.secondsOpenMic": newSecondsOpenMic,
-                "participants.$.secondsStream": newSecondsStream,
-                "participants.$.secondsVideo": newSecondsVideo,
-                // "participants.$.serverMutedCount":
-                //   participant.serverMutedCount + (serverMuted ? 1 : 0),
-                // "participants.$.deafened": newState.deaf,
-                // "participants.$.muted": newState.mute,
-                // "participants.$.streaming": newState.streaming,
-                // "participants.$.selfVideo": newState.selfVideo,
-                // "participants.$.lastUpdatedMute": muteChanged
-                //   ? new Date()
-                //   : participant.lastUpdatedMute,
-                // "participants.$.lastUpdatedStream": selfStreamChanged
-                //   ? new Date()
-                //   : participant.lastUpdatedStream,
-                // "participants.$.lastUpdatedVideo": selfVideoChanged
-                //   ? new Date()
-                //   : participant.lastUpdatedVideo,
-              },
-            },
-            (err, result) => {
-              if (err) {
-                console.error("Error updating participant:", err);
-              } else {
-                console.log("Participant updated successfully:", result);
-              }
-            }
-          );
+          }
+        );
+        const memberModel = await MemberModel.findOne({
+          discordId: member.user.id,
         });
+        // memberModel.
+        if (memberModel.autIdAddress) {
+          if (meetsMinDuration) {
+            const taskManager = await hubService.getTaskManager();
+            const response = await taskManager.commitContribution(
+              gathering.contributionId,
+              memberModel.autIdAddress,
+              "0x"
+            );
+            if (!response.isSuccess) {
+              console.error(
+                `Error committing contribution for user ${member.user.id}:`,
+                response.errorMessage
+              );
+              continue;
+            }
+            const pointsResponse = await taskManager.giveContribution(
+              gathering.contributionId,
+              memberModel.autIdAddress
+            );
+            if (!pointsResponse.isSuccess) {
+              console.error(
+                `Error giving points for user ${member.user.id}:`,
+                pointsResponse.errorMessage
+              );
+            }
+          }
+        }
       }
     } catch (e) {
-      console.log(e);
+      console.error("Error finalizing gathering:", e);
     }
   }
 
   async initializeGathering(id: string) {
-    const gathering = await GatheringModel.findOne({
-      id: id,
-    });
+    try {
+      const gathering = await GatheringModel.findById(id);
+      if (!gathering) return;
 
-    const guild = await this.discordClient.guilds.cache.find(
-      (g) => g.id === gathering.guildId
-    );
-
-    const channel = guild.channels.cache.find(
-      (c) => c.id === gathering.channelId
-    );
-
-    const members = channel.members as Collection<string, GuildMember>;
-
-    members.forEach((member) => {
-      const participant = gathering.participants.find(
-        (p) => p.discordId === member.user.id
+      const guild = await this.discordClient.guilds.cache.find(
+        (g) => g.id === gathering.guildId
       );
 
-      if (!participant) {
-        const voiceState = member.voice;
-        const newParticipant = new ParticipantModel({
-          discordId: member.user.id,
-          secondsOpenMic: 0,
-          secondsStream: 0,
-          secondsVideo: 0,
-          timeJoined: new Date(),
-          deafened: voiceState.deaf,
-          muted: voiceState.mute,
-          streaming: voiceState.streaming,
-          selfVideo: voiceState.selfVideo,
-          serverMutedCount: 0,
-          lastUpdatedMute: new Date(),
-          lastUpdatedStream: new Date(),
-          lastUpdatedVideo: new Date(),
-        });
+      const channel = guild.channels.cache.find(
+        (c) => c.id === gathering.channelId
+      );
+      const members = channel.members as Collection<string, GuildMember>;
+      for (const member of members) {
+        const roleMatched = member[1].roles.cache.find((r) =>
+          gathering.roleIds.includes(r.id)
+        );
 
-        gathering.participants.push(newParticipant);
+        if (!roleMatched) continue;
+
+        const participant = gathering.participants.find(
+          (p) => p.discordId === member[1].user.id
+        );
+
+        if (!participant) {
+          gathering.participants.push({
+            discordId: member[1].user.id,
+            secondsInChannel: 0,
+            timeJoined: new Date(),
+            lastUpdatedPresence: new Date(),
+          } as IParticipant);
+        }
       }
-    });
 
-    gathering.save();
+      await gathering.save();
+    } catch (e) {
+      console.error("Error initializing gathering:", e);
+    }
   }
 
   async finalizePoll(id: string) {
-    const poll = await PollModel.findOne({
-      id: id,
-    });
+    const poll = await PollModel.findById(id);
     const guild = await this.discordClient.guilds.cache.find(
       (g) => g.id === poll.guildId
     );
@@ -220,23 +221,93 @@ export class AgendaManager {
       (m) => m.id === poll.messageId
     );
     const fetchMessage = await textChannel.messages.fetch(poll.messageId);
-    let reactions = {};
+    let reactions = [];
+
     for (const o of poll.options) {
-      reactions[o.emoji] = [];
+      // Get users who reacted with this emoji
       const userReactions = await fetchMessage.reactions.cache
         .get(o.emoji)
         .users.fetch();
+
+      // Create an object for this emoji and its users
+      const emojiReaction = {
+        emoji: o.emoji,
+        userIds: [],
+      };
+
+      // Filter users based on role match
       fetchMessage.reactions.cache.get(o.emoji).users.cache.forEach((u) => {
         const roleMatched = members
           .find((m) => m.user.id === u.id)
           .roles.cache.find((r) => poll.roleIds.includes(r.id));
 
         if (roleMatched) {
-          reactions[o.emoji].push(u.id);
+          emojiReaction.userIds.push(u.id);
         }
       });
+
+      reactions.push(emojiReaction);
+    }
+
+    const userReactions = reactions.reduce((acc, { emoji, userIds }) => {
+      userIds.forEach((userId) => {
+        if (!acc[userId]) acc[userId] = [];
+        acc[userId].push(emoji);
+      });
+      return acc;
+    }, {});
+
+    const uniqueUserIds = [
+      ...new Set(reactions.flatMap((reaction) => reaction.userIds)),
+    ];
+
+    const hub = await this.subgrapghQueryService.getHubFromGuildId(
+      poll.guildId
+    );
+
+    const hubService: Hub = this.sdkContainerService.sdk.initService(
+      Hub,
+      hub.address
+    );
+
+    for (let i = 0; i < uniqueUserIds.length; i++) {
+      const userId = uniqueUserIds[i];
+
+      const member = await guild.members.fetch(userId);
+      const memberModel = await MemberModel.findOne({
+        discordId: member.user.id,
+      });
+      // memberModel.
+      if (memberModel.autIdAddress) {
+        const taskManager = await hubService.getTaskManager();
+        const response = await taskManager.commitContribution(
+          poll.contributionId,
+          memberModel.autIdAddress,
+          "0x"
+        );
+        if (!response.isSuccess) {
+          console.error(
+            `Error committing contribution for user ${userId}:`,
+            response.errorMessage
+          );
+          continue;
+        }
+        const pointsResponse = await taskManager.giveContribution(
+          poll.contributionId,
+          memberModel.autIdAddress
+        );
+        if (!pointsResponse.isSuccess) {
+          console.error(
+            `Error giving points for user ${userId}:`,
+            pointsResponse.errorMessage
+          );
+        }
+      } else {
+        console.error(`Address not found for user ${userId}`);
+      }
     }
 
     console.log(JSON.stringify(reactions));
+    console.log(JSON.stringify(userReactions));
   }
 }

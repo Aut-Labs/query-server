@@ -21,9 +21,9 @@
     "testFlow": "npm run build && node ./dist/testFlow.js"
   },
   "dependencies": {
-    "@aut-labs/sdk": "^0.0.223-dev",
     "@hokify/agenda": "^6.3.0",
     "@octokit/rest": "^18.12.0",
+    "@aut-labs/sdk": "^0.0.229-dev",
     "@resvg/resvg-js": "^2.4.1",
     "axios": "^0.27.2",
     "body-parser": "^1.19.0",

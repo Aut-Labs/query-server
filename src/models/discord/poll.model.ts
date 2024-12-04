@@ -7,6 +7,7 @@ interface IOption {
 
 interface IPoll extends Document {
   guildId: string;
+  contributionId: string;
   title: string;
   description: string;
   channelId: string;
@@ -25,6 +26,7 @@ const optionSchema = new Schema<IOption>({
 
 const PollSchema = new Schema<IPoll>({
   guildId: { type: String },
+  contributionId: { type: String },
   title: { type: String },
   description: { type: String },
   channelId: { type: String },

@@ -14,6 +14,8 @@ import { gql, GraphQLClient } from "graphql-request";
 import { verifyPullRequest } from "../services/taskVerifiers/githubTaskVerification";
 import { verifyTwitterRetweet } from "../services/taskVerifiers/twitterVerification";
 import { verifyCommit } from "../services/taskVerifiers/githubTaskVerification";
+import { verifyJoinDiscordTask } from "../services/taskVerifiers/joinDiscordVerification";
+import { SubgraphQueryService, TaskType } from "../services/subgraph-query.service";
 
 interface ContributionRequest {
   autSig: AuthSig;
@@ -69,10 +71,6 @@ const fetchMetadatas = async (items: any[]) => {
       let result = getMetadataFromCache(metadataUri);
       if (!result) {
         try {
-          const url = ipfsCIDToHttpUrl(
-            metadataUri,
-            process.env.IPFS_GATEWAY_URL
-          );
           const response = await fetch(
             ipfsCIDToHttpUrl(metadataUri, process.env.IPFS_GATEWAY_URL),
             { method: "GET" }
@@ -96,14 +94,6 @@ const fetchMetadatas = async (items: any[]) => {
   );
 };
 
-interface TaskType {
-  id: string;
-  metadataUri: string;
-  taskId: string;
-  creator: string;
-  metadata: BaseNFTModel<any>;
-}
-
 @injectable()
 export class ContributionController {
   private graphqlClient: GraphQLClient;
@@ -111,70 +101,11 @@ export class ContributionController {
   constructor(
     private loggerService: LoggerService,
     private _sdkContainerService: SdkContainerService,
-    private _encryptDecryptService: EncryptDecryptService
+    private _encryptDecryptService: EncryptDecryptService,
+    private _subgraphQueryService: SubgraphQueryService
   ) {
     this.graphqlClient = new GraphQLClient(process.env.GRAPH_API_DEV_URL);
   }
-
-  private _getTaskTypes = async (hubAddress: string): Promise<TaskType[]> => {
-    if (this.taskTypesCache[hubAddress]) {
-      return this.taskTypesCache[hubAddress];
-    }
-
-    const query = gql`
-      query GetTaskTypes($where: HubAdmin_filter) {
-        tasks(first: 1000, where: $where) {
-          id
-          metadataUri
-          taskId
-          creator
-        }
-      }
-    `;
-
-    const tasks = await this.graphqlClient
-      .request<any>(query)
-      .then((data) => data.tasks)
-      .then((tasks) => fetchMetadatas(tasks))
-      .catch((e) => {
-        this.loggerService.error(JSON.stringify(e));
-        return [];
-      });
-
-    this.taskTypesCache[hubAddress] = tasks;
-    return tasks;
-  };
-
-  private _getHubContributionbyId = async (
-    contributionId: string
-  ): Promise<any> => {
-    const query = gql`
-      query GetContribution($id: ID!) {
-        contribution(id: $id) {
-          id
-          taskId
-          role
-          startDate
-          endDate
-          points
-          quantity
-          descriptionId
-        }
-      }
-    `;
-
-    const variables = {
-      id: contributionId,
-    };
-
-    return this.graphqlClient
-      .request<any>(query, variables)
-      .then((data) => data.contribution)
-      .catch((e) => {
-        this.loggerService.error(JSON.stringify(e));
-        return null;
-      });
-  };
 
   public commitContribution = async (req: any, res: Response) => {
     try {
@@ -198,9 +129,9 @@ export class ContributionController {
         return res.status(400).send({ error: "message not provided." });
       }
 
-      const taskTypes = await this._getTaskTypes(hubAddress);
+      const taskTypes = await this._subgraphQueryService._getTaskTypes(hubAddress);
 
-      const contribution = await this._getHubContributionbyId(contributionId);
+      const contribution = await this._subgraphQueryService._getHubContributionbyId(contributionId);
 
       const correspondingTask = taskTypes.find(
         (taskType) => taskType.id === contribution.taskId
@@ -217,7 +148,7 @@ export class ContributionController {
           if (commitRes && commitRes.hasCommit) {
             message = JSON.stringify(commitRes);
             break;
-          } else if(commitRes && !commitRes.hasCommit){
+          } else if (commitRes && !commitRes.hasCommit) {
             return res.status(400).send({
               error: `User hasn't committed to the branch.`,
             });
@@ -231,7 +162,7 @@ export class ContributionController {
           if (prRes && prRes.hasPR) {
             message = JSON.stringify(prRes);
             break;
-          } else if(prRes && !prRes.hasPR){
+          } else if (prRes && !prRes.hasPR) {
             return res.status(400).send({
               error: `User hasn't opened a PR to the branch.`,
             });
@@ -245,7 +176,7 @@ export class ContributionController {
           if (retweetRes && retweetRes.hasRetweeted) {
             message = JSON.stringify(retweetRes);
             break;
-          } else if(retweetRes && !retweetRes.hasRetweeted){
+          } else if (retweetRes && !retweetRes.hasRetweeted) {
             return res.status(400).send({
               error: `User hasn't retweeted.`,
             });
@@ -253,7 +184,22 @@ export class ContributionController {
           return res.status(500).send({
             error: `Failed to verify retweet.`,
           });
-
+        case "JoinDiscord":
+          canAutoGivePoints = true;
+          const joinDiscordRes = await verifyJoinDiscordTask(
+            JSON.parse(message)
+          );
+          if (joinDiscordRes && joinDiscordRes.hasJoined) {
+            message = JSON.stringify(joinDiscordRes);
+            break;
+          } else if (joinDiscordRes && !joinDiscordRes.hasJoined) {
+            return res.status(400).send({
+              error: `User hasn't joined the server.`,
+            });
+          }
+          return res.status(500).send({
+            error: `Failed to verify commit.`,
+          });
         default:
           break;
       }
@@ -283,7 +229,7 @@ export class ContributionController {
       const response = await taskManager.commitContribution(
         contributionId,
         address,
-        ethers.toUtf8Bytes(encryptionResponse.hash) as any
+        encryptionResponse.hash
       );
       if (!response.isSuccess) {
         return res.status(400).send({

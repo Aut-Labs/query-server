@@ -358,7 +358,7 @@ export class DiscordController {
 
       if (!roleChannel) return;
       roleChannel.send(
-        `Welcome <@${guildMember.id}>! Get your Āut role by following this link: http://localhost:3000/claim-discord-role?hub-address=${hub.address}`
+        `Welcome <@${guildMember.id}>! Get your Āut role by following this link: ${process.env.HUB_OS_URL}/claim-discord-role?hub-address=${hub.address}`
       );
     });
 

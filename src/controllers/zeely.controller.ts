@@ -73,32 +73,27 @@ export class ZeelyController {
           autIDs(
             where: { owner: "${wallet.toLowerCase()}" }
           ) {
-            novaAddress
+             joinedHubs(first: 100) {
+              id
+              hubAddress
+            }
           }
         }
       `);
-
-      const { autIDs } = response;
+      const { autIDs = [] } = response;
       const autID = autIDs[0];
       if (!autID) {
         return res.status(400).send({ message: "AutId not found" });
       }
 
-      // const signer = await getSigner(this.networkConfig);
-      // const multiSigner: MultiSigner = {
-      //   readOnlySigner: signer,
-      //   signer,
-      // };
-      
-
       const sdk = await AutSDK.getInstance();
 
-      // await sdk.init(multiSigner, this.networkConfig.contracts);
-
-      const nova = sdk.initService<Nova>(Nova, autID.novaAddress);
-      const isAdmin = await nova.contract.admins.isAdmin(wallet);
-      if (isAdmin) {
-        return res.status(200).send({ message: "User is an admin" });
+      for (const hub of autID.joinedHubs) {
+        const nova = sdk.initService<Nova>(Nova, hub.hubAddress);
+        const isAdmin = await nova.contract.admins.isAdmin(wallet);
+        if (isAdmin) {
+          return res.status(200).send({ message: "User is an admin" });
+        }
       }
       res.status(400).send({ message: "Not an admin" });
     } catch (e) {

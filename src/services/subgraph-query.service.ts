@@ -47,7 +47,7 @@ export interface TaskType {
     creator: string;
     metadata: BaseNFTModel<any>;
   }
-  
+
 
 interface AutID {
   id: string;
@@ -258,14 +258,7 @@ export class SubgraphQueryService {
     const query = gql`
       query GetContribution($id: ID!) {
         contribution(id: $id) {
-          id
           taskId
-          role
-          startDate
-          endDate
-          points
-          quantity
-          descriptionId
         }
       }
     `;

@@ -9,6 +9,10 @@ export interface NetworkContracts {
   domainHubAddress: string;
   daoExpanderRegistryAddress: string;
   daoExpanderFactoryAddress: string;
+  hubRegistryAddress: string;
+  taskRegistryAddress: string;
+  interactionFactoryAddress: string;
+  trustedForwarderAddress: string;
   novaRegistryAddress: string;
   novaFactoryAddress: string;
   hackerDaoAddress: string;

@@ -84,7 +84,6 @@ export class DiscordController {
     try {
       console.log("setting up client");
       this.client = new AutDiscordClient({
-        shardCount: 1,
         intents: [
           GatewayIntentBits.Guilds,
           GatewayIntentBits.GuildVoiceStates,

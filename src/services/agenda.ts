@@ -17,15 +17,19 @@ export class AgendaManager {
   private sdkContainerService: SdkContainerService;
   agenda: Agenda;
   constructor(discordClient, subgrahpQueryServuce, sdkContainerService) {
-    this.discordClient = discordClient;
-    this.subgrapghQueryService = subgrahpQueryServuce;
-    this.sdkContainerService = sdkContainerService;
-    this.agenda = new Agenda({
-      db: { address: `${process.env.MONGODB_CONNECTION_STRING}/agenda` },
-    });
+    try {
+      this.discordClient = discordClient;
+      this.subgrapghQueryService = subgrahpQueryServuce;
+      this.sdkContainerService = sdkContainerService;
+      this.agenda = new Agenda({
+        db: { address: `${process.env.MONGODB_CONNECTION_STRING}/agenda` },
+      });
 
-    this.initializeJobs();
-    this.startAgenda();
+      this.initializeJobs();
+      this.startAgenda();
+    } catch (error) {
+      console.error("Error initializing AgendaManager:", error);
+    }
   }
 
   initializeJobs() {

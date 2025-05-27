@@ -43,7 +43,7 @@ class AutDiscordClient extends Client {
   public commands: Collection<any, any>;
 }
 
-@injectable()
+// @injectable()
 export class DiscordController {
   private client: AutDiscordClient;
   private agenda: Agenda;

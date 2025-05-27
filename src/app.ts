@@ -1,7 +1,7 @@
 import express from "express";
 import helmet from "helmet";
 import { injectable } from "inversify";
-import { AutRouter, TaskRouter, UserRouter, ZeelyRouter, DiscordRouter } from "./routers";
+import { AutRouter, TaskRouter, UserRouter, ZeelyRouter } from "./routers";
 import { SdkContainerService } from "./tools/sdk.container";
 
 const bodyParser = require("body-parser");
@@ -39,7 +39,7 @@ export class App {
     private taskRouter: TaskRouter,
     private userRouter: UserRouter,
     private zeelyRouter: ZeelyRouter,
-    private discordRouter: DiscordRouter,
+    // private discordRouter: DiscordRouter,
     private sdkContainerService: SdkContainerService
   ) {
     this._app = express();
@@ -64,7 +64,7 @@ export class App {
     this._app.use("/api/zeely", this.zeelyRouter.router);
     this._app.use("/api/task", this.taskRouter.router);
     this._app.use("/api/user", this.userRouter.router);
-    this._app.use("/api/discord", this.discordRouter.router);
+    // this._app.use("/api/discord", this.discordRouter.router);
     this._app.use("/api/docs", swaggerUI.serve, swaggerUI.setup(swagger));
   }
 }

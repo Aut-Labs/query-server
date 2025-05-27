@@ -2,7 +2,7 @@ import { DiscordController } from "../controllers";
 import { Router } from "express";
 import { inject, injectable } from "inversify";
 
-@injectable()
+// @injectable()
 export class DiscordRouter {
   private readonly _router: Router;
 

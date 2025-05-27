@@ -30,7 +30,7 @@
     "canvas": "^2.11.2",
     "cookie-parser": "1.4.5",
     "cors": "2.8.5",
-    "discord.js": "^14.16.1",
+    "discord.js": "14.16.1",
     "dotenv": "^8.0.0",
     "eth-crypto": "^2.6.0",
     "ethers": "^6.10.0",

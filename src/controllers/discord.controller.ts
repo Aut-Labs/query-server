@@ -81,327 +81,338 @@ export class DiscordController {
     private _subgraphQueryService: SubgraphQueryService,
     private _sdkContainerService: SdkContainerService
   ) {
-    console.log("setting up client");
-    this.client = new AutDiscordClient({
-      intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildVoiceStates,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.GuildMembers,
-        GatewayIntentBits.GuildMessageReactions,
-      ],
-    });
+    try {
+      console.log("setting up client");
+      this.client = new AutDiscordClient({
+        shardCount: 1,
+        intents: [
+          GatewayIntentBits.Guilds,
+          GatewayIntentBits.GuildVoiceStates,
+          GatewayIntentBits.GuildMessages,
+          GatewayIntentBits.GuildMembers,
+          GatewayIntentBits.GuildMessageReactions,
+        ],
+      });
 
-    const userMeCommand = {
-      data: new SlashCommandBuilder()
-        .setName("user")
-        .setDescription("Provides information about the user."),
-      async execute(interaction: CommandInteraction) {
-        await interaction.reply(
-          `This command was run by ${interaction.user.username}.`
-        );
-      },
-    };
-    const claimRoleCommand = {
-      data: new SlashCommandBuilder()
-        .setName("claimrole")
-        .setDescription("Claim your Āut role from the hub within the server."),
-      execute: async function (interaction: CommandInteraction) {
-        const hub = await this.getHubFromGuildId(interaction.guild.id);
-        const autIds = await this._getAutIdsByHub(hub.address);
-        const discordUserId = interaction.user.id;
-        const autId = autIds.find((autId) => {
-          return autId.metadata.properties.socials.some(
-            (social) => social?.metadata?.userId === discordUserId
+      const userMeCommand = {
+        data: new SlashCommandBuilder()
+          .setName("user")
+          .setDescription("Provides information about the user."),
+        async execute(interaction: CommandInteraction) {
+          await interaction.reply(
+            `This command was run by ${interaction.user.username}.`
           );
+        },
+      };
+      const claimRoleCommand = {
+        data: new SlashCommandBuilder()
+          .setName("claimrole")
+          .setDescription(
+            "Claim your Āut role from the hub within the server."
+          ),
+        execute: async function (interaction: CommandInteraction) {
+          const hub = await this.getHubFromGuildId(interaction.guild.id);
+          const autIds = await this._getAutIdsByHub(hub.address);
+          const discordUserId = interaction.user.id;
+          const autId = autIds.find((autId) => {
+            return autId.metadata.properties.socials.some(
+              (social) => social?.metadata?.userId === discordUserId
+            );
+          });
+
+          if (autId) {
+            const role = autId.joinedHubs.find(
+              (h) => h.hubAddress === hub.address
+            ).role;
+            const roleSet = hub.metadata.properties.rolesSets.find(
+              (rs) => rs.roleSetName === "Default"
+            );
+            const roleName = roleSet.roles.find((r) => r.id == role).roleName;
+            const discordGuild = this.client.guilds.cache.find(
+              (g) => g.id === interaction.guild.id
+            );
+
+            const discordRole = discordGuild.roles.cache.find(
+              (r) => r.name === roleName
+            );
+            const guildMember = await interaction.guild.members.fetch(
+              discordUserId
+            );
+
+            // Add the role to the guild member
+            await guildMember.roles.add(discordRole);
+
+            await interaction.reply(
+              `<@${discordUserId}> has claimed their role as <@&${discordRole.id}>.`
+            );
+          } else {
+            await interaction.reply(
+              "Looks like you haven't verified your discord profile.\nPlease follow this {link} and add your discord account to your ĀutID. Once done use /claimRole to get your role."
+            );
+          }
+        }.bind(this),
+      };
+      this.commandsCollection = new Collection();
+      this.commandsCollection.set(userMeCommand.data.name, userMeCommand);
+      this.commandsCollection.set(claimRoleCommand.data.name, claimRoleCommand);
+
+      // const foldersPath = path.join(__dirname, "../tools/discord/commands");
+      // const commandFolders = fs.readdirSync(foldersPath);
+
+      // for (const folder of commandFolders) {
+      //   const commandsPath = path.join(foldersPath, folder);
+      //   const commandFiles = fs
+      //     .readdirSync(commandsPath)
+      //     .filter((file) => file.endsWith(".ts"));
+      //   for (const file of commandFiles) {
+      //     const filePath = path.join(commandsPath, file);
+      //     const command = require(filePath);
+      //     if ("data" in command && "execute" in command) {
+      //       this.commandsCollection.set(command.data.name, command);
+      //     } else {
+      //       console.log(
+      //         `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`
+      //       );
+      //     }
+      //   }
+      // }
+
+      this.client.on(Events.VoiceStateUpdate, async (oldState, newState) => {
+        const { member, channelId } = newState;
+        const guildId = member.guild.id;
+
+        const currentDate = new Date();
+        const activeGatherings = await GatheringModel.find({
+          guildId: guildId,
+          startDate: { $lte: currentDate },
+          endDate: { $gt: currentDate },
         });
 
-        if (autId) {
-          const role = autId.joinedHubs.find(
-            (h) => h.hubAddress === hub.address
-          ).role;
+        for (const gathering of activeGatherings) {
+          const roleMatched = newState.member.roles.cache.find((r) =>
+            gathering.roleIds.includes(r.id)
+          );
+
+          if (!roleMatched) continue;
+
+          const participant = gathering.participants.find(
+            (p) => p.discordId === member.user.id
+          );
+
+          if (!participant) {
+            gathering.participants.push({
+              discordId: member.user.id,
+              secondsInChannel: 0,
+              timeJoined: new Date(),
+              lastUpdatedPresence: new Date(),
+            } as IParticipant);
+            gathering.save();
+          } else {
+            if (!channelId) {
+              // User left channel
+              let secondsInCall = participant.secondsInChannel || 0;
+
+              const newSeconds =
+                (new Date().getTime() -
+                  participant.lastUpdatedPresence.getTime()) /
+                1000;
+              secondsInCall += newSeconds;
+
+              await GatheringModel.findOneAndUpdate(
+                {
+                  _id: gathering.id,
+                  "participants._id": participant.id,
+                },
+                {
+                  $set: {
+                    "participants.$.secondsInChannel": secondsInCall,
+                    "participants.$.lastUpdatedPresence": new Date(),
+                  },
+                }
+              );
+            } else {
+              await GatheringModel.findOneAndUpdate(
+                {
+                  _id: gathering.id,
+                  "participants._id": participant.id,
+                },
+                {
+                  $set: {
+                    "participants.$.lastUpdatedPresence": new Date(),
+                  },
+                }
+              );
+            }
+          }
+        }
+      });
+
+      this.client.on(Events.GuildCreate, async (guild) => {
+        console.log("Joined a new guild: " + guild.name);
+
+        await this._deployCommands(guild.id);
+
+        const hub = await this._subgraphQueryService.getHubFromGuildId(
+          guild.id
+        );
+
+        if (
+          hub &&
+          hub.metadata &&
+          hub.metadata.properties &&
+          hub.metadata.properties.rolesSets
+        ) {
+          const botRole = guild.roles.cache.find(
+            (r) => r.name === this.client.user.username
+          );
+
+          // Create roles for each role in the rolesSets
           const roleSet = hub.metadata.properties.rolesSets.find(
             (rs) => rs.roleSetName === "Default"
           );
-          const roleName = roleSet.roles.find((r) => r.id == role).roleName;
-          const discordGuild = this.client.guilds.cache.find(
-            (g) => g.id === interaction.guild.id
-          );
 
-          const discordRole = discordGuild.roles.cache.find(
-            (r) => r.name === roleName
-          );
-          const guildMember = await interaction.guild.members.fetch(
-            discordUserId
-          );
+          if (botRole) {
+            try {
+              await botRole.setPosition(1);
+            } catch (e) {
+              console.error("Error setting bot role position:", e);
+            }
+          }
 
-          // Add the role to the guild member
-          await guildMember.roles.add(discordRole);
+          for (const role of roleSet.roles) {
+            const randomColor = Math.floor(Math.random() * 16777215).toString(
+              16
+            );
+            try {
+              await guild.roles.create({
+                name: role.roleName,
+                color: `#${randomColor}`,
+                reason: "Āut role from Āut Hub",
+              });
+            } catch (e) {
+              console.error(`Error creating role ${role.roleName}:`, e);
+            }
+          }
 
-          await interaction.reply(
-            `<@${discordUserId}> has claimed their role as <@&${discordRole.id}>.`
+          // Create Āut-role-Channel if it doesn't exist
+          const existingRoleChannel = guild.channels.cache.find(
+            (channel) => channel.name === "āut-role-channel"
           );
+          if (!existingRoleChannel) {
+            try {
+              const channel = await guild.channels.create({
+                name: "āut-role-channel",
+                type: ChannelType.GuildText,
+              });
+              console.log(`Created new channel: ${channel.name}`);
+              // Note: You might want to store this channel ID somewhere if needed
+            } catch (e) {
+              console.error("Error creating āut-role-channel:", e);
+            }
+          }
         } else {
-          await interaction.reply(
-            "Looks like you haven't verified your discord profile.\nPlease follow this {link} and add your discord account to your ĀutID. Once done use /claimRole to get your role."
-          );
+          console.log("Hub data not found or incomplete for this guild.");
         }
-      }.bind(this),
-    };
-    this.commandsCollection = new Collection();
-    this.commandsCollection.set(userMeCommand.data.name, userMeCommand);
-    this.commandsCollection.set(claimRoleCommand.data.name, claimRoleCommand);
 
-    // const foldersPath = path.join(__dirname, "../tools/discord/commands");
-    // const commandFolders = fs.readdirSync(foldersPath);
-
-    // for (const folder of commandFolders) {
-    //   const commandsPath = path.join(foldersPath, folder);
-    //   const commandFiles = fs
-    //     .readdirSync(commandsPath)
-    //     .filter((file) => file.endsWith(".ts"));
-    //   for (const file of commandFiles) {
-    //     const filePath = path.join(commandsPath, file);
-    //     const command = require(filePath);
-    //     if ("data" in command && "execute" in command) {
-    //       this.commandsCollection.set(command.data.name, command);
-    //     } else {
-    //       console.log(
-    //         `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`
-    //       );
-    //     }
-    //   }
-    // }
-
-    this.client.on(Events.VoiceStateUpdate, async (oldState, newState) => {
-      const { member, channelId } = newState;
-      const guildId = member.guild.id;
-
-      const currentDate = new Date();
-      const activeGatherings = await GatheringModel.find({
-        guildId: guildId,
-        startDate: { $lte: currentDate },
-        endDate: { $gt: currentDate },
+        // Your other stuff like adding to guildArray can go here
       });
 
-      for (const gathering of activeGatherings) {
-        const roleMatched = newState.member.roles.cache.find((r) =>
-          gathering.roleIds.includes(r.id)
+      this.client.on(Events.GuildMemberAdd, async (guildMember) => {
+        console.log(`member! ${guildMember}`);
+        // // const guildData = await GuildModel.findOne({ guildId: m.guild.id });
+        // const autIds = await this._getAutIdsByHub(hub.address);
+        // const autId = autIds.find((autId) => {
+        //   return autId.metadata.properties.socials.some(
+        //     (social) => social?.metadata?.userId === guildMember.id
+        //   );
+        // });
+        // const channel = guildMember.guild.channels.cache.find(
+        //   (c) => c.name === "āut-role-channel"
+        // );
+        // if (autId) {
+        //   const role = autId.joinedHubs.find(
+        //     (h) => h.hubAddress === hub.address
+        //   ).role;
+        //   const roleSet = hub.metadata.properties.rolesSets.find(
+        //     (rs) => rs.roleSetName === "Default"
+        //   );
+        //   const roleName = roleSet.roles.find((r) => r.id == role).roleName;
+        //   const discordGuild = this.client.guilds.cache.find(
+        //     (g) => g.id === guildMember.guild.id
+        //   );
+
+        //   const discordRole = discordGuild.roles.cache.find(
+        //     (r) => r.name === roleName
+        //   );
+
+        //   await guildMember.roles.add(discordRole);
+
+        //   (channel as TextChannel).send(
+        //     `Everyone welcome <@${guildMember.id}>. They have joined with the role <@&${discordRole.id}>! `
+        //   );
+        // } else {
+        //   (channel as TextChannel).send(
+        //     `Everyone welcome <@${guildMember.id}>. Looks like you haven't verified your discord profile.\nPlease follow this {link} and add your discord account to your ĀutID. Once done use /claimRole to get your role.`
+        //   );
+        // }
+
+        const hub = await this._subgraphQueryService.getHubFromGuildId(
+          guildMember.guild.id
         );
 
-        if (!roleMatched) continue;
-
-        const participant = gathering.participants.find(
-          (p) => p.discordId === member.user.id
-        );
-
-        if (!participant) {
-          gathering.participants.push({
-            discordId: member.user.id,
-            secondsInChannel: 0,
-            timeJoined: new Date(),
-            lastUpdatedPresence: new Date(),
-          } as IParticipant);
-          gathering.save();
-        } else {
-          if (!channelId) {
-            // User left channel
-            let secondsInCall = participant.secondsInChannel || 0;
-
-            const newSeconds =
-              (new Date().getTime() -
-                participant.lastUpdatedPresence.getTime()) /
-              1000;
-            secondsInCall += newSeconds;
-
-            await GatheringModel.findOneAndUpdate(
-              {
-                _id: gathering.id,
-                "participants._id": participant.id,
-              },
-              {
-                $set: {
-                  "participants.$.secondsInChannel": secondsInCall,
-                  "participants.$.lastUpdatedPresence": new Date(),
-                },
-              }
-            );
-          } else {
-            await GatheringModel.findOneAndUpdate(
-              {
-                _id: gathering.id,
-                "participants._id": participant.id,
-              },
-              {
-                $set: {
-                  "participants.$.lastUpdatedPresence": new Date(),
-                },
-              }
-            );
-          }
-        }
-      }
-    });
-
-    this.client.on(Events.GuildCreate, async (guild) => {
-      console.log("Joined a new guild: " + guild.name);
-
-      await this._deployCommands(guild.id);
-
-      const hub = await this._subgraphQueryService.getHubFromGuildId(guild.id);
-
-      if (
-        hub &&
-        hub.metadata &&
-        hub.metadata.properties &&
-        hub.metadata.properties.rolesSets
-      ) {
-        const botRole = guild.roles.cache.find(
-          (r) => r.name === this.client.user.username
-        );
-
-        // Create roles for each role in the rolesSets
-        const roleSet = hub.metadata.properties.rolesSets.find(
-          (rs) => rs.roleSetName === "Default"
-        );
-
-        if (botRole) {
-          try {
-            await botRole.setPosition(1);
-          } catch (e) {
-            console.error("Error setting bot role position:", e);
-          }
-        }
-
-        for (const role of roleSet.roles) {
-          const randomColor = Math.floor(Math.random() * 16777215).toString(16);
-          try {
-            await guild.roles.create({
-              name: role.roleName,
-              color: `#${randomColor}`,
-              reason: "Āut role from Āut Hub",
-            });
-          } catch (e) {
-            console.error(`Error creating role ${role.roleName}:`, e);
-          }
-        }
-
-        // Create Āut-role-Channel if it doesn't exist
-        const existingRoleChannel = guild.channels.cache.find(
+        const roleChannel = guildMember.guild.channels.cache.find(
           (channel) => channel.name === "āut-role-channel"
+        ) as TextChannel;
+
+        if (!roleChannel) return;
+        roleChannel.send(
+          `Welcome <@${guildMember.id}>! Get your Āut role by following this link: ${process.env.HUB_OS_URL}/claim-discord-role?hub-address=${hub.address}`
         );
-        if (!existingRoleChannel) {
-          try {
-            const channel = await guild.channels.create({
-              name: "āut-role-channel",
-              type: ChannelType.GuildText,
+      });
+
+      this.client.on(Events.InteractionCreate, async (interaction) => {
+        if (!interaction.isChatInputCommand()) return;
+        const command = this.commandsCollection.get(interaction.commandName);
+
+        if (!command) {
+          console.error(
+            `No command matching ${interaction.commandName} was found.`
+          );
+          return;
+        }
+
+        try {
+          await command.execute(interaction);
+        } catch (error) {
+          console.error(error);
+          if (interaction.replied || interaction.deferred) {
+            await interaction.followUp({
+              content: "There was an error while executing this command!",
+              ephemeral: true,
             });
-            console.log(`Created new channel: ${channel.name}`);
-            // Note: You might want to store this channel ID somewhere if needed
-          } catch (e) {
-            console.error("Error creating āut-role-channel:", e);
+          } else {
+            await interaction.reply({
+              content: "There was an error while executing this command!",
+              ephemeral: true,
+            });
           }
         }
-      } else {
-        console.log("Hub data not found or incomplete for this guild.");
-      }
+      });
 
-      // Your other stuff like adding to guildArray can go here
-    });
+      this.client.once(Events.ClientReady, async (c) => {
+        console.log(`Ready! Logged in as ${c.user.tag}`);
+      });
 
-    this.client.on(Events.GuildMemberAdd, async (guildMember) => {
-      console.log(`member! ${guildMember}`);
-      // // const guildData = await GuildModel.findOne({ guildId: m.guild.id });
-      // const autIds = await this._getAutIdsByHub(hub.address);
-      // const autId = autIds.find((autId) => {
-      //   return autId.metadata.properties.socials.some(
-      //     (social) => social?.metadata?.userId === guildMember.id
-      //   );
-      // });
-      // const channel = guildMember.guild.channels.cache.find(
-      //   (c) => c.name === "āut-role-channel"
-      // );
-      // if (autId) {
-      //   const role = autId.joinedHubs.find(
-      //     (h) => h.hubAddress === hub.address
-      //   ).role;
-      //   const roleSet = hub.metadata.properties.rolesSets.find(
-      //     (rs) => rs.roleSetName === "Default"
-      //   );
-      //   const roleName = roleSet.roles.find((r) => r.id == role).roleName;
-      //   const discordGuild = this.client.guilds.cache.find(
-      //     (g) => g.id === guildMember.guild.id
-      //   );
+      this.client.login(process.env.DISCORD_BOT_TOKEN);
 
-      //   const discordRole = discordGuild.roles.cache.find(
-      //     (r) => r.name === roleName
-      //   );
-
-      //   await guildMember.roles.add(discordRole);
-
-      //   (channel as TextChannel).send(
-      //     `Everyone welcome <@${guildMember.id}>. They have joined with the role <@&${discordRole.id}>! `
-      //   );
-      // } else {
-      //   (channel as TextChannel).send(
-      //     `Everyone welcome <@${guildMember.id}>. Looks like you haven't verified your discord profile.\nPlease follow this {link} and add your discord account to your ĀutID. Once done use /claimRole to get your role.`
-      //   );
-      // }
-
-      const hub = await this._subgraphQueryService.getHubFromGuildId(
-        guildMember.guild.id
-      );
-
-      const roleChannel = guildMember.guild.channels.cache.find(
-        (channel) => channel.name === "āut-role-channel"
-      ) as TextChannel;
-
-      if (!roleChannel) return;
-      roleChannel.send(
-        `Welcome <@${guildMember.id}>! Get your Āut role by following this link: ${process.env.HUB_OS_URL}/claim-discord-role?hub-address=${hub.address}`
-      );
-    });
-
-    this.client.on(Events.InteractionCreate, async (interaction) => {
-      if (!interaction.isChatInputCommand()) return;
-      const command = this.commandsCollection.get(interaction.commandName);
-
-      if (!command) {
-        console.error(
-          `No command matching ${interaction.commandName} was found.`
-        );
-        return;
-      }
-
-      try {
-        await command.execute(interaction);
-      } catch (error) {
-        console.error(error);
-        if (interaction.replied || interaction.deferred) {
-          await interaction.followUp({
-            content: "There was an error while executing this command!",
-            ephemeral: true,
-          });
-        } else {
-          await interaction.reply({
-            content: "There was an error while executing this command!",
-            ephemeral: true,
-          });
-        }
-      }
-    });
-
-    this.client.once(Events.ClientReady, async (c) => {
-      console.log(`Ready! Logged in as ${c.user.tag}`);
-    });
-
-    this.client.login(process.env.DISCORD_BOT_TOKEN);
-
-    this.agenda = new AgendaManager(
-      this.client,
-      this._subgraphQueryService,
-      this._sdkContainerService
-    ).agenda;
+      this.agenda = new AgendaManager(
+        this.client,
+        this._subgraphQueryService,
+        this._sdkContainerService
+      ).agenda;
+    } catch (error) {
+      console.error("Error setting up Discord client:", error);
+    }
   }
 
   private getDiscordUserIdFromToken = async (

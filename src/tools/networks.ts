@@ -14,6 +14,8 @@ export const AmoyNetwork = (): NetworkConfig => ({
     domainHubAddress: process.env.AMOY_DOMAIN_HUB_ADDRESS,
     hubRegistryAddress: process.env.AMOY_AUT_HUB_REGISTRY_ADDRESS,
     taskRegistryAddress: process.env.AMOY_HUB_TASK_REGISTRY_ADDRESS,
+    interactionFactoryAddress: process.env.AMOY_INTERACTION_FACTORY_ADDRESS,
+    trustedForwarderAddress: process.env.AMOY_TRUSTED_FORWARDER_ADDRESS,
   },
 });
 
@@ -32,5 +34,7 @@ export const PolygonNetwork = (): NetworkConfig => ({
     domainHubAddress: process.env.POLYGON_DOMAIN_HUB_ADDRESS,
     hubRegistryAddress: process.env.POLYGON_AUT_HUB_REGISTRY_ADDRESS,
     taskRegistryAddress: process.env.POLYGON_HUB_TASK_REGISTRY_ADDRESS,
+    interactionFactoryAddress: process.env.POLYGON_INTERACTION_FACTORY_ADDRESS,
+    trustedForwarderAddress: process.env.POLYGON_TRUSTED_FORWARDER_ADDRESS,
   },
 });

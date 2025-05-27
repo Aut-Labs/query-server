@@ -9,6 +9,8 @@ export interface NetworkContracts {
   domainHubAddress: string;
   hubRegistryAddress: string;
   taskRegistryAddress: string;
+  interactionFactoryAddress: string;
+  trustedForwarderAddress: string;
 }
 
 export interface NetworkConfig {
